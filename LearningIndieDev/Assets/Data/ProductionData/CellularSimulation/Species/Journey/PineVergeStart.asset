@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: pine-verge-start
   displayName: PINE VERGE
-  description: Begin among the pines. Choose one Hare Mutation before the first cycle.
+  description: Begin among the pines. Choose one Rabbit Mutation before the first cycle.
   kind: 5
   row: 0
   column: 2

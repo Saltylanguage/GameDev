@@ -28,7 +28,7 @@ internal static class Checks
             var project = Path.Combine(root, "Project O'Brien $value `tick");
             Directory.CreateDirectory(Path.Combine(project, "tools"));
             var script = Path.Combine(project, "tools", "Export-CellSimWorksheet.ps1");
-            File.WriteAllText(script, "param([string[]]$ReportPath,[string]$OutputPath,[string]$ProjectPath,[int]$MaxRuns,[int[]]$Checkpoints,[string]$Match,[int[]]$Seeds,[switch]$DetailedObservations,[string]$ReviewSelection,[int[]]$SuccessFloors)\n[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)\n@{reports=$ReportPath;match=$Match;seeds=$Seeds;ticks=$Checkpoints;rows=$MaxRuns;detailed=[bool]$DetailedObservations;selection=$ReviewSelection;floors=$SuccessFloors}|ConvertTo-Json -Depth 5|Set-Content -LiteralPath $OutputPath -Encoding UTF8\nWrite-Output 'Readable progress: Hares / Foxes / Plants'\nexit 0\n");
+            File.WriteAllText(script, "param([string[]]$ReportPath,[string]$OutputPath,[string]$ProjectPath,[int]$MaxRuns,[int[]]$Checkpoints,[string]$Match,[int[]]$Seeds,[switch]$DetailedObservations,[string]$ReviewSelection,[int[]]$SuccessFloors)\n[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)\n@{reports=$ReportPath;match=$Match;seeds=$Seeds;ticks=$Checkpoints;rows=$MaxRuns;detailed=[bool]$DetailedObservations;selection=$ReviewSelection;floors=$SuccessFloors}|ConvertTo-Json -Depth 5|Set-Content -LiteralPath $OutputPath -Encoding UTF8\nWrite-Output 'Readable progress: Rabbits / Foxes / Plants'\nexit 0\n");
             var report = Path.Combine(root, "report O'Brien $(throw 'unsafe') ` 日本語.json");
             File.WriteAllText(report, "{}");
             var options = new ExportOptions([report], Path.Combine(root, "new workbook.xlsx"), "D5 O'Brien $(throw 'unsafe') ` 日本語", "60000, 60001 60000", 24, 400, 500);
@@ -52,7 +52,7 @@ internal static class Checks
                 Reject(() => Tools.ValidateExport(options with { Output = Path.Combine(root, "wrong.csv") }));
                 Reject(() => Tools.ValidateExport(options with { Output = "relative.xlsx" }));
                 Reject(() => Tools.ValidateExport(options with { ReviewSelection = "made-up" }));
-                Reject(() => Tools.ValidateExport(options with { HareFloor = 0 }));
+                Reject(() => Tools.ValidateExport(options with { RabbitFloor = 0 }));
             });
             Check("Actual PowerShell process preserves arrays, quoting and progress", () =>
             {
@@ -76,7 +76,7 @@ internal static class Checks
             });
             Check("Statistical export selection and success floors reach the exporter", () =>
             {
-                var custom = options with { Output = Path.Combine(root, "statistics.xlsx"), ReviewSelection = "lowest-seeds", HareFloor = 3, FoxFloor = 4, PlantFloor = 80 };
+                var custom = options with { Output = Path.Combine(root, "statistics.xlsx"), ReviewSelection = "lowest-seeds", RabbitFloor = 3, FoxFloor = 4, PlantFloor = 80 };
                 Require(Tools.Export(project, custom, _ => { }).GetAwaiter().GetResult() == 0);
                 using var captured = JsonDocument.Parse(File.ReadAllText(custom.Output).TrimStart('\uFEFF'));
                 Require(captured.RootElement.GetProperty("selection").GetString() == "lowest-seeds");
@@ -153,7 +153,7 @@ internal static class Checks
                 PumpUi();
                 var selection = Find<ComboBox>(form).Single(c => c.AccessibleName == "Review selection");
                 Require(selection.SelectedIndex == 0 && selection.Items.Count == 2 && selection.Width >= 240);
-                Require(Find<NumericUpDown>(form).Single(c => c.AccessibleName == "Success floor Hares").Value == 5);
+                Require(Find<NumericUpDown>(form).Single(c => c.AccessibleName == "Success floor Rabbits").Value == 5);
                 if (actualReport != null) Check("Native export button, async completion and close guard with real evidence", () =>
                 {
                     var actualOutput = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(resultPath))!, "workbench-integration-" + DateTime.Now.ToString("yyyyMMdd-HHmmss-fff") + ".xlsx");
@@ -195,7 +195,7 @@ internal static class Checks
                 form.Show(); PumpUi();
                 var page = Find<RunPage>(form).Single();
                 page.Apply(RunTools.LoadPreset(Path.Combine(actualProject, "tools", "CellSim.Workbench", "presets", "D5-Gardeners-review.json")) with
-                { Strategies = RunTools.StrategyIds, Comparisons = [new("hare-population", "20,30"), new("fox:energy.starting", "120,160")] });
+                { Strategies = RunTools.StrategyIds, Comparisons = [new("rabbit-population", "20,30"), new("fox:energy.starting", "120,160")] });
                 PumpUi();
                 var matrix = Find<DataGridView>(page).Single(g => g.AccessibleName == "Live test matrix");
                 var conditions = Find<DataGridView>(page).Single(g => g.AccessibleName == "Condition preview");
@@ -238,7 +238,7 @@ internal static class Checks
                     var picker = Find<ComboBox>(page).Single();
                     var values = Find<TextBox>(page).Single(t => t.AccessibleName == "Comparison value list");
                     var add = Find<Button>(page).Single(b => b.Text == "Add comparison");
-                    foreach (var key in new[] { "hare:awareness.vision-range", "fox:awareness.vision-range" })
+                    foreach (var key in new[] { "rabbit:awareness.vision-range", "fox:awareness.vision-range" })
                     {
                         picker.SelectedItem = SetupParameters.Find(key); values.Text = range; add.PerformClick(); PumpUi();
                     }

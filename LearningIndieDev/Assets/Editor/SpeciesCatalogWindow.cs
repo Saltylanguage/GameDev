@@ -971,7 +971,7 @@ namespace SaltyGame.EditorTools
         Texture2D ResolveSpeciesIcon(string id, SpeciesRole role)
         {
             var searchKey = NormalizeIconKey(id);
-            if (searchKey == "hare")
+            if (searchKey == "rabbit")
             {
                 searchKey = "rabbit";
             }

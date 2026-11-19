@@ -6,8 +6,8 @@ namespace SaltyGame
 {
     public enum FieldDataPopulationInterventionKind
     {
-        AddHare,
-        RemoveHare,
+        AddRabbit,
+        RemoveRabbit,
         AddFox,
         RemoveFox,
         AddPlants,

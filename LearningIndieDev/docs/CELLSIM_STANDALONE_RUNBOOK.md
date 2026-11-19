@@ -15,7 +15,7 @@ the October 7 meeting's still-undefined tick-700 ecology viability criterion.
 For the local Windows GUI, double-click `Open-CellSim-Workbench.cmd`. The
 [Workbench](CELLSIM_WORKBENCH.md) now supports readable setup, saved presets,
 run-count preview, validation, deliberate Run, progress, safe stop/resume and
-Excel export. Setup is currently the neutral Plant/Hare/Fox six-round flow;
+Excel export. Setup is currently the neutral Plant/Rabbit/Fox six-round flow;
 validation freezes a fresh experiment and exact runner without starting workers.
 
 The Workbench launcher builds its runner into `artifacts/cellsim-workbench/runner`
@@ -64,15 +64,15 @@ tail chunks, failures, stale status, identity rejection and analysis lifecycle.
 
 ## Sweep settings, then confirm candidates
 
-The approved Hare-purchase panel is documented in
+The approved Rabbit-purchase panel is documented in
 [`S4-03 protocol`](Research/Experiments/S4-03-Hare-Reinforcement-Candidate-Panel/PROTOCOL.md).
-The scientific option `-harePurchasePolicy` supports `none`, `early-five`,
+The scientific option `-rabbitPurchasePolicy` supports `none`, `early-five`,
 `middle-five`, `late-five`, `each-one`, `each-three`, `each-five` and
-`restore-toward-start`. It requires a Hare player, six continuous phases and
-normal boundary choices. Restoration requires an explicit starting Hare count.
+`restore-toward-start`. It requires a Rabbit player, six continuous phases and
+normal boundary choices. Restoration requires an explicit starting Rabbit count.
 Omitting the option preserves the historical experiment behavior; explicit
 `none` adds a currency audit without purchases. Each reached window credits
-living Hares once, buys individual Hares for 10 after successful production
+living Rabbits once, buys individual Rabbits for 10 after successful production
 placement, and retains unspent funds. `purchaseWindows` records currency,
 population, requests, additions and stop reasons; additions reconcile as ADD.
 Report schema is 35. Existing frozen historical builds/exports remain separate.
@@ -95,7 +95,7 @@ flow. From `LearningIndieDev`:
 ```powershell
 .\tools\Export-CellSimSnapshot.ps1 `
     -OutputPath "$PWD\artifacts\cellsim-neutral.json" `
-    -ScientificArguments @('-playerSpeciesId','hare','-stepIntervalSeconds','0.1',
+    -ScientificArguments @('-playerSpeciesId','rabbit','-stepIntervalSeconds','0.1',
         '-wrapEdges','true','-combatMode','opposed-roll',
         '-experimentalFeatures','bev-experimental')
 
@@ -104,7 +104,7 @@ python .\tools\CellSim.Batch\sweep.py compile `
 dotnet .\tools\CellSim.Batch\bin\Release\net8.0\CellSim.Batch.dll batch `
     .\artifacts\screen\plan.json
 python .\tools\CellSim.Batch\sweep.py analyze .\artifacts\screen `
-    .\artifacts\screen-analysis --rank population.hare.final --top 10
+    .\artifacts\screen-analysis --rank population.rabbit.final --top 10
 
 # Retest the shortlisted settings with fresh seeds and every original path.
 python .\tools\CellSim.Batch\sweep.py compile `
@@ -142,7 +142,7 @@ policies have six phases. Short early endings remain measured outcomes.
 Absolute starting-stat overrides use registered IDs, for example:
 
 ```text
--speciesStats fox:energy.starting=80,hare:awareness.vision-range=7
+-speciesStats fox:energy.starting=80,rabbit:awareness.vision-range=7
 ```
 
 All 27 IDs in `SpeciesAttributeIds` are supported, including attack/block,
@@ -181,10 +181,10 @@ Missing=3. Invalid/unavailable values remain SQL NULL, never measured zero.
   metric/direction. `shortlist-contexts.json` feeds the fresh-seed compile step.
 
 Metric names include `population.<species>.final/min/max/mean`,
-`herbivore.hare.PREY/pAVI/STRV/sAVI/CRWD/cAVI/BIR/RFS/APS`,
+`herbivore.rabbit.PREY/pAVI/STRV/sAVI/CRWD/cAVI/BIR/RFS/APS`,
 `predator.fox.KIL/huntAVG/STRV/BIR/AHS`,
 `activity.fox.reproductionBlockedEnergy`, and
-`activity.hare.births.per100Ticks`. The slash separators here enumerate metric
+`activity.rabbit.births.per100Ticks`. The slash separators here enumerate metric
 suffixes, not literal metric names. `population.<species>.mean` averages
 post-tick populations over observed ticks; trajectory summaries also retain
 initial/final counts, positive ticks, first-zero tick (-1 if absent), and the
@@ -243,9 +243,9 @@ dotnet $runner self-test
 .\tools\Export-CellSimSnapshot.ps1 `
     -OutputPath "$PWD\artifacts\cellsim-input.json" `
     -ScientificArguments @(
-        '-playerSpeciesId','hare','-runTicks','700',
+        '-playerSpeciesId','rabbit','-runTicks','700',
         '-gridWidth','36','-gridHeight','20',
-        '-startingPopulations','plant=400,hare=20,fox=10',
+        '-startingPopulations','plant=400,rabbit=20,fox=10',
         '-wrapEdges','true','-combatMode','opposed-roll',
         '-experimentalFeatures','bev-experimental') `
     -SeedStart 100000 -ReferenceSeeds 4
@@ -303,7 +303,7 @@ the same seed range, enabling matched-seed comparisons. For example:
 "conditions": [
   { "id": "control", "arguments": [] },
   { "id": "fox-cooldown-2", "arguments": ["-foxAttackCooldownTicks", "2"] },
-  { "id": "population-600-40-25", "arguments": ["-startingPopulations", "plant=600,hare=40,fox=25"] }
+  { "id": "population-600-40-25", "arguments": ["-startingPopulations", "plant=600,rabbit=40,fox=25"] }
 ]
 ```
 
@@ -357,7 +357,7 @@ the first/final population snapshots and omit detailed event arrays. Death evide
 needed by stat lines and complete population history are still held during a run,
 then discarded with that run. This bounds memory by concurrent runs, not total
 batch size. A detailed replay records the original event arrays for one seed.
-The legacy policy report emits an inapplicable predator stat line for a Hare;
+The legacy policy report emits an inapplicable predator stat line for a Rabbit;
 the batch validates FPO accounting for the species' actual role and preserves the
 legacy report for parity. Reproduction accounting is checked for all species.
 
@@ -398,7 +398,7 @@ activity counters on every tick. A console build alone is not Unity validation.
 Standalone tool guard clauses use compact formatting; existing domain conventions
 and serialized assets are preserved. See the dated validation record below for
 the actual evidence, rather than treating this list of checks as a passing claim.
-The sweep check uses a bounded Hare/Fox fixture to reconcile distributions,
+The sweep check uses a bounded Rabbit/Fox fixture to reconcile distributions,
 matched deltas, held-axis references, SQLite coverage, invalid/N/A handling,
 sampling, budgets, cohort summarization and corrupted/duplicate seed rejection.
 
@@ -416,7 +416,7 @@ Local evidence is in `artifacts/cellsim-sweep-validation-20261008/`:
   report-rate rounding retains the documented tolerance.
 - `pilot-final`: **192 runs = 16 contexts × 3 paths × 4 seeds** (23000–23003),
   changing 100/10/5 versus 150/15/8 populations, 20x12 versus 24x16 grids,
-  Fox starting energy 80/120 and Hare vision 5/7. Paths are skip-all, Trailblazer
+  Fox starting energy 80/120 and Rabbit vision 5/7. Paths are skip-all, Trailblazer
   and Warren, with six planned 20-tick phases. This is a short tooling fixture.
 - `analysis-complete`: 26 metrics, 8,736 condition/phase/metric summaries and 31,850
   paired comparison rows (including completely unreached phases);
@@ -470,7 +470,7 @@ the tested Release assembly SHA-256 is
 
 All baseline benchmark runs used identical settings: 36x20, wrapping enabled,
 700 ticks, authored 0.2-second steps, opposed combat, experimental features,
-400 Plants / 20 Hares / 10 Foxes. Fresh benchmark invocations include dispatch,
+400 Plants / 20 Rabbits / 10 Foxes. Fresh benchmark invocations include dispatch,
 simulation, validation and aggregation. The three four-seed-chunk outputs have
 the same SHA-256; the 32-seed single-chunk output and the first 32 rows of the
 128-seed output are also byte-identical to them.

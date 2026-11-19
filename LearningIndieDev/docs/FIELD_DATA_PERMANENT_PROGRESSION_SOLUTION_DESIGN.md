@@ -82,7 +82,7 @@ The integrated profile store is version 7. Recognize the older shapes explicitly
 
 - v2: copy generic currency into Research Data; species wallets start at zero.
 - local v3: preserve researchData and speciesDataWallets as already migrated.
-- incoming Rabbit v3: migrate Rabbit Data into the Hare species wallet and
+- incoming Rabbit v3: migrate Rabbit Data into the Rabbit species wallet and
   combine its distinct generic Currency and Research Data balances with checked
   addition. Preserve allocations, completed-run IDs/counts and Genome state.
 - v4: use the canonical species wallets and Research Data; compatibility
@@ -223,9 +223,9 @@ still owns the visible Genome Lab purchase controls; T10 owns settlement retry p
 Treat the existing `unlockedNodeIds` as permanent node ownership and
 `activeNodeIds` as the current allocation. Add/extend a validated catalog for
 path license cost, node cost, prerequisite IDs, and active capacity cost. The
-initial catalog includes Hare only. Provisional prices are 10 Hare Data for
-the Hare path license and 5 Hare Data per eligible node. The first slice uses
-all five existing Hare IDs and preserves their authored
+initial catalog includes Rabbit only. Provisional prices are 10 Rabbit Data for
+the Rabbit path license and 5 Rabbit Data per eligible node. The first slice uses
+all five existing Rabbit IDs and preserves their authored
 prerequisites. Each costs 2 points of the existing 8-point active capacity.
 The tuning sheet records the five supported effects/display names approved on
 October 24 and authored by T01 with existing IDs/GUIDs preserved.
@@ -239,10 +239,10 @@ add permanent ownership, and add it to active configuration in one profile
 update. At full capacity, block purchase; do not silently unlock but leave
 inactive.
 
-**T06 implementation (2026-10-26):** `TryPurchaseHareGenomeLicense(profileId)`
-uses the canonical 10 Hare Data price and existing saved license flag. It checks
-the loaded profile and Hare wallet, then saves deduction/license together before
-publication. Duplicate or legacy ownership, insufficient/missing Hare Data,
+**T06 implementation (2026-10-26):** `TryPurchaseRabbitGenomeLicense(profileId)`
+uses the canonical 10 Rabbit Data price and existing saved license flag. It checks
+the loaded profile and Rabbit wallet, then saves deduction/license together before
+publication. Duplicate or legacy ownership, insufficient/missing Rabbit Data,
 wrong profile, reentry and failed writes do not publish a purchase. Other species
 wallets, Research Data/level, existing Genomes and settlement history/pending
 inputs are preserved. The license grants no node effect. It can be bought after
@@ -250,9 +250,9 @@ the first funded successful journey; ordinary journey launch needs no license.
 The POC's price-parameter/three-run method remains for the existing UI until T11
 wires the FD2 operation. No save-schema change is needed for this existing flag.
 
-**T07 implementation (2026-10-26):** `TryPurchaseHareGenomeNode(profileId, nodeId)`
-accepts only IDs in the canonical T01 Hare map. It requires the matching loaded
-profile and path license, charges the catalog's 5 Hare Data price, and saves
+**T07 implementation (2026-10-26):** `TryPurchaseRabbitGenomeNode(profileId, nodeId)`
+accepts only IDs in the canonical T01 Rabbit map. It requires the matching loaded
+profile and path license, charges the catalog's 5 Rabbit Data price, and saves
 deduction, permanent `unlockedNodeIds` and immediate activation together before
 publication. Duplicate owned/inactive nodes and existing POC allocations cannot
 be purchased again. The existing FD2 resolver checks all owned ancestors and
@@ -278,7 +278,7 @@ reset for each replacement loadout, rather than permanent free rearrangement
 after the first reset. `TryResetGenomeLoadout(profileId, speciesId,
 expectedResetGeneration)` saves the fee, empty active selection and incremented
 generation together. Empty resets are rejected without a fee. The new FD2 API
-supports the canonical Hare map and rejects refundable POC allocations without
+supports the canonical Rabbit map and rejects refundable POC allocations without
 converting them. Permanent ownership, license and Species Data stay intact.
 
 `TryArrangeGenomeLoadout` accepts the same profile/species/reset generation and
@@ -304,9 +304,9 @@ verify the saved selections resolve to those exact catalog records. This does
 not establish next-launch player wiring or balance acceptance.
 
 **T09 launch integration (2026-10-27):** `CreateLaunchGenomeSnapshot` resolves
-permanent Hare profiles through the versioned T01 definition and its
+permanent Rabbit profiles through the versioned T01 definition and its
 owned-prerequisite/capacity validator. A reset generation or a canonical owned
-Hare node identifies this permanent path; active selections also require the
+Rabbit node identifies this permanent path; active selections also require the
 license and must not mix refundable POC allocations. The existing authoring
 provider still supplies POC/other-species maps until T11. If it supplies a map
 containing FD2 IDs, that whole map must match the canonical definition. POC-only
@@ -328,7 +328,7 @@ instead of clearing it. This is launch integration, not ecology/balance approval
 
 Use the existing GalapagOS Desktop's Gene Lab window, its view-model, and
 Noesis bindings. Add a shared Research section and species wallet display;
-show a Hare tree/license state and locked/owned/active/capacity states; expose
+show a Rabbit tree/license state and locked/owned/active/capacity states; expose
 purchase, activate/deactivate, reset, and conversion-research commands with
 cost and resulting balance. Keep commands unavailable when prerequisites,
 capacity, or wallet checks fail. ViewModels format receipts but do not compute
@@ -340,7 +340,7 @@ retained permanent balances/unlocks. Starting another journey must not
 accidentally re-settle a closed one.
 
 **T11 implementation (2026-10-27):** MainMenu profile launch now composes the
-permanent Gene Lab workflow. The window displays shared Research Data, Hare
+permanent Gene Lab workflow. The window displays shared Research Data, Rabbit
 Data, current conversion level, canonical path/node prices, resulting wallet
 balances, owned/active/selected states, prerequisites and catalog capacity.
 `FieldDataGenomeLab` owns quotes and transaction orchestration through the
@@ -356,7 +356,7 @@ Canonical catalog order is used when applying the full selection; the approved
 five effects are independent additive changes, and no Mutation order changes.
 
 Direct authoring-scene entry retains POC preview behavior. A profile with
-refundable Hare allocations automatically retains labeled legacy controls and
+refundable Rabbit allocations automatically retains labeled legacy controls and
 its existing refund/reset transaction. Closing/reopening after that legacy reset
 selects permanent controls. This avoids reinterpreting migrated ownership.
 The canonical five-node UI remains stable when the POC authoring catalog refreshes;
@@ -408,7 +408,7 @@ production ecology, tuning, a release or publishing the isolated source.
   node effects/costs may not yet be purchase-ready.
 - First-test conversion research is capped at three levels, priced at 10, 20,
   and 30 Research Data; the reset fee is 20 Research Data. These are tuning
-  baselines, not balance findings. The five-node Hare selection and capacity
+  baselines, not balance findings. The five-node Rabbit selection and capacity
   costs are recorded in the [FD2 tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md),
   while specific node effects now have a proposed supported mapping awaiting review.
 - Settlement receipt retention must preserve exactly-once behavior across

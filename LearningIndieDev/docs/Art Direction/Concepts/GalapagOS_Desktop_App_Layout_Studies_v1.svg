@@ -61,7 +61,7 @@
     <text x="24" y="130" class="title" font-size="15">SPECIMENS</text>
     <line x1="24" y1="145" x2="150" y2="145" class="line"/>
     <circle cx="40" cy="172" r="13" class="sky" stroke="#6F7E3A" stroke-width="2"/>
-    <text x="62" y="178" class="ink small">Hare</text>
+    <text x="62" y="178" class="ink small">Rabbit</text>
     <circle cx="40" cy="207" r="13" class="tangerine" stroke="#6F7E3A" stroke-width="2"/>
     <text x="62" y="213" class="ink small">Fox</text>
     <circle cx="40" cy="242" r="13" class="olive" stroke="#6F7E3A" stroke-width="2"/>
@@ -71,7 +71,7 @@
     <rect x="178" y="105" width="298" height="226" class="sheet"/>
     <circle cx="327" cy="172" r="38" class="sky" stroke="#6F7E3A" stroke-width="3"/>
     <path d="M300 188 L314 157 L327 174 L343 151 L360 189" class="branch"/>
-    <text x="202" y="235" class="title" font-size="20">HARE · HERBIVORE</text>
+    <text x="202" y="235" class="title" font-size="20">RABBIT · HERBIVORE</text>
     <text x="202" y="261" class="ink small">Cautious grazer with sharp hearing.</text>
     <rect x="202" y="278" width="126" height="30" class="button" rx="5"/>
     <text x="218" y="298" fill="#FCEEC0" font-family="monospace" font-size="13">GENE LAB</text>
@@ -93,7 +93,7 @@
     <rect x="8" y="11" width="700" height="3" fill="#E8EDB2"/>
     <rect x="8" y="21" width="700" height="3" fill="#E8EDB2"/>
     <rect x="8" y="31" width="700" height="3" fill="#E8EDB2"/>
-    <text x="18" y="29" class="title" font-size="16">GENE LAB · HARE</text>
+    <text x="18" y="29" class="title" font-size="16">GENE LAB · RABBIT</text>
     <text x="668" y="29" class="title" font-size="20">×</text>
     <rect x="12" y="56" width="692" height="34" class="cream" stroke="#D4A373" stroke-width="1"/>
     <text x="24" y="79" class="ink small">PLANT   HERBIVORE   CARNIVORE</text>
@@ -113,7 +113,7 @@
     <text x="462" y="164" class="title" font-size="18">KEEN HEARING</text>
     <text x="462" y="192" class="ink small">Status       Available</text>
     <text x="462" y="218" class="ink small">Cost         120 data</text>
-    <text x="462" y="244" class="ink small">Prerequisite Hare root</text>
+    <text x="462" y="244" class="ink small">Prerequisite Rabbit root</text>
     <line x1="462" y1="258" x2="684" y2="258" class="line"/>
     <text x="462" y="283" class="muted">expands future choices</text>
     <rect x="462" y="294" width="176" height="28" class="button" rx="5"/>
@@ -142,13 +142,13 @@
     <rect x="244" y="100" width="214" height="218" class="sheet"/>
     <text x="260" y="128" class="title" font-size="15">PLAYER SPECIES</text>
     <circle cx="350" cy="181" r="34" class="sky" stroke="#6F7E3A" stroke-width="3"/>
-    <text x="282" y="244" class="title" font-size="17">HARE · HERBIVORE</text>
+    <text x="282" y="244" class="title" font-size="17">RABBIT · HERBIVORE</text>
     <text x="260" y="269" class="muted">starting traits ready</text>
     <rect x="260" y="282" width="106" height="24" class="button-secondary" rx="4"/>
     <text x="271" y="299" class="ink small">CHANGE</text>
     <rect x="476" y="100" width="228" height="218" class="cream" stroke="#6F7E3A" stroke-width="3"/>
     <text x="494" y="128" class="title" font-size="15">LAUNCH PERMIT</text>
-    <text x="494" y="159" class="ink small">Forest Edge · Hare</text>
+    <text x="494" y="159" class="ink small">Forest Edge · Rabbit</text>
     <text x="494" y="183" class="ink small">Seed: randomized</text>
     <text x="494" y="207" class="ink small">Research: 2 eligible</text>
     <line x1="494" y1="222" x2="686" y2="222" class="line"/>

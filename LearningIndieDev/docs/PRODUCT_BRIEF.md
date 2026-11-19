@@ -49,7 +49,7 @@ poorly.
 
 ## Player experience and agency
 
-The player enters the curated Forest Edge/Hare journey through the Desktop
+The player enters the curated Forest Edge/Rabbit journey through the Desktop
 profile and launch flow. The scenario and species choice may be constrained,
 but the player must understand that choice and the opening Fox pressure. During
 simulation nodes, the player observes the live board, pauses or changes speed,

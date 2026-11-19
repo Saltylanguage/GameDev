@@ -19,7 +19,7 @@ namespace SaltyGame.EditorTests
             var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath);
             Assert.That(map, Is.Not.Null);
             Assert.That(scenario, Is.Not.Null);
-            Assert.That(map.AppliesTo(scenario, new SpeciesId("hare")), Is.True);
+            Assert.That(map.AppliesTo(scenario, new SpeciesId("rabbit")), Is.True);
             Assert.That(map.Nodes.Count, Is.EqualTo(31));
             Assert.That(map.StartNode, Is.Not.Null);
             Assert.That(map.StartNode.Row, Is.Zero);

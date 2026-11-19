@@ -72,7 +72,7 @@ Resolve scenario and upgrade assets through a small explicit build input catalog
 
 Add a minimal simulation-only player entry point with a structured job file, output path, explicit success/failure exit, and no presentation scene dependency. Use the existing Unity version and package lock. The build method must select its own scene list without rewriting the user's normal build settings. Shared code changes must compile in the normal game too.
 
-**Required scope:** Forest Edge/Hare, `bev-experimental`, `opposed-roll`, natural opportunities, ordered launch upgrades including repeated levels, existing experimental overrides, and consecutive phase schedules. Inventory authored upgrades and diagnostic modes: either retain them through the shared path and validate them, or explicitly reject unsupported input. Never silently downgrade a requested mode.
+**Required scope:** Forest Edge/Rabbit, `bev-experimental`, `opposed-roll`, natural opportunities, ordered launch upgrades including repeated levels, existing experimental overrides, and consecutive phase schedules. Inventory authored upgrades and diagnostic modes: either retain them through the shared path and validate them, or explicitly reject unsupported input. Never silently downgrade a requested mode.
 
 **Pass:** One Linux player completes a bounded experiment with all required reports, and the existing Editor command still works. Fresh serial Editor/player runs match per seed under the parity contract below. Build/startup logs show the worker does not depend on initializing the game UI. Normal compilation and focused simulation/report/continuation regression tests pass.
 
@@ -106,7 +106,7 @@ Aggregate completed chunks in stable condition/seed order, retaining provenance 
 
 **Question:** Does this implementation reduce total time to a validated, equivalent skill sweep on the selected host?
 
-**Proposed fixture:** One existing skill, frozen at G0, Levels 0-10, seeds 1-40 at each level: 440 independent runs. Use Forest Edge/Hare, 200 ticks, a 0.1-second step, `bev-experimental`, opposed-roll combat, and natural opportunities. Record resolved grid dimensions. Retain a separate consecutive-phase parity fixture; do not reinterpret this fresh-run sweep as expedition evidence.
+**Proposed fixture:** One existing skill, frozen at G0, Levels 0-10, seeds 1-40 at each level: 440 independent runs. Use Forest Edge/Rabbit, 200 ticks, a 0.1-second step, `bev-experimental`, opposed-roll combat, and natural opportunities. Record resolved grid dimensions. Retain a separate consecutive-phase parity fixture; do not reinterpret this fresh-run sweep as expedition evidence.
 
 Measure the existing serial Editor workflow and the same player image with 1 and 2 workers; test 4 only if measured memory/CPU headroom permits. Use three repetitions per configuration, rotate order, and record other host workload. Include launch, execution, report validation, and aggregation in elapsed time. Record build/import/image preparation separately, plus the time for the first complete sweep including preparation.
 
@@ -128,7 +128,7 @@ Document disk location/retention and cleanup of only named batch containers and 
 
 Use one versioned JSON batch specification. Required information is experiment ID, frozen source/build/content identity, explicit scenario and player species, ticks/step/grid values, modes, seeds, conditions with ordered upgrades, and optional complete phase schedules. Keep worker limits, timeout, chunk size, and output locations as execution settings. The existing queue's nested `parameters` object can be adapted; do not assume its current fields cover the new contract. Reject seed overflow, invalid dimensions, conflicting duration/tick settings, unsupported modes, and paths escaping allowed roots.
 
-Expected outputs per attempt: resolved input, `report.json`, `report.csv`, Hare `statline.csv` when applicable, validator output, `manifest.json`, and process/container logs. Batch outputs add a status manifest, coverage/validation summary, consolidated raw rows, and existing paired-delta/summary formats where applicable. Keep analysis and human acceptance separate from factual reports.
+Expected outputs per attempt: resolved input, `report.json`, `report.csv`, Rabbit `statline.csv` when applicable, validator output, `manifest.json`, and process/container logs. Batch outputs add a status manifest, coverage/validation summary, consolidated raw rows, and existing paired-delta/summary formats where applicable. Keep analysis and human acceptance separate from factual reports.
 
 Parity compares canonical scientific values keyed by condition, seed, species, and phase where applicable. Include resolved rules, fingerprints, ordered loadouts, final state or an equivalent complete deterministic state digest, populations, raw counters, phase boundaries, derived metrics, and simulation termination status. Ignore only explicitly listed execution metadata such as timestamps, paths, host/container IDs, and durations. Do not compare whole report hashes across runs whose metadata intentionally differs; retain hashes for integrity.
 

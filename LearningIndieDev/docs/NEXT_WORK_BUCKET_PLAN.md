@@ -265,7 +265,7 @@ The next useful balance slice is:
 2. Approve a Forest Edge reference panel with role-specific local and ecosystem
    measurements.
 3. Calibrate provisional Adaptation Value estimates at several starting values.
-4. Test the existing Hare Mutation candidates at early, middle, and late
+4. Test the existing Rabbit Mutation candidates at early, middle, and late
    acquisition points, including likely paths and suspected synergies.
 5. Add the first Genome contract only after profile ownership separates
    permanent node unlocks from the active per-species configuration.

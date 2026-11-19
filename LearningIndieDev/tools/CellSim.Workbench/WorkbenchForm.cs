@@ -10,7 +10,7 @@ internal sealed class WorkbenchForm : Form
     readonly NumericUpDown first = Number(400, 0, int.MaxValue, "First checkpoint tick");
     readonly NumericUpDown second = Number(500, 0, int.MaxValue, "Second checkpoint tick");
     readonly ComboBox reviewSelection = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 250, DropDownWidth = 300, IntegralHeight = false, MaxDropDownItems = 2, AccessibleName = "Review selection" };
-    readonly NumericUpDown hareFloor = Number(5, 1, int.MaxValue, "Success floor Hares");
+    readonly NumericUpDown rabbitFloor = Number(5, 1, int.MaxValue, "Success floor Rabbits");
     readonly NumericUpDown foxFloor = Number(5, 1, int.MaxValue, "Success floor Foxes");
     readonly NumericUpDown plantFloor = Number(100, 1, int.MaxValue, "Success floor Plants");
     readonly CheckBox detailedObservations = new() { Text = "Include detailed purchase-by-purchase observations", AutoSize = true, AccessibleName = "Detailed observations" };
@@ -150,7 +150,7 @@ internal sealed class WorkbenchForm : Form
         reviewSelection.DropDown += (_, _) => SizeReviewSelection();
         SizeReviewSelection();
         content.Controls.Add(Flow(TextLabel("Review selection"), reviewSelection));
-        content.Controls.Add(Flow(TextLabel("Success at final horizon: Hares ≥"), hareFloor, TextLabel("Foxes ≥"), foxFloor, TextLabel("Plants ≥"), plantFloor));
+        content.Controls.Add(Flow(TextLabel("Success at final horizon: Rabbits ≥"), rabbitFloor, TextLabel("Foxes ≥"), foxFloor, TextLabel("Plants ≥"), plantFloor));
         var customize = new CheckBox { Text = "Customize examples, filters and checkpoint ticks", AutoSize = true, Margin = new(3, 6, 3, 6) };
         content.Controls.Add(customize);
         var fields = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 2 };
@@ -251,7 +251,7 @@ internal sealed class WorkbenchForm : Form
         if (runPage.IsBusy) { ShowError("Wait for the current setup/run operation to finish or stop before exporting."); return; }
         var destination = string.IsNullOrWhiteSpace(output.Text) ? Path.Combine(project, "artifacts", "worksheets", "Simulation review-" + DateTime.Now.ToString("yyyyMMdd-HHmmss-fff") + ".xlsx") : output.Text;
         var options = new ExportOptions(reports.Items.Cast<string>().ToArray(), destination, match.Text, seeds.Text, (int)rows.Value, (int)first.Value, (int)second.Value, detailedObservations.Checked,
-            reviewSelection.SelectedIndex == 0 ? "promising" : "lowest-seeds", (int)hareFloor.Value, (int)foxFloor.Value, (int)plantFloor.Value);
+            reviewSelection.SelectedIndex == 0 ? "promising" : "lowest-seeds", (int)rabbitFloor.Value, (int)foxFloor.Value, (int)plantFloor.Value);
         try { Tools.ValidateExport(options); }
         catch (Exception error) { ShowError(error.Message); return; }
         busy = true;

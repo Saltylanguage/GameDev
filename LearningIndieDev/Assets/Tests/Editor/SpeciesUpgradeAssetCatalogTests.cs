@@ -14,7 +14,7 @@ namespace SaltyGame.EditorTests
         const string ProductionCatalogPath = "Assets/Data/ProductionData/CellularSimulation/Upgrades/Production";
         const string LargerMinimumLitterPath = ProductionCatalogPath + "/LargerMinimumLitter.asset";
         const string LargerMaximumLitterPath = ProductionCatalogPath + "/LargerMaximumLitter.asset";
-        const string HareSpeciesPath = "Assets/Data/ProductionData/CellularSimulation/Species/hare.asset";
+        const string RabbitSpeciesPath = "Assets/Data/ProductionData/CellularSimulation/Species/rabbit.asset";
 
         [Test]
         public void EveryProductionUpgradeAssetResolvesToAValidSnapshot()
@@ -53,14 +53,14 @@ namespace SaltyGame.EditorTests
             AssertFixture(
                 LargerMinimumLitterPath,
                 SpeciesUpgradeCatalog.LargerMinimumLitterId,
-                "Hare: Larger Minimum Litter",
+                "Rabbit: Larger Minimum Litter",
                 5,
                 canApplyAfterRunStart: true,
                 new ExpectedModifier(SpeciesAttributeIds.LitterMinimum, 1f));
             AssertFixture(
                 LargerMaximumLitterPath,
                 SpeciesUpgradeCatalog.LargerMaximumLitterId,
-                "Hare: Larger Maximum Litter",
+                "Rabbit: Larger Maximum Litter",
                 5,
                 canApplyAfterRunStart: true,
                 new ExpectedModifier(SpeciesAttributeIds.LitterMaximum, 1f));
@@ -72,12 +72,12 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
-        public void ProductionHareUsesDoubledEnergyAndLitterMatingRules()
+        public void ProductionRabbitUsesDoubledEnergyAndLitterMatingRules()
         {
-            var hareAsset = AssetDatabase.LoadAssetAtPath<SpeciesDefinitionAsset>(HareSpeciesPath);
-            Assert.That(hareAsset, Is.Not.Null);
+            var rabbitAsset = AssetDatabase.LoadAssetAtPath<SpeciesDefinitionAsset>(RabbitSpeciesPath);
+            Assert.That(rabbitAsset, Is.Not.Null);
 
-            var rules = hareAsset.CreateRules();
+            var rules = rabbitAsset.CreateRules();
             Assert.That(rules.ReproductionChance, Is.EqualTo(0.5f).Within(0.0001f));
             Assert.That(rules.StartingEnergy, Is.EqualTo(12));
             Assert.That(rules.MaximumEnergy, Is.EqualTo(48));
@@ -112,7 +112,7 @@ namespace SaltyGame.EditorTests
             var snapshot = CreateSnapshot(LoadAsset(path));
             Assert.That(snapshot.Id, Is.EqualTo(id));
             Assert.That(snapshot.DisplayName, Is.EqualTo(displayName));
-            Assert.That(snapshot.TargetSpecies.Value, Is.EqualTo("hare"));
+            Assert.That(snapshot.TargetSpecies.Value, Is.EqualTo("rabbit"));
             Assert.That(snapshot.Cost, Is.EqualTo(cost));
             Assert.That(snapshot.Scope, Is.EqualTo(SpeciesUpgradeScope.PerRun));
             Assert.That(snapshot.PrerequisiteUpgradeIds, Is.Empty);

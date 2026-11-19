@@ -107,7 +107,7 @@ or about causal effects of changing a simulation rule.
 ## First controlled experiment matrix
 
 The first causal comparison should use the same Forest Edge scenario, player
-species (`hare`), seed panel (`1-20`), grid, run length, step interval, combat
+species (`rabbit`), seed panel (`1-20`), grid, run length, step interval, combat
 mode, attack-opportunity mode, and `bev-experimental` export flag in both arms:
 
 | Arm | Single changed rule | Everything else |
@@ -123,7 +123,7 @@ identifier must be preserved together.
 
 ## Completed schema-16 validation evidence
 
-Both arms used Forest Edge, hare, seeds `1-20`, a `32x32` grid, 20 seconds,
+Both arms used Forest Edge, rabbit, seeds `1-20`, a `32x32` grid, 20 seconds,
 `0.1` second steps, opposed-roll combat, natural attack opportunities, and
 `bev-experimental`. The only requested rule change was the player upgrade:
 

@@ -2,7 +2,7 @@
 
 Status: **Product direction approved.** The first Mutation contract, Genome
 identity/profile/snapshot contract, and data-driven Genome authoring skeleton
-exist. Josh approved the first Hare Genome contract on 2026-10-01. A local first
+exist. Josh approved the first Rabbit Genome contract on 2026-10-01. A local first
 Fertile Droppings runtime behavior is now gated on its active snapshot ID;
 production catalog/UI wiring and balance evidence remain follow-up work. The
 current Genome slice includes profile persistence, an immutable launch/run
@@ -30,7 +30,7 @@ start a journey without a license; a successful journey can fund the selected
 species license. This replaces the older three-completed-runs Gene Lab gate.
 Genome nodes are permanently unlocked, while only the active loadout is reset.
 Each replacement requires a 20 Research Data reset with no species-data refund.
-The first test uses 8 capacity points and 2 per Hare node. Five Hare nodes and
+The first test uses 8 capacity points and 2 per Rabbit node. Five Rabbit nodes and
 their supported effects were approved for this slice; the prices and effects
 are initial test settings, not balance approval. See the [FD2 tuning
 sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md) and [FD2 Process
@@ -39,7 +39,7 @@ Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md).
 ## Two upgrade systems
 
 The October 21 [population Genome contract](Research/2026-10-21-Hare-population-pool-and-Genome-nodes.md)
-adds two lifecycle effects: +5 starting Hares per new journey and +10 player
+adds two lifecycle effects: +5 starting Rabbits per new journey and +10 player
 population-pool capacity per node (base 50). The pool limits ordinary
 replenishment; it does not remove survivors between rounds or restrain natural
 births. Food exhaustion from unchecked growth remains an intended failure path.
@@ -54,9 +54,9 @@ their ownership and lifetime must remain visibly separate.
 
 ### Experimental coupled responses
 
-`Coupled Hare/Fox responses` is a default-off `bev-experimental` option, not a
+`Coupled Rabbit/Fox responses` is a default-off `bev-experimental` option, not a
 third progression system and not a Mutation that targets multiple species. At a
-continuous Expedition boundary, a player-selected legacy Hare or Fox upgrade
+continuous Expedition boundary, a player-selected legacy Rabbit or Fox upgrade
 keeps its normal cost and target; the deterministic counterpart response is
 recorded as a separate free snapshot for the other species. It is frozen before
 the Expedition begins, applied only at that boundary, and appears in the
@@ -84,7 +84,7 @@ any later Mutation cost or Skip reward remain open in
 
 ## Current decision boundary (updated 2026-10-01)
 
-- S3-04 uses the five existing experimental Hare Mutations as a bounded bridge
+- S3-04 uses the five existing experimental Rabbit Mutations as a bounded bridge
   pool. Each boundary shows three distinct free choices and Skip. A selected
   Mutation may reappear later; selecting it again increments its level and
   stacks/reapplies its defined effect.
@@ -105,7 +105,7 @@ any later Mutation cost or Skip reward remain open in
 - Josh approved the provisional successful-journey payout of 1 Rabbit Data
   plus 1 Research Data. Failure and early endings grant neither; other
   scientific-data wallets and final economy balance remain open.
-- The first Hare Genome contract is approved: Fertile Droppings pairs grass
+- The first Rabbit Genome contract is approved: Fertile Droppings pairs grass
   renewal with predator-trackable scent. Rabbit Data buys the permanent tree
   license and active upgrades. Resetting refunds the active allocation and
   charges a flat Research Data fee. The implemented playtest Gene Lab gate
@@ -116,16 +116,16 @@ any later Mutation cost or Skip reward remain open in
   further prices and final effect values remain open pending tuning and evidence.
 - **October 17 design clarification:** Josh's proposed 8-node Trailblazer,
   8-node Warren, and 9-node Gardener lists are permanent Rabbit Genome branch
-  candidates, configured before a run and applying to all Hares. The existing
+  candidates, configured before a run and applying to all Rabbits. The existing
   temporary Mutations still use these build identities but are separate
   upgrades. The [AI design forecast](Research/2026-10-17-Rabbit-Genome-build-forecast.md)
   records testability and balance hypotheses; it does not approve the node
   list, effects, costs, or S5 scope.
 - **October 17 local mechanics checkpoint:** The first Fertile Droppings slice
-  adds an identity-bearing scent marker after a successful Hare seed drop. A
-  hungry carnivore samples Hare scent every 10 ticks, prioritizes
-  detected droppings, then follows that Hare's freshest ordinary scent at longer
-  range after sniffing. Standing Hares and vacated tiles leave ordinary scent;
+  adds an identity-bearing scent marker after a successful Rabbit seed drop. A
+  hungry carnivore samples Rabbit scent every 10 ticks, prioritizes
+  detected droppings, then follows that Rabbit's freshest ordinary scent at longer
+  range after sniffing. Standing Rabbits and vacated tiles leave ordinary scent;
   it lasts 20 ticks and reaches 16 tiles;
   droppings last 40 ticks and reach 24 tiles. Post-sniff tracking reaches 36
   tiles. Josh confirmed those scent ranges and durations as starting values.
@@ -204,7 +204,7 @@ explains that the tree offers paths with different playstyles and benefits.
 Player-facing node copy should be concise, practical, and qualitative. Stat
 rewards stack by default unless the node explicitly says otherwise.
 
-The active Genome applies wherever that species appears. Playing Hare does not
+The active Genome applies wherever that species appears. Playing Rabbit does not
 silently turn off the active Fox or Fern Genomes. A reset clears the species'
 active allocation but does not remove permanent tree access.
 
@@ -315,9 +315,9 @@ ticks. They survive phase summaries and disappear only after the expedition
 ends. Choosing a Mutation or Skip continues the same world; neither creates a
 new starting population.
 
-## Example Hare Mutation branches
+## Example Rabbit Mutation branches
 
-The current Hare vertical-slice builds provide the first working example:
+The current Rabbit vertical-slice builds provide the first working example:
 
 - **Trailblazer:** movement and perception lead toward rapid migration and access to fresh food, at the cost of weaker grouping or protection.
 - **Warren:** local defense and controlled reproduction lead toward stable breeding pockets, at the cost of mobility and greater local resource pressure.
@@ -329,10 +329,10 @@ These are intended build identities, not final node lists. The first implementat
 
 The following six nodes are the initial path candidates. Their values are
 starting hypotheses, not accepted balance. Each targets exactly one species, is
-Hare-only in this first slice, is a temporary Mutation,
+Rabbit-only in this first slice, is a temporary Mutation,
 non-stackable in the first slice, and is recorded by stable ID in purchase
 order. Production cross-species Mutations are deferred. The separate default-off
-experimental Hare/Fox response toggle above does not change this catalog
+experimental Rabbit/Fox response toggle above does not change this catalog
 contract. Direct mechanic tests must pass before ecological trials.
 
 | Stable ID | Build | Effect | Tradeoff | Required contribution evidence |
@@ -345,7 +345,7 @@ contract. Direct mechanic tests must pass before ecological trials.
 | `gardeners-careful-sowing` | Gardeners | Seed-drop chance +0.10, capped at 1.0 | Movement speed -0.25 | Successful drops, new Fern cells, Fern population-time integral, movement |
 
 `stronger-attack`, split attack-modifier, and damage upgrades are excluded from
-the Hare catalog. Block above +2 and Fox attack cooldown remain diagnostic arms,
+the Rabbit catalog. Block above +2 and Fox attack cooldown remain diagnostic arms,
 not player rewards. Same-build prerequisites and cross-build hybrids remain
 future decisions until these nodes independently demonstrate their declared
 mechanics and costs.
@@ -418,9 +418,9 @@ format implicitly.
 The player is not trying to make one species dominate every simulation. The
 long-term objective is to build a diverse, resilient ecosystem.
 
-Improving one Genome can create a useful new imbalance: stronger Hare
+Improving one Genome can create a useful new imbalance: stronger Rabbit
 reproduction may strain Fern resources; stronger Fern recovery may support too
-many Hares; improved Fox pressure may restore control but threaten a weak Hare
+many Rabbits; improved Fox pressure may restore control but threaten a weak Rabbit
 population. These consequences should encourage the player to run and develop
 several species.
 
@@ -460,7 +460,7 @@ change, and when it becomes active.
   relationships, Genome unlock/allocation stages, and expedition windows.
 - Give every capability local measurements and wider ecological outcomes.
 
-**Gate:** Every current Hare Mutation maps to a supported rule, at least one
+**Gate:** Every current Rabbit Mutation maps to a supported rule, at least one
 capability, a local measurement, and an ecosystem measurement without inventing
 a second execution path.
 
@@ -488,7 +488,7 @@ reports and are clearly labelled as contextual estimates.
   timing, cost, counters, telemetry, and deterministic replay.
 - Preserve authored order and test likely pairs and suspected synergies.
 
-**Gate:** At least three Hare paths remain understandable and viable across the
+**Gate:** At least three Rabbit paths remain understandable and viable across the
 reference panel, no path is universally correct, and the player can see each
 path's strength and weakness.
 
@@ -505,8 +505,8 @@ path's strength and weakness.
 - Keep broad role categories out of the Genome execution contract unless a
   separate role-wide progression feature is approved.
 
-**Gate:** One Hare Genome node unlock survives restart, can be turned on or off
-between simulations, changes all Hare populations only when active, is recorded
+**Gate:** One Rabbit Genome node unlock survives restart, can be turned on or off
+between simulations, changes all Rabbit populations only when active, is recorded
 in run provenance, and does not alter a simulation already in progress.
 
 ### UB-5 — Matchup and ecosystem review
@@ -539,7 +539,7 @@ silently change production values.
 
 ### UB-7 — Content expansion gate
 
-- Use the first Hare / Fox / plant ecology to prove the workflow.
+- Use the first Rabbit / Fox / plant ecology to prove the workflow.
 - Add species and upgrade families only after the shared capability, authoring,
   evidence, and human-decision paths work end to end.
 - Review the reference panel whenever a new species, biome, ability family, or

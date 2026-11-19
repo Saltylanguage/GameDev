@@ -46,11 +46,11 @@ can use this document directly; no new chat or delegation is required.
   now contains eleven selectable nodes, including the existing POC offers under
   their original IDs. Existing saved profile IDs must continue resolving.
 - Implemented POC effects: Long Stride, Long Vision, Tough Hide, maximum litter,
-  Efficient Digestion, +5 starting Hares and +10 refill capacity. Do not rebuild
+  Efficient Digestion, +5 starting Rabbits and +10 refill capacity. Do not rebuild
   these effects or the selection bridge.
 - Base refill capacity is **50**, plus **10 per active capacity node**. Starting
-  Hares and refill capacity are separate. Births can exceed the refill limit;
-  survivors are never culled to it. Unchecked Hares may exhaust food and starve.
+  Rabbits and refill capacity are separate. Births can exceed the refill limit;
+  survivors are never culled to it. Unchecked Rabbits may exhaust food and starve.
 - The local prototype has two connected six-round simulations, habitat
   conditions, Rest Stop and Seed Cache branches, and six population controls.
   The controls cost 10 Field Data each. Encounter quantities are provisional.
@@ -180,7 +180,7 @@ movement, vision, defense and digestion already have playable POC offers.
 
 Faster Gestation is now an approved bounded playtest offer: Trailblazer root,
 1 Rabbit Data per rank, 2 capacity points for rank 1 and one additional
-capacity point per rank through rank 3. Each rank reduces current natural Hare
+capacity point per rank through rank 3. Each rank reduces current natural Rabbit
 gestation by 15%, rounded to the nearest tick with a 1-tick minimum (48 ticks
 resolves to 41 / 34 / 26). It uses its own explicit percentage rule rather than
 changing the signed-additive modifier registry (UPG-C02). Allocation points are
@@ -200,7 +200,7 @@ Tests must cover safe lower bounds, minimum <= maximum in every legal active
 allocation, prerequisite ordering, one-time application, save/reset and frozen
 next-journey delivery. Preserve acquisition order; do not silently clamp invalid
 builds. Keep new fixtures under the explicit TestData catalog. A stat proxy does
-not implement burrows, migration or a general Hare scent ability.
+not implement burrows, migration or a general Rabbit scent ability.
 
 ## Food and ability implementation contracts
 
@@ -226,7 +226,7 @@ ability and freeze its resolved values with the Genome.
 - Resource growth uses terrain definitions and cell growth timing; applying a
   global grass multiplier would affect untouched plants as well.
 
-**Acceptance:** a no-Genome Hare can eat every approved food; each target uses
+**Acceptance:** a no-Genome Rabbit can eat every approved food; each target uses
 its own identity/energy/reserve; two foods on a controlled map have distinguishable
 results; seed selection is deterministic and registration-order independent;
 creature/resource layers survive consumption/removal; wrap edges, search limits,
@@ -237,11 +237,11 @@ The existing single-Plant baseline retains its behavior when new abilities are o
 
 | Order | Ability | Contract that must be accepted before implementation | Evidence required |
 | --- | --- | --- | --- |
-| 1 | Picky Eater | How nutrient quality is ranked against reachable distance; sensing range and tie-breaks | Reachable alternatives, chosen quality, rejected unreachable choices, ordinary-Hare comparison |
+| 1 | Picky Eater | How nutrient quality is ranked against reachable distance; sensing range and tie-breaks | Reachable alternatives, chosen quality, rejected unreachable choices, ordinary-Rabbit comparison |
 | 2 | Tier-2 then tier-3 Droppings | Unlocked seed set, eligibility/selection, reserve cost, caps and how tier-3 depends on tier-2 | Attempts, eligible drops, selected tier, success, reserve spent and food created |
 | 3 | Favorite Food | Named edible target, exact 2x benefit and scarcity tradeoff | Target-specific meals and actual extra energy; other foods retain base yield |
 | 4 | At One with Nature | Preserve chance; whose energy “50%” describes; what remains; 2x growth duration/cap | Trigger opportunities, preserves, energy received, growth effect and its expiry |
-| 5 | Pass Through Bushes | Meaningful bush terrain; Hare/Fox traversal; sensing/feeding through or around it | Path reachability and actual movement agree; no crossing forbidden terrain |
+| 5 | Pass Through Bushes | Meaningful bush terrain; Rabbit/Fox traversal; sensing/feeding through or around it | Path reachability and actual movement agree; no crossing forbidden terrain |
 | Design decision | Patrols | Job, route, stop/return conditions, energy cost and Fox exposure | A player-visible behavior distinct from wandering, foraging and migration |
 
 Existing Fertile Droppings and Efficient Digestion remain the first playable
@@ -260,11 +260,11 @@ Extend the existing explicit effect contract only as each ability requires.
 | --- | --- | --- |
 | G2: Wanderlust | Chunk size, wrap behavior, crowding measure, threshold accumulation, stay/migrate roll, destination, energy/mating consequences | Density observation and deterministic migration state; local dispersal remains distinct |
 | G3: Burrows | Construction/maintenance, occupancy, access, mating/hiding safety, crowding penalty, predator counterplay, death persistence, offspring use | Run-owned persistent structure state with stable IDs, checkpoint/report support and explicit animal behavior |
-| G4: Hare scent | Whether food, mates, predators or a subset are detected; precedence and stale-target behavior | Shared scent sampling at the approved 10-tick cadence, longer-range bounded perception; attack still follows its accepted sight requirements |
+| G4: Rabbit scent | Whether food, mates, predators or a subset are detected; precedence and stale-target behavior | Shared scent sampling at the approved 10-tick cadence, longer-range bounded perception; attack still follows its accepted sight requirements |
 | Additional decisions | What 2x interactions doubles; what skip-a-node skips; what burrow speed accelerates; how minimum-litter x n crowding works | Implement only the accepted closed rule with measurable opportunities and costs |
 
 Preserve sight's current-state response and scent's slower samples. Existing Fox
-Droppings tracking does not give Hares a functioning “good scent” upgrade.
+Droppings tracking does not give Rabbits a functioning “good scent” upgrade.
 For litter-linked crowding, specify whether it uses natural, Genome-adjusted or
 Mutation-adjusted minimum litter; do not turn it into a fixed additive proxy.
 Structures and migration state belong to the simulation, not scene objects.
@@ -277,7 +277,7 @@ The two added population nodes currently sit in Warren in the POC.
 | Branch | Candidate slots | Current implemented POC portion | Remaining mechanics / definition |
 | --- | ---: | --- | --- |
 | Trailblazer | 8 | Long Stride, Long Vision, Faster Gestation (3 ranks), High Crowding | Avoidance, wanderlust, 2x interactions, skip a node |
-| Warren | 10 | Tough Hide, Larger Litters, Increased Minimum Litter, Founding Hares, Population Reserves | Burrows, Hare scent, litter-linked crowding, burrow speed, offspring/inherited burrows |
+| Warren | 10 | Tough Hide, Larger Litters, Increased Minimum Litter, Founding Rabbits, Population Reserves | Burrows, Rabbit scent, litter-linked crowding, burrow speed, offspring/inherited burrows |
 | Gardener | 9 | Fertile Droppings first slice, Efficient Digestion | Bush traversal, Picky Eater, tier-2 drops, tier-3 drops, Favorite Food, At One with Nature, Patrols |
 
 **Total: 27 candidate slots.** This fits the requested 6–10 range per tree.

@@ -24,6 +24,9 @@ namespace SaltyGame
         [SerializeField, Range(0f, 1f)] float reproductionChance;
         [SerializeField, Min(0)] int reproductionFoodRequired;
         [SerializeField, Min(0)] int maxReproductionGroupSize;
+        [SerializeField, Min(0)]
+        [Tooltip("Hard cap for this species. Zero leaves it uncapped.")]
+        int maximumPopulation;
         [SerializeField, Min(0)] int startingEnergy;
         [SerializeField, Min(0)] int forageBelowEnergy;
         [SerializeField, Range(0f, 1f)] float forageThresholdFraction;
@@ -33,7 +36,7 @@ namespace SaltyGame
         [SerializeField] bool foragesUntilFull;
         [SerializeField, Range(0f, 1f)] float wiltChance;
         [SerializeField, FormerlySerializedAs("crowdingEnergyPenalty"), Min(1)]
-        [Tooltip("Multiplier applied to normal metabolism while the local group is crowded. One means no extra cost.")]
+        [Tooltip("Maximum extra metabolism from crowding. A species cap scales it by population share; uncapped species use local group crowding.")]
         int crowdingMetabolismMultiplier = 2;
         [SerializeField, Range(0f, 1f)] float crowdingEnergyReduction;
         [SerializeField, Min(0f)] float startingFoodReserve;
@@ -98,7 +101,8 @@ namespace SaltyGame
                 distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring,
                 crowdingEnergyReduction: crowdingEnergyReduction,
                 gestationTicks: Role == SpeciesRole.Plant ? 0 : gestationTicks,
-                maximumHealth: maximumHealth);
+                maximumHealth: maximumHealth,
+                maximumPopulation: maximumPopulation);
         }
 
         public bool TryCreateAlphaRule(out AlphaOffspringRule rule)

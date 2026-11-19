@@ -370,14 +370,31 @@ namespace SaltyGame
 
             var currentCells = Run.Cells;
             var currentPopulation = 0;
+            var currentSpeciesPopulation = 0;
             var candidates = new List<int>();
             for (var y = 0; y < currentCells.Height; y++)
             {
                 for (var x = 0; x < currentCells.Width; x++)
                 {
                     var cell = currentCells.GetCell(x, y);
-                    if (cell.IsCreature) currentPopulation++;
-                    if (cell.IsPlantResource) currentPopulation++;
+                    if (cell.IsCreature)
+                    {
+                        currentPopulation++;
+                        if (!plant && cell.SpeciesId == species)
+                        {
+                            currentSpeciesPopulation++;
+                            currentSpeciesPopulation += cell.PendingLitterSize;
+                        }
+                    }
+
+                    if (cell.IsPlantResource)
+                    {
+                        currentPopulation++;
+                        if (plant && GetPlantSpecies(cell) == species)
+                        {
+                            currentSpeciesPopulation++;
+                        }
+                    }
 
                     var matchesTarget = plant
                         ? cell.IsPlantResource && GetPlantSpecies(cell) == species
@@ -393,9 +410,21 @@ namespace SaltyGame
                 }
             }
 
+            if (!plant && species == RabbitBurrows.Rabbit)
+            {
+                currentSpeciesPopulation += Run.HiddenRabbitCount;
+            }
+
             if (addition && maxPopulation > 0 && quantity > maxPopulation - currentPopulation)
             {
                 error = "The full population addition would exceed the simulation's maximum population.";
+                return false;
+            }
+
+            if (addition && targetRules.MaximumPopulation > 0
+                && quantity > targetRules.MaximumPopulation - currentSpeciesPopulation)
+            {
+                error = "The full population addition would exceed the species maximum population.";
                 return false;
             }
 
@@ -450,7 +479,7 @@ namespace SaltyGame
         {
             if (prepared == null
                 || !Run.InstallFieldDataBoundaryCells(prepared.ExpectedCells, prepared.ResultCells,
-                    prepared.SpeciesId, prepared.Kind == FieldDataPopulationInterventionKind.AddHare
+                    prepared.SpeciesId, prepared.Kind == FieldDataPopulationInterventionKind.AddRabbit
                         || prepared.Kind == FieldDataPopulationInterventionKind.AddFox
                         || prepared.Kind == FieldDataPopulationInterventionKind.AddPlants
                         ? prepared.Quantity : -prepared.Quantity))
@@ -470,13 +499,13 @@ namespace SaltyGame
         {
             switch (kind)
             {
-                case FieldDataPopulationInterventionKind.AddHare:
-                    species = new SpeciesId("hare");
+                case FieldDataPopulationInterventionKind.AddRabbit:
+                    species = new SpeciesId("rabbit");
                     quantity = 1;
                     addition = true;
                     return true;
-                case FieldDataPopulationInterventionKind.RemoveHare:
-                    species = new SpeciesId("hare");
+                case FieldDataPopulationInterventionKind.RemoveRabbit:
+                    species = new SpeciesId("rabbit");
                     quantity = 1;
                     addition = false;
                     return true;
@@ -544,7 +573,8 @@ namespace SaltyGame
                 || !SpeciesSimulation.CanAddBoundaryPopulation(initialCells, amount, maxPopulation)
                 || !SpeciesSimulation.TryAddBoundaryPopulation(
                     currentCells, species, targetRules, amount, maxPopulation,
-                    CreateBoundaryPopulationSeed(isRestartGrid: false), out var nextCells)
+                    CreateBoundaryPopulationSeed(isRestartGrid: false), out var nextCells,
+                    Run.HiddenRabbitCount)
                 || !SpeciesSimulation.TryAddBoundaryPopulation(
                     initialCells, species, targetRules, amount, maxPopulation,
                     CreateBoundaryPopulationSeed(isRestartGrid: true), out var nextInitialCells)
@@ -615,8 +645,8 @@ namespace SaltyGame
             Run.Metrics.BeginTick(Run.Tick + 1);
             Run.Metrics.ConfigureMutationEffects(Run.PlayerSpeciesId, Run.UpgradeLoadout);
             var activeRules = simulationData?.SpeciesRules ?? rules;
-            var lineage = Run.GetHareJourneyLineage();
-            var source = Run.PrepareHareBurrows(activeRules, lineage);
+            var lineage = Run.GetRabbitJourneyLineage();
+            var source = Run.PrepareRabbitBurrows(activeRules, lineage);
             var next = SpeciesSimulation.StepWithLineage(
                 source,
                 activeRules,
@@ -632,7 +662,7 @@ namespace SaltyGame
                 simulationData?.StepInterval ?? stepSeconds,
                 Run.ActiveGenomeSnapshot,
                 lineage,
-                Run.HiddenHareCount);
+                Run.HiddenRabbitCount);
             previousCells = source;
             Run.Advance(next, stepSeconds);
             if (stopOnPlayerExtinction && Run.SupportsContinuation

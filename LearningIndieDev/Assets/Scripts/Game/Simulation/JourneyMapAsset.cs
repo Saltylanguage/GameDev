@@ -18,7 +18,7 @@ namespace SaltyGame
     public sealed class JourneyMapAsset : ScriptableObject
     {
         [SerializeField] string scenarioId = "ForestEdge";
-        [SerializeField] string playerSpeciesId = "hare";
+        [SerializeField] string playerSpeciesId = "rabbit";
         [SerializeField] JourneyNodeAsset startNode;
         [SerializeField] JourneyNodeAsset[] nodes = Array.Empty<JourneyNodeAsset>();
         [SerializeField] JourneyNodePlacement[] nodePlacements = Array.Empty<JourneyNodePlacement>();

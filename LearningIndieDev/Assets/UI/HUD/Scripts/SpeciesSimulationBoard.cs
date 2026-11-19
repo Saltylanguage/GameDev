@@ -99,9 +99,10 @@ namespace SaltyGame
                 [new SpeciesId("wolf")] = 0,
                 [new SpeciesId("fox")] = 1,
                 [new SpeciesId("eagle")] = 2,
+                [new SpeciesId("owl")] = 2,
                 [new SpeciesId("shark")] = 3,
                 [new SpeciesId("deer")] = 4,
-                [new SpeciesId("hare")] = 5,
+                [new SpeciesId("rabbit")] = 5,
                 [new SpeciesId("cow")] = 6,
                 [new SpeciesId("elephant")] = 7,
             };

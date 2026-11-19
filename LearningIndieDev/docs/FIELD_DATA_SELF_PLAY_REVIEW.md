@@ -22,7 +22,7 @@ to withhold this explicit acceptance. No live Trello closure or publication is
 claimed by this local decision record.
 
 **Status, October 20, 2026:** Bevin completed the full route and reported that
-the loop felt good, including near population misses for both Foxes and Hares.
+the loop felt good, including near population misses for both Foxes and Rabbits.
 Record this as positive acceptance of the first loop with an APS reporting
 defect to correct; no ecology/price revision was requested. The APS defect is
 now fixed and verified in Unity. See the [playthrough/fix handoff](handoffs/2026-10-20-0007-codex-field-data-human-playthrough-and-aps-accounting-fix.md).
@@ -45,9 +45,9 @@ panel is historical evidence, preserved separately.
    then click **Start This Route** to begin. **Back** before starting returns
    to setup. During a run, use **Map** on the HUD or inside the round/shop and
    results panels; **Back** returns to the same run or decision.
-3. Use the authored Forest Edge scenario, Hare player, empty active Genome and
+3. Use the authored Forest Edge scenario, Rabbit player, empty active Genome and
    0.2-second simulation interval. Use a fresh journey for every comparison.
-   As approved October 18, the authored opener is **400 Plants, 55 Hares and
+   As approved October 18, the authored opener is **400 Plants, 55 Rabbits and
    20 Foxes**. Earlier 35-Fox panels remain historical; do not compare their
    outcomes as if the starting populations were matched to this setting.
    The freshly verified successful route uses actual seed **10100**; **10129**
@@ -75,8 +75,8 @@ frozen automated panel.
 
 | Path | Decision at each round break |
 | --- | --- |
-| Remove Hare | After Skip, attempt one 10-FD Remove Hare purchase; insufficient funds and final-individual rejection are expected possibilities. |
-| Add Hare | After Skip, attempt one 10-FD Add Hare purchase; keep the same setup and seed as the removal path. |
+| Remove Rabbit | After Skip, attempt one 10-FD Remove Rabbit purchase; insufficient funds and final-individual rejection are expected possibilities. |
+| Add Rabbit | After Skip, attempt one 10-FD Add Rabbit purchase; keep the same setup and seed as the removal path. |
 | Save for ×2 | Skip free choices, save through the first shop, and attempt the 50-FD ×2 offer at shop two if it is actually offered and affordable. |
 
 Also inspect the shop/reorder interactions directly: actual effect and price,
@@ -93,7 +93,7 @@ explanations of purchase decisions are required.
 
 | Participant/date | Actual seed and path | Node, round and tick | Real decision time | Observation or clarity problem |
 | --- | --- | --- | --- | --- |
-| Bevin / captured 2026-10-20 | Seed10100, custom mixed purchases;17 ordinary skills,1 shop species effect,0 income modifiers | Completed all5nodes/18rounds, tick1800 | Not measured/reported | Felt good; near population misses for both Foxes and Hares. APS INVALID at completion. Live capture confirms143 Hares/26 Foxes/434 Plants;8 Hares added,9 removed;43 Foxes added,9 removed. |
+| Bevin / captured 2026-10-20 | Seed10100, custom mixed purchases;17 ordinary skills,1 shop species effect,0 income modifiers | Completed all5nodes/18rounds, tick1800 | Not measured/reported | Felt good; near population misses for both Foxes and Rabbits. APS INVALID at completion. Live capture confirms143 Rabbits/26 Foxes/434 Plants;8 Rabbits added,9 removed;43 Foxes added,9 removed. |
 | Bevin / 2026-10-21 | Seed10100, custom choices; screenshot shows0 income modifiers,1 species effect,11 ordinary skills | Failed at tick1168; this is a later run, separate from the earlier full completion | Not measured/reported | Explicitly accepts the initial loop and confirms APS fixed. Screenshot showsADD6/REM7, FPO0/expected0, ReconciledTrue and validAPS-1.04. Identity55+6-7+325births-239preyed-140starved=0. |
 |  |  |  |  |  |
 

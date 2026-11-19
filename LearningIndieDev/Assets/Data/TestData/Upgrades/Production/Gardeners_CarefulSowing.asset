@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeId: gardeners-careful-sowing
   displayName: 'Gardeners: Careful Sowing'
   description: Spread seeds more reliably, but move more slowly.
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   cost: 8
   modifiers:
   - attributeId: resource.seed-drop-chance

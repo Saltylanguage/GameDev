@@ -20,7 +20,7 @@ namespace SaltyGame.EditorTests
 
             Assert.That(snapshots, Has.Length.EqualTo(2));
             Assert.That(snapshots[0].Id, Is.EqualTo(SpeciesUpgradeCatalog.LargerMaximumLitterId));
-            Assert.That(snapshots[0].TargetSpecies.Value, Is.EqualTo("hare"));
+            Assert.That(snapshots[0].TargetSpecies.Value, Is.EqualTo("rabbit"));
             Assert.That(snapshots[0].Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.LitterMaximum));
             Assert.That(snapshots[0].Modifiers[0].SignedValue, Is.EqualTo(1f));
             Assert.That(snapshots[1].Id, Is.EqualTo(SpeciesUpgradeCatalog.LargerMinimumLitterId));

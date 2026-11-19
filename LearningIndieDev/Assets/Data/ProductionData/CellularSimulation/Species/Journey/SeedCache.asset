@@ -25,7 +25,7 @@ MonoBehaviour:
   dataReward: 0
   nextNodes:
   - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d005, type: 2}
-  refreshHares: 10
+  refreshRabbits: 10
   refreshPlants: 10
   eventPlantGain: 10
   eventPlantLoss: 5

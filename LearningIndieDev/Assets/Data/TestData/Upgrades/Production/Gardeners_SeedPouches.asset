@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeId: gardeners-seed-pouches
   displayName: 'Gardeners: Seed Pouches'
   description: Begin with more stored food, but less starting energy.
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   cost: 6
   modifiers:
   - attributeId: resource.starting-food-reserve

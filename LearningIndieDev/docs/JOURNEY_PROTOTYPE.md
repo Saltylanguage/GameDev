@@ -1,7 +1,7 @@
 # Forest Edge journey prototype
 
 **Field Data design update (2026-10-15):** Round-end income starts at the
-surviving population of the player's species: 20 Hares earns 20 Field Data.
+surviving population of the player's species: 20 Rabbits earns 20 Field Data.
 The balance carries across the journey for simulation population interventions
 and journey upgrades. The reviewed first slice defines income modifiers,
 shop reordering and node rewards; random challenges remain future work.
@@ -28,7 +28,7 @@ unlocked upgrade or feature availability survive. An accomplishment during a
 failed run can still unlock permanent availability once those rules are
 designed. Field Data carries through its phases and nodes; other currency
 types can leave a successful journey for Desktop Genome upgrades. Intended
-Field Data purchases include removing Hares, changing Fox and Plant counts in
+Field Data purchases include removing Rabbits, changing Fox and Plant counts in
 either direction, and buying a random event. Gates, prices, limits and the
 first slice were open at that meeting; the October 15 Field Data design at the
 top of this document now defines its test scope. The 100-rabbit Burrow Genome
@@ -38,7 +38,7 @@ unlock is an illustrative example, not an approved condition. See the
 ## Player flow
 
 1. Opening Simulation from the Desktop shows the full-screen Forest Edge journey map. The Back button returns to the Desktop. The map can also be reopened during a simulation; doing so pauses a running clock until the player closes it.
-2. **Fern Glade**, **Creek Bend**, and **Pine Verge** are available at the start. Each opens a reward popup with the existing three Hare Mutation choices. Claiming one records that opening and makes only its connected first simulation available.
+2. **Fern Glade**, **Creek Bend**, and **Pine Verge** are available at the start. Each opens a reward popup with the existing three Rabbit Mutation choices. Claiming one records that opening and makes only its connected first simulation available.
 3. Choosing **Canopy Edge**, **Forest Edge**, or **Pine Trail** starts six phases in the same ecosystem. These first simulation nodes use the same scenario and cadence. After phases 1–5, the usual Mutation or Skip choice appears. The starting reward and phase Mutations remain in the run loadout.
 4. At the end of phase 6, the cycle report appears. **Return to Journey Map** reveals the connected habitat condition choices. The upper opening leads to Seedfall, the middle opening can choose Seedfall or Fox Tracks, and the lower opening leads to Fox Tracks. Claiming a condition returns to the map and reveals its connected second simulation node.
 5. Choosing the second simulation resumes the *same* `SimulationRunState` at phase 7. Cells, population history, seed, clock, and the accumulated Mutation loadout persist. The selected habitat condition changes the relevant species rules for the next tick. Phase Mutations or Skip appear after phases 7–11.
@@ -72,7 +72,7 @@ Both condition effects are captured as runtime snapshots when the expedition is 
 
 ## Implementation and evidence
 
-Forest Edge/Hare uses 12 phase windows in one run. The boundary at phase 6 holds the run in `AwaitingDecision` while the report, map, and condition popup are shown. Choosing the connected simulation resumes through `ContinueWithBoundaryState`. Non-Journey scenarios retain their six-phase flow, and direct test scenes can still auto-start.
+Forest Edge/Rabbit uses 12 phase windows in one run. The boundary at phase 6 holds the run in `AwaitingDecision` while the report, map, and condition popup are shown. Choosing the connected simulation resumes through `ContinueWithBoundaryState`. Non-Journey scenarios retain their six-phase flow, and direct test scenes can still auto-start.
 
 The focused Unity Editor asset test validates the graph, placement, three reward starts, and connected simulation/condition sequence. Play Mode tests verify each trailhead, the Desktop Noesis map and popup, report-to-map transition, same run/cells/history through cycle 2, persistent Mutations, and final reset. Graphics checks cover wheel travel, opening/middle/right views, hover details, and returning to the trailheads after exploration or reset. Current evidence is indexed in the [scrolling map handoff](handoffs/2026-10-14-2105-codex-scrollable-forest-journey-map.md). These tests do not establish ecological balance or final pacing. The current default of 100 ticks per phase yields 1,200 ticks for the two-cycle Forest Edge run.
 

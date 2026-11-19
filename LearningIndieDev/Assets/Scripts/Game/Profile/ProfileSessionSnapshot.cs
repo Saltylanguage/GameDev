@@ -27,7 +27,7 @@ namespace SaltyGame
         public IReadOnlyList<string> UnlockedFeatureIds => unlockedFeatureIds;
         public IReadOnlyList<string> CompletedRunIds => completedRunIds;
         public long Currency => ResearchData;
-        public long RabbitData => speciesDataWallets.TryGetValue(new SpeciesId("hare"), out var amount) ? amount : 0;
+        public long RabbitData => speciesDataWallets.TryGetValue(new SpeciesId("rabbit"), out var amount) ? amount : 0;
         public IReadOnlyDictionary<SpeciesId, long> SpeciesDataWallets => speciesDataWallets;
         public long ResearchData { get; }
         public int ConversionResearchLevel { get; }
@@ -167,7 +167,7 @@ namespace SaltyGame
             return catalog == null ? snapshot : snapshot.Resolve(catalog);
         }
 
-        /// <summary>Freeze permanent FD2 Hare ownership and retain the POC resolver for other catalogs.</summary>
+        /// <summary>Freeze permanent FD2 Rabbit ownership and retain the POC resolver for other catalogs.</summary>
         public GenomeSimulationSnapshot CreateLaunchGenomeSnapshot(GenomeCatalogSnapshot catalog)
         {
             if (catalog == null) throw new ArgumentNullException(nameof(catalog));
@@ -179,15 +179,15 @@ namespace SaltyGame
                 // profile, but require the player to reduce it before launching.
                 if (genome.CapacityUsed > GenomeContract.ActiveCapacity)
                     throw new InvalidOperationException("The active Genome exceeds eight equipped nodes.");
-                var permanentHare = genome.SpeciesId == definition.HareMap.SpeciesId
-                    && (genome.ResetGeneration > 0 || genome.UnlockedNodeIds.Any(id => definition.HareMap.TryGetNode(id, out _)));
-                if (permanentHare)
+                var permanentRabbit = genome.SpeciesId == definition.RabbitMap.SpeciesId
+                    && (genome.ResetGeneration > 0 || genome.UnlockedNodeIds.Any(id => definition.RabbitMap.TryGetNode(id, out _)));
+                if (permanentRabbit)
                 {
                     if (genome.Allocations.Count != 0
                         || (genome.ActiveNodeIds.Count > 0 && !unlockedGenomeSpeciesIds.Contains(genome.SpeciesId)))
-                        throw new InvalidOperationException("An active FD2 Hare loadout requires its path license and permanent ownership without POC allocations.");
+                        throw new InvalidOperationException("An active FD2 Rabbit loadout requires its path license and permanent ownership without POC allocations.");
                     var authored = catalog.GetSpeciesMap(genome.SpeciesId);
-                    if (authored != null && authored.Nodes.Any(node => definition.HareMap.TryGetNode(node.Id, out _)))
+                    if (authored != null && authored.Nodes.Any(node => definition.RabbitMap.TryGetNode(node.Id, out _)))
                         definition.ValidateAuthoredMap(authored);
                     snapshots.Add(definition.FreezeOwnedLoadout(genome).GetSpeciesGenome(genome.SpeciesId));
                 }
@@ -371,14 +371,14 @@ namespace SaltyGame
             var next = genomeProfile == null ? this : WithGenomeProfile(genomeProfile);
             if (unlockRabbitTree)
             {
-                next = next.WithUnlockedGenome(new SpeciesId("hare"));
+                next = next.WithUnlockedGenome(new SpeciesId("rabbit"));
             }
 
             var wallets = new Dictionary<SpeciesId, long>(next.SpeciesDataWallets);
-            var hare = new SpeciesId("hare");
-            if (rabbitData != 0 || wallets.ContainsKey(hare))
+            var rabbit = new SpeciesId("rabbit");
+            if (rabbitData != 0 || wallets.ContainsKey(rabbit))
             {
-                wallets[hare] = rabbitData;
+                wallets[rabbit] = rabbitData;
             }
 
             return new ProfileSessionSnapshot(next.HasLoadedProfile, next.ProfileId, next.ProfileName,
@@ -404,15 +404,15 @@ namespace SaltyGame
                 }
             }
 
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             if (rabbitData != 0)
             {
-                if (copied.TryGetValue(hare, out var amount) && amount != rabbitData)
+                if (copied.TryGetValue(rabbit, out var amount) && amount != rabbitData)
                 {
-                    throw new ArgumentException("Rabbit compatibility balance conflicts with the Hare wallet.", nameof(rabbitData));
+                    throw new ArgumentException("Rabbit compatibility balance conflicts with the Rabbit wallet.", nameof(rabbitData));
                 }
 
-                copied[hare] = rabbitData;
+                copied[rabbit] = rabbitData;
             }
 
             return new ReadOnlyDictionary<SpeciesId, long>(copied);

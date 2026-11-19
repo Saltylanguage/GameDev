@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a3f0c4b7e1469aa51f2c6d8e9b3041, type: 3}
   m_Name: LongVision
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
-  upgradeId: poc.hare.long-vision
+  upgradeId: poc.rabbit.long-vision
   displayName: Long Vision
   description: 'POC: vision range +2 tiles. Provisional test value, not balanced.'
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   prerequisiteNodeIds:
-  - poc.hare.long-stride
+  - poc.rabbit.long-stride
   rabbitDataPrice: 1
   capacityPoints: 1
   branchName: Trailblazer

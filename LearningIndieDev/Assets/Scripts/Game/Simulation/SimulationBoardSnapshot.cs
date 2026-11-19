@@ -88,7 +88,7 @@ namespace SaltyGame
                 cells,
                 grassVertices,
                 desertVertices,
-                run.CopyHareBurrowCellIndices(),
+                run.CopyRabbitBurrowCellIndices(),
                 speciesRoles);
         }
 

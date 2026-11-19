@@ -25,12 +25,12 @@ internal sealed partial class RunPage : TabPage
     readonly NumericUpDown width = Number(36, 1, 4096, "Grid width");
     readonly NumericUpDown height = Number(20, 1, 4096, "Grid height");
     readonly NumericUpDown plants = Number(400, 0, int.MaxValue, "Starting Plants");
-    readonly NumericUpDown hares = Number(55, 1, int.MaxValue, "Starting Hares");
+    readonly NumericUpDown rabbits = Number(55, 1, int.MaxValue, "Starting Rabbits");
     readonly NumericUpDown foxes = Number(35, 0, int.MaxValue, "Starting Foxes");
-    readonly NumericUpDown vision = Number(9, 0, 4096, "Hare vision");
+    readonly NumericUpDown vision = Number(9, 0, 4096, "Rabbit vision");
     readonly NumericUpDown energy = Number(160, 0, int.MaxValue, "Fox starting energy");
     readonly CheckBox wrap = new() { Text = "Wrap map edges", Checked = true, AutoSize = true };
-    readonly CheckBox statOverrides = new() { Text = "Override Hare vision / Fox starting energy", AutoSize = true };
+    readonly CheckBox statOverrides = new() { Text = "Override Rabbit vision / Fox starting energy", AutoSize = true };
     readonly Dictionary<string, CheckBox> strategies = ChoiceChecks(RunTools.StrategyIds);
     readonly Dictionary<string, CheckBox> purchases = ChoiceChecks(RunTools.PurchaseIds);
     readonly Button validate = Button("Validate setup");
@@ -91,8 +91,8 @@ internal sealed partial class RunPage : TabPage
     {
         Name = name.Text, Owner = owner.Text, Question = question.Text, Hypothesis = hypothesis.Text, SuccessCriteria = success.Text, FailureCriteria = failure.Text, Snapshot = snapshot.Text,
         SeedStart = (int)seedStart.Value, SeedCount = (int)seedCount.Value, Workers = (int)workers.Value, ChunkSize = (int)chunks.Value, TimeoutSeconds = (int)timeout.Value, PhaseTicks = (int)phase.Value,
-        Width = (int)width.Value, Height = (int)height.Value, Plants = (int)plants.Value, Hares = (int)hares.Value, Foxes = (int)foxes.Value, Wrap = wrap.Checked,
-        OverrideStats = statOverrides.Checked, HareVision = (int)vision.Value, FoxEnergy = (int)energy.Value,
+        Width = (int)width.Value, Height = (int)height.Value, Plants = (int)plants.Value, Rabbits = (int)rabbits.Value, Foxes = (int)foxes.Value, Wrap = wrap.Checked,
+        OverrideStats = statOverrides.Checked, RabbitVision = (int)vision.Value, FoxEnergy = (int)energy.Value,
         Strategies = strategies.Where(c => c.Value.Checked).Select(c => c.Key).ToArray(), Purchases = purchases.Where(c => c.Value.Checked).Select(c => c.Key).ToArray(),
         Comparisons = ReadComparisons()
     };
@@ -103,8 +103,8 @@ internal sealed partial class RunPage : TabPage
         {
         name.Text = options.Name; owner.Text = options.Owner; question.Text = options.Question; hypothesis.Text = options.Hypothesis; success.Text = options.SuccessCriteria; failure.Text = options.FailureCriteria; snapshot.Text = options.Snapshot;
         seedStart.Value = options.SeedStart; seedCount.Value = options.SeedCount; workers.Value = options.Workers; chunks.Value = options.ChunkSize; timeout.Value = options.TimeoutSeconds; phase.Value = options.PhaseTicks;
-        width.Value = options.Width; height.Value = options.Height; plants.Value = options.Plants; hares.Value = options.Hares; foxes.Value = options.Foxes; wrap.Checked = options.Wrap;
-        statOverrides.Checked = options.OverrideStats; vision.Value = options.HareVision; energy.Value = options.FoxEnergy;
+        width.Value = options.Width; height.Value = options.Height; plants.Value = options.Plants; rabbits.Value = options.Rabbits; foxes.Value = options.Foxes; wrap.Checked = options.Wrap;
+        statOverrides.Checked = options.OverrideStats; vision.Value = options.RabbitVision; energy.Value = options.FoxEnergy;
         foreach (var (id, check) in strategies) check.Checked = options.Strategies.Contains(id);
         foreach (var (id, check) in purchases) check.Checked = options.Purchases.Contains(id);
         comparisonGrid.Rows.Clear();
@@ -203,9 +203,9 @@ internal sealed partial class RunPage : TabPage
         {
             using var doc = Tools.ReadSmall(picker.FileName); var data = doc.RootElement;
             var values = data.GetProperty("species").EnumerateArray().ToDictionary(s => s.GetProperty("id").GetString()!, s => s.GetProperty("population").GetInt32());
-            Apply(Options() with { Snapshot = picker.FileName, Width = data.GetProperty("width").GetInt32(), Height = data.GetProperty("height").GetInt32(), Wrap = data.GetProperty("wrapEdges").GetBoolean(), Plants = values["plant"], Hares = values["hare"], Foxes = values["fox"], OverrideStats = false, Comparisons = [] });
+            Apply(Options() with { Snapshot = picker.FileName, Width = data.GetProperty("width").GetInt32(), Height = data.GetProperty("height").GetInt32(), Wrap = data.GetProperty("wrapEdges").GetBoolean(), Plants = values["plant"], Rabbits = values["rabbit"], Foxes = values["fox"], OverrideStats = false, Comparisons = [] });
         }
-        catch (Exception error) { Error(new InvalidDataException("Could not load the frozen Plant/Hare/Fox snapshot: " + error.Message)); }
+        catch (Exception error) { Error(new InvalidDataException("Could not load the frozen Plant/Rabbit/Fox snapshot: " + error.Message)); }
     }
     void LoadPreset()
     {

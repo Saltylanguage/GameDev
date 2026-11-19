@@ -99,6 +99,9 @@ namespace SaltyGame
             [SerializeField, Range(0f, 1f)] internal float reproductionChance;
             [SerializeField, Min(0)] internal int reproductionFoodRequired;
             [SerializeField, Min(0)] internal int maxReproductionGroupSize;
+            [SerializeField, Min(0)]
+            [Tooltip("Hard cap for this species. Zero leaves it uncapped.")]
+            internal int maximumPopulation;
             [SerializeField, Min(0)] internal int startingEnergy;
             [SerializeField, Min(0)] internal int forageBelowEnergy;
             [SerializeField, Range(0f, 1f)] internal float forageThresholdFraction;
@@ -108,7 +111,7 @@ namespace SaltyGame
             [SerializeField] internal bool foragesUntilFull;
             [SerializeField, Range(0f, 1f)] internal float wiltChance;
             [SerializeField, FormerlySerializedAs("crowdingEnergyPenalty"), Min(1)]
-            [Tooltip("Multiplier applied to normal metabolism while the local group is crowded. One means no extra cost.")]
+            [Tooltip("Maximum extra metabolism from crowding. A species cap scales it by population share; uncapped species use local group crowding.")]
             internal int crowdingMetabolismMultiplier = 2;
             [SerializeField, Range(0f, 1f)] internal float crowdingEnergyReduction;
             [SerializeField, Min(0f)] internal float startingFoodReserve;
@@ -172,7 +175,8 @@ namespace SaltyGame
                     distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring,
                     crowdingEnergyReduction: crowdingEnergyReduction,
                     gestationTicks: role == SpeciesRole.Plant ? 0 : gestationTicks,
-                    maximumHealth: maximumHealth);
+                    maximumHealth: maximumHealth,
+                    maximumPopulation: maximumPopulation);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -214,6 +218,7 @@ namespace SaltyGame
                     predatorDetectionRangeBonus = rules.Awareness.PredatorDetectionRangeBonus,
                     maximumEnergy = rules.MaximumEnergy,
                     maximumHealth = rules.MaximumHealth,
+                    maximumPopulation = rules.MaximumPopulation,
                     litterMinimum = rules.LitterMinimum,
                     litterMaximum = rules.LitterMaximum,
                     gestationTicks = rules.GestationTicks,

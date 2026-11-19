@@ -83,6 +83,24 @@ the earlier exclusion of major simulation and UI work. It does not silently
 add implementation tasks to the existing S6 estimate: revise the sprint scope
 and capacity before scheduling the work.
 
+## November 19 first-pass Rabbit population ceiling and crowding
+
+Josh set the initial cozy population values to 3 Rabbits and 2 Foxes, with a
+hard Rabbit ceiling of 15. The ceiling includes living Rabbits, hidden burrow
+occupants, and pending litter reserved for birth. Rabbit population purchases,
+starting counts, and reproduction must respect that ceiling. The overall
+`maxPopulation` remains disabled so the Rabbit limit does not cap Plants.
+
+For capped species, the crowding metabolism surcharge scales with current living
+population divided by the species ceiling. With the current multiplier of 2,
+the Rabbit surcharge starts at 20% of its maximum at 3/15 and reaches 100% at
+15/15. Uncapped species retain the existing local-group crowding rule. The
+first-pass authored setup also uses a 34×19 map and 600 ticks; Rabbit starts
+with 24 energy, 2 health, and 9 vision, while Fox attack is 1 and vision is 8.
+The Fox energy values remain 48 starting / 96 maximum, with 2 energy lost per
+25 ticks and a forage threshold of 72. These are test inputs, not measured
+survival or death-rate targets; no balance result has been collected for them.
+
 ## November 9 predator-first design decision
 
 Josh selected **Fox overhunting of Hares** as the introductory scenario's primary, immediately understandable pressure. Plant overgrazing may remain a gentle background pressure, but it must not obscure the opening problem or make food renewal the only viable answer. Use the existing Hare/Fox matchup before considering another predator species or terrain system.

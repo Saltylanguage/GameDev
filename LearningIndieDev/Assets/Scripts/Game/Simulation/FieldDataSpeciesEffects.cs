@@ -73,9 +73,9 @@ namespace SaltyGame
                     error = "Effect entries must be non-null and have unique instance IDs.";
                     return false;
                 }
-                if (!string.Equals(effect.TargetSpeciesId, "hare", StringComparison.Ordinal))
+                if (!string.Equals(effect.TargetSpeciesId, "rabbit", StringComparison.Ordinal))
                 {
-                    error = "The first Field Data effect resolver supports Hare targets only.";
+                    error = "The first Field Data effect resolver supports Rabbit targets only.";
                     return false;
                 }
                 totals.TryGetValue(effect.AttributeId, out var total);

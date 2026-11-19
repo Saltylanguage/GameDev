@@ -137,14 +137,14 @@ namespace SaltyGame
 
             return new SpeciesUpgradeSnapshot(
                 Id,
-                targetSpecies.Value == "hare" && Id == SpeciesUpgradeCatalog.FasterMovementId
+                targetSpecies.Value == "rabbit" && Id == SpeciesUpgradeCatalog.FasterMovementId
                     ? "LONG STRIDE" : SpeciesUpgradeCatalog.GetDisplayName(Id),
                 Type == SpeciesUpgradeType.SeedDropChance
                     ? $"Add {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points of planting chance per eligible step. Spend one stored food only on success."
                     : Type == SpeciesUpgradeType.BlockAmount
                     ? $"Increase block by {(int)Value} for this journey."
                     : Type == SpeciesUpgradeType.MaximumHealth
-                    ? $"Gain {(int)Value} health. A Hare can survive one basic Fox attack."
+                    ? $"Gain {(int)Value} health. A Rabbit can survive one basic Fox attack."
                     : Type == SpeciesUpgradeType.MovementSpeed
                     ? $"Increase movement speed by {Value.ToString("0.##", CultureInfo.InvariantCulture)} for this journey."
                     : Type == SpeciesUpgradeType.DigestionEnergyBonus
@@ -315,13 +315,14 @@ namespace SaltyGame
                 distributeMatingEnergyToOffspring: rules.DistributeMatingEnergyToOffspring,
                 crowdingEnergyReduction: crowdingEnergyReduction,
                 gestationTicks: rules.GestationTicks,
-                maximumHealth: maximumHealth);
+                maximumHealth: maximumHealth,
+                maximumPopulation: rules.MaximumPopulation);
         }
     }
 
     public static class SpeciesUpgradeCatalog
     {
-        static readonly string[] FieldDataHareSkillIds =
+        static readonly string[] FieldDataRabbitSkillIds =
         {
             ToughHideId, EfficientDigestionId, SeedDispersalId,
             CrowdingToleranceId, ReproductiveDriveId, KeenSensesId, LongVisionId, FasterMovementId,
@@ -334,13 +335,13 @@ namespace SaltyGame
         public const int ExpandedBurrowsMaxLevel = 5;
         static readonly string[] BurrowMutationIds = { BurrowingId, SharedBurrowsId, ExpandedBurrowsId };
 
-        internal static bool IsHareBurrowMutation(SpeciesId species, string id) =>
-            species.Value == "hare" && Array.IndexOf(BurrowMutationIds, id) >= 0;
+        internal static bool IsRabbitBurrowMutation(SpeciesId species, string id) =>
+            species.Value == "rabbit" && Array.IndexOf(BurrowMutationIds, id) >= 0;
 
         public static int GetFieldDataRewardMaxLevel(SpeciesId species, string upgradeId)
         {
-            if (species.Value == "hare" && upgradeId == ExpandedBurrowsId) return ExpandedBurrowsMaxLevel;
-            return species.Value == "hare" && Array.IndexOf(FieldDataHareSkillIds, upgradeId) >= 0
+            if (species.Value == "rabbit" && upgradeId == ExpandedBurrowsId) return ExpandedBurrowsMaxLevel;
+            return species.Value == "rabbit" && Array.IndexOf(FieldDataRabbitSkillIds, upgradeId) >= 0
                 ? GetMaxLevel(upgradeId) : 1;
         }
 
@@ -364,9 +365,9 @@ namespace SaltyGame
             SpeciesId species, IEnumerable<SpeciesUpgradeSnapshot> authored, Func<string, bool> burrowResearch = null)
         {
             var pool = new List<SpeciesUpgradeSnapshot>();
-            if (species.Value == "hare")
+            if (species.Value == "rabbit")
             {
-                foreach (var id in FieldDataHareSkillIds)
+                foreach (var id in FieldDataRabbitSkillIds)
                 {
                     SpeciesUpgradeSnapshot selected = null;
                     foreach (var upgrade in authored ?? Array.Empty<SpeciesUpgradeSnapshot>())
@@ -403,8 +404,8 @@ namespace SaltyGame
         {
             var name = id == BurrowingId ? "Burrowing" : id == SharedBurrowsId ? "Shared Burrows" : "Expanded Burrows";
             var description = id == BurrowingId
-                ? "Hares can dig burrows and hide with their descendants. Each burrow holds three Hares and lasts 200 steps."
-                : id == SharedBurrowsId ? "Unrelated Hares can shelter in burrows with room."
+                ? "Rabbits can dig burrows and hide with their descendants. Each burrow holds three Rabbits and lasts 200 steps."
+                : id == SharedBurrowsId ? "Unrelated Rabbits can shelter in burrows with room."
                 : "Adds one place to every burrow for this journey, up to eight places.";
             return new SpeciesUpgradeSnapshot(id, name, description, species, 0, Array.Empty<SpeciesUpgradeModifier>());
         }
@@ -519,7 +520,7 @@ namespace SaltyGame
             new[] { EfficientDigestionId, SeedDispersalId },
         };
 
-        static readonly string[][] IntroductoryHarePathStarterIds =
+        static readonly string[][] IntroductoryRabbitPathStarterIds =
         {
             new[] { ThreatExposureId },
             new[] { ToughHideId },
@@ -558,7 +559,7 @@ namespace SaltyGame
             int rotation,
             int seed,
             Func<SpeciesUpgrade, bool> canOffer = null,
-            bool introductoryHareMutations = false)
+            bool introductoryRabbitMutations = false)
         {
             if (rotation < 0)
             {
@@ -580,7 +581,7 @@ namespace SaltyGame
             if (!hasContinuingUpgrade && rotation == 0)
             {
                 return CreatePhasePathStarterOffer(seededValue, canOffer,
-                    introductoryHareMutations ? IntroductoryHarePathStarterIds : PhaseHerbivorePathStarterIds);
+                    introductoryRabbitMutations ? IntroductoryRabbitPathStarterIds : PhaseHerbivorePathStarterIds);
             }
 
             var offer = new List<SpeciesUpgrade>(3);
@@ -898,13 +899,13 @@ namespace SaltyGame
         {
             responderSpecies = default;
             responderUpgradeId = string.Empty;
-            var isHare = selectedSpecies == SpeciesIds.Herbivore
-                || string.Equals(selectedSpecies.Value, "hare", StringComparison.Ordinal);
+            var isRabbit = selectedSpecies == SpeciesIds.Herbivore
+                || string.Equals(selectedSpecies.Value, "rabbit", StringComparison.Ordinal);
             var isFox = selectedSpecies == SpeciesIds.Carnivore
                 || string.Equals(selectedSpecies.Value, "fox", StringComparison.Ordinal);
-            if (isHare)
+            if (isRabbit)
             {
-                responderSpecies = string.Equals(selectedSpecies.Value, "hare", StringComparison.Ordinal)
+                responderSpecies = string.Equals(selectedSpecies.Value, "rabbit", StringComparison.Ordinal)
                     ? new SpeciesId("fox")
                     : SpeciesIds.Carnivore;
                 switch (selectedUpgradeId)
@@ -928,7 +929,7 @@ namespace SaltyGame
             else if (isFox)
             {
                 responderSpecies = string.Equals(selectedSpecies.Value, "fox", StringComparison.Ordinal)
-                    ? new SpeciesId("hare")
+                    ? new SpeciesId("rabbit")
                     : SpeciesIds.Herbivore;
                 switch (selectedUpgradeId)
                 {

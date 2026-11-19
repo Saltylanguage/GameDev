@@ -123,7 +123,7 @@ namespace SaltyGame
 
             // These named Mutations activate simulation capabilities through the run loadout.
             if (copiedModifiers.Count == 0 && populationToAdd == 0 && preContactAvoidanceChanceBonus == 0f
-                && !SpeciesUpgradeCatalog.IsHareBurrowMutation(targetSpecies, id.Trim()))
+                && !SpeciesUpgradeCatalog.IsRabbitBurrowMutation(targetSpecies, id.Trim()))
             {
                 throw new ArgumentException("An upgrade must contain a modifier, population addition or avoidance effect.", nameof(modifiers));
             }

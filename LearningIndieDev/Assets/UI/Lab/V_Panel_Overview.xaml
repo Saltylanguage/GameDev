@@ -10,7 +10,7 @@
             <Border Background="{DynamicResource Ui.Brush.Header}" CornerRadius="8" Padding="18">
                 <StackPanel>
                     <TextBlock Text="CURRENT STUDY" Foreground="{DynamicResource Ui.Brush.TextAccent}" FontWeight="Bold" />
-                    <TextBlock Text="FOREST EDGE — HARE / FERN / FOX" Foreground="{DynamicResource Ui.Brush.TextPrimary}" FontSize="20" Margin="0,8,0,4" />
+                    <TextBlock Text="FOREST EDGE — RABBIT / FERN / FOX" Foreground="{DynamicResource Ui.Brush.TextPrimary}" FontSize="20" Margin="0,8,0,4" />
                     <TextBlock Text="The Lab is the persistent home base between deterministic cellular-automata runs." Style="{StaticResource Ui.Text.Body}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>

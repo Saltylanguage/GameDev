@@ -18,6 +18,7 @@ namespace SaltyGame
             var startingSpecies = GetSortedSpecies(data.StartingProbabilities);
             var fallbackSpecies = GetSortedSpecies(data.SpeciesRules);
             var populationCount = 0;
+            var speciesPopulationCounts = new Dictionary<SpeciesId, int>();
             for (var y = 0; y < data.Height; y++)
             {
                 for (var x = 0; x < data.Width; x++)
@@ -31,6 +32,16 @@ namespace SaltyGame
                     // Explicit starting populations are placed after the weighted
                     // pass so their counts remain deterministic for authored scenarios.
                     if (data.StartingPopulations.ContainsKey(species))
+                    {
+                        continue;
+                    }
+
+                    var speciesCount = speciesPopulationCounts.TryGetValue(species, out var currentSpeciesCount)
+                        ? currentSpeciesCount
+                        : 0;
+                    var speciesRules = data.SpeciesRules[species];
+                    if (speciesRules.MaximumPopulation > 0
+                        && speciesCount >= speciesRules.MaximumPopulation)
                     {
                         continue;
                     }
@@ -51,10 +62,12 @@ namespace SaltyGame
 
                     grid.SetCell(x, y, CreateCell(data, species));
                     populationCount++;
+                    speciesPopulationCounts[species] = speciesCount + 1;
                 }
             }
 
-            PlaceExplicitStartingPopulations(data, grid, random, ref populationCount);
+            PlaceExplicitStartingPopulations(
+                data, grid, random, ref populationCount, speciesPopulationCounts);
 
             var minimumPopulation = Math.Min(data.MinPopulation, grid.Count);
             if (data.MaxPopulation > 0)
@@ -75,8 +88,19 @@ namespace SaltyGame
                 }
 
                 var species = GetInitialSpecies(random.NextDouble(), data, startingSpecies, fallbackSpecies);
+                var speciesCount = speciesPopulationCounts.TryGetValue(species, out var currentSpeciesCount)
+                    ? currentSpeciesCount
+                    : 0;
+                var speciesRules = data.SpeciesRules[species];
+                if (speciesRules.MaximumPopulation > 0
+                    && speciesCount >= speciesRules.MaximumPopulation)
+                {
+                    continue;
+                }
+
                 grid.SetCell(x, y, CreateCell(data, species));
                 populationCount++;
+                speciesPopulationCounts[species] = speciesCount + 1;
             }
 
             StaggerInitialPlantGrowth(data, grid, random);
@@ -143,7 +167,8 @@ namespace SaltyGame
             CellularSimData data,
             Grid<SpeciesCell> grid,
             Random random,
-            ref int populationCount)
+            ref int populationCount,
+            Dictionary<SpeciesId, int> speciesPopulationCounts)
         {
             if (data.StartingPopulations.Count == 0)
             {
@@ -211,6 +236,8 @@ namespace SaltyGame
                         $"Could not place the configured starting population for {species}. "
                         + $"Requested {requested}, placed {placed}.");
                 }
+
+                speciesPopulationCounts[species] = placed;
             }
         }
 

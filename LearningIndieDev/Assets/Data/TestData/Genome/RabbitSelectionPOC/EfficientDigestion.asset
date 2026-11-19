@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a3f0c4b7e1469aa51f2c6d8e9b3041, type: 3}
   m_Name: EfficientDigestion
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
-  upgradeId: poc.hare.efficient-digestion
+  upgradeId: poc.rabbit.efficient-digestion
   displayName: Efficient Digestion
   description: 'POC: digestion energy bonus +0.25. Provisional test value, not balanced.'
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   prerequisiteNodeIds:
   - fertile-droppings
   rabbitDataPrice: 1

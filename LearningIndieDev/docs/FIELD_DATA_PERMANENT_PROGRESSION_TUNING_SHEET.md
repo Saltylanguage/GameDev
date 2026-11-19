@@ -41,15 +41,15 @@ for evidence, rule conflicts and the integration sequence.
 | 100 | 1 | 10 | 11 |
 | 100 | 3 | 10 | 13 |
 
-## Hare Genome license, nodes, and loadout
+## Rabbit Genome license, nodes, and loadout
 
 | Item | First-test definition | Status |
 |---|---|---|
-| Path license | 10 Hare Data; grants access to the tree only | Provisional baseline |
-| Node purchase | 5 Hare Data per node | Provisional baseline |
-| Active capacity | 8 points per Hare loadout | Existing Genome contract |
+| Path license | 10 Rabbit Data; grants access to the tree only | Provisional baseline |
+| Node purchase | 5 Rabbit Data per node | Provisional baseline |
+| Active capacity | 8 points per Rabbit loadout | Existing Genome contract |
 | Node capacity cost | 2 points for each first-slice node; at most four of five fit at once | Agreed first-test setting |
-| Reset | 20 RD; clears the selected species' active loadout; refunds no Hare Data; permanent node unlocks remain | Agreed first-test setting |
+| Reset | 20 RD; clears the selected species' active loadout; refunds no Rabbit Data; permanent node unlocks remain | Agreed first-test setting |
 | Replacement selection | Each replacement requires a new paid reset. Select the full owned loadout freely from empty, then apply once; identical selection is a no-op. Empty reset is rejected without a charge. | Bevin confirmed 2026-10-26 for T08 |
 | Timing | Active loadout applies to journeys launched after the change | Approved rule |
 
@@ -58,15 +58,15 @@ The approved display names describe the supported effect directly. Each effect
 is one signed additive modifier; no burrowing, hearing-specific sensing, or new
 ability is implied by the older placeholder name.
 
-| Stable node ID (unchanged) | Approved display name | Owned prerequisites (IDs abbreviated) | Hare Data cost | Active capacity cost | Approved exact modifier |
+| Stable node ID (unchanged) | Approved display name | Owned prerequisites (IDs abbreviated) | Rabbit Data cost | Active capacity cost | Approved exact modifier |
 |---|---|---|---:|---:|---|
-| `hare.guarded-burrow` | Tough Hide | None | 5 | 2 | `combat.block` +1 |
-| `hare.keen-hearing` | Long Vision | `guarded-burrow` | 5 | 2 | `awareness.vision-range` +2 tiles |
-| `hare.swift-digging` | Long Stride | `guarded-burrow` | 5 | 2 | `movement.speed` +0.25 |
-| `hare.safe-foraging` | Efficient Digestion | `keen-hearing`, `swift-digging` | 5 | 2 | `digestion.energy-bonus` +0.25 |
-| `hare.warren-network` | Population Reserves | `guarded-burrow`, `safe-foraging` | 5 | 2 | `population.pool-capacity` +10 |
+| `rabbit.guarded-burrow` | Tough Hide | None | 5 | 2 | `combat.block` +1 |
+| `rabbit.keen-hearing` | Long Vision | `guarded-burrow` | 5 | 2 | `awareness.vision-range` +2 tiles |
+| `rabbit.swift-digging` | Long Stride | `guarded-burrow` | 5 | 2 | `movement.speed` +0.25 |
+| `rabbit.safe-foraging` | Efficient Digestion | `keen-hearing`, `swift-digging` | 5 | 2 | `digestion.energy-bonus` +0.25 |
+| `rabbit.warren-network` | Population Reserves | `guarded-burrow`, `safe-foraging` | 5 | 2 | `population.pool-capacity` +10 |
 
-All abbreviated prerequisites above have the `hare.` prefix. Each node is owned
+All abbreviated prerequisites above have the `rabbit.` prefix. Each node is owned
 once and contributes its effect once while active. A prerequisite controls
 permanent purchase eligibility, as in the FD2 SDD; it does not also consume
 active capacity. With all five owned, a legal loadout can use up to four.
@@ -77,17 +77,17 @@ the player flow. T01 supplies the owned-prerequisite freeze adapter; later
 tickets wire purchases and launch. The shared POC catalog's rules stay strict.
 
 Population Reserves raises the incoming ordinary replenishment limit from 50
-to 60 while active. It does not add ten Hares, cap births, cull an above-limit
+to 60 while active. It does not add ten Rabbits, cap births, cull an above-limit
 population, or replenish each round. Incoming POC values are source mechanics,
 not approved FD2 balance. T01 authored the five approved assets under
-`Assets/Data/TestData/Genome/HareGenome`, preserving their existing GUIDs.
+`Assets/Data/TestData/Genome/RabbitGenome`, preserving their existing GUIDs.
 
 Source counterparts at incoming `7ac2a54` are `ToughHide.asset`,
 `LongVision.asset`, `LongStride.asset`, `EfficientDigestion.asset`, and
 `PopulationPool.asset` under `Assets/Data/TestData/Genome/RabbitSelectionPOC`.
 Copy their supported modifier semantics, not their `poc.*` IDs, POC prices,
 prerequisite graph or ownership/refund behavior. Burrows Preview remains
-unsupported. Fertile Droppings, Larger Litters and Founding Hares are supported
+unsupported. Fertile Droppings, Larger Litters and Founding Rabbits are supported
 incoming content outside this five-node proposal; they remain in Salty's catalog.
 
 ## Rules that remain in force
@@ -133,4 +133,4 @@ values differ from this FD2 definition. Do not treat the incoming POC values as
 an approved replacement: reconcile catalog, effects, prices and reset semantics,
 then perform the SG-005 review before closing T01.
 
-The numeric baseline and five-node topology are recorded. **FD2-T01 remains open** until Salty's core mechanics are pushed and each placeholder receives a supported, named effect with its cost and 2-point capacity assignment reviewed against SG-005. Do not close T01 or claim the Hare tree is gameplay-ready before that review.
+The numeric baseline and five-node topology are recorded. **FD2-T01 remains open** until Salty's core mechanics are pushed and each placeholder receives a supported, named effect with its cost and 2-point capacity assignment reviewed against SG-005. Do not close T01 or claim the Rabbit tree is gameplay-ready before that review.

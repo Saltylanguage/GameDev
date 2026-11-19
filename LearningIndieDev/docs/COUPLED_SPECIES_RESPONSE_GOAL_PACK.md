@@ -1,4 +1,4 @@
-# Coupled Hare/Fox Responses - implementation goal pack
+# Coupled Rabbit/Fox Responses - implementation goal pack
 
 Date: 2026-09-11  
 Status: Draft for implementation; no gameplay or balance change is authorized by this document alone  
@@ -6,13 +6,13 @@ Requested by: Bevin
 Upgrade feature owner/reviewer: Josh  
 Implementation owner: Assigned AI agent  
 Scenario: Forest Edge  
-Related design: [Reactive Species / Ecology Plan](REACTIVE_SPECIES_ECOLOGY_PLAN.md), [Hare + Fox treatment](Species%20Design/HARE_FOX_ITERATIVE_TREATMENT.md), [upgrade-system direction](UPGRADE_SYSTEM_DIRECTION.md), and [upgrade concerns](Planning%20Concerns/upgrade-system.md)
+Related design: [Reactive Species / Ecology Plan](REACTIVE_SPECIES_ECOLOGY_PLAN.md), [Rabbit + Fox treatment](Species%20Design/HARE_FOX_ITERATIVE_TREATMENT.md), [upgrade-system direction](UPGRADE_SYSTEM_DIRECTION.md), and [upgrade concerns](Planning%20Concerns/upgrade-system.md)
 
 ## Outcome
 
-Add one explicit, default-off **Coupled Hare/Fox Responses** toggle under the
+Add one explicit, default-off **Coupled Rabbit/Fox Responses** toggle under the
 existing `bev-experimental` feature bundle. When enabled, purchasing a supported
-Hare or Fox Mutation also grants one authored response level to the opposing
+Rabbit or Fox Mutation also grants one authored response level to the opposing
 species at the same frozen phase boundary.
 
 The feature should make an expedition feel like an ecological arms race without
@@ -22,11 +22,11 @@ random-number sequence, and balance must remain unchanged.
 
 ## Player-facing contract
 
-- User-facing toggle: `Coupled Hare/Fox Responses`.
+- User-facing toggle: `Coupled Rabbit/Fox Responses`.
 - Runtime setting: `CoupledSpeciesResponsesEnabled`.
 - Batch argument: `-CoupledSpeciesResponses true|false`.
 - Default: off.
-- Availability: Forest Edge with both `hare` and `fox` present.
+- Availability: Forest Edge with both `rabbit` and `fox` present.
 - The setting is chosen before an expedition starts and remains frozen until
   that expedition ends.
 - Enabling it requires the `bev-experimental` feature bundle. A batch request
@@ -52,18 +52,18 @@ reflection, discovery scan, or new ScriptableObject system.
 
 | Player species | Purchased Mutation | Response species | Automatic response | Intended relationship |
 | --- | --- | --- | --- | --- |
-| Hare | `tough-hide` | Fox | `piercing-bite` | Defense is contested by attack accuracy. |
-| Hare | `threat-exposure` | Fox | `relentless-pursuit` | Better escape creates stronger pursuit pressure. |
-| Hare | `efficient-digestion` | Fox | `hunt-urgency` | Better-fed prey provoke earlier hunting. |
-| Hare | `reproductive-drive` | Fox | `brood-drive` | More prey growth supports predator reproduction. |
-| Hare | `crowding-tolerance` | Fox | `brood-drive` | Dense, persistent prey supports predator population pressure. |
-| Fox | `piercing-bite` | Hare | `tough-hide` | Stronger attacks provoke stronger defense. |
-| Fox | `relentless-pursuit` | Hare | `threat-exposure` | Stronger pursuit provokes better escape/avoidance. |
-| Fox | `hunt-urgency` | Hare | `efficient-digestion` | Earlier hunting provokes better prey energy recovery. |
-| Fox | `brood-drive` | Hare | `reproductive-drive` | Predator population growth provokes prey population growth. |
+| Rabbit | `tough-hide` | Fox | `piercing-bite` | Defense is contested by attack accuracy. |
+| Rabbit | `threat-exposure` | Fox | `relentless-pursuit` | Better escape creates stronger pursuit pressure. |
+| Rabbit | `efficient-digestion` | Fox | `hunt-urgency` | Better-fed prey provoke earlier hunting. |
+| Rabbit | `reproductive-drive` | Fox | `brood-drive` | More prey growth supports predator reproduction. |
+| Rabbit | `crowding-tolerance` | Fox | `brood-drive` | Dense, persistent prey supports predator population pressure. |
+| Fox | `piercing-bite` | Rabbit | `tough-hide` | Stronger attacks provoke stronger defense. |
+| Fox | `relentless-pursuit` | Rabbit | `threat-exposure` | Stronger pursuit provokes better escape/avoidance. |
+| Fox | `hunt-urgency` | Rabbit | `efficient-digestion` | Earlier hunting provokes better prey energy recovery. |
+| Fox | `brood-drive` | Rabbit | `reproductive-drive` | Predator population growth provokes prey population growth. |
 
-`brood-drive` appears twice on the Hare-to-Fox side because the retained Fox
-catalog currently contains four accepted skills against five Hare skills. Do
+`brood-drive` appears twice on the Rabbit-to-Fox side because the retained Fox
+catalog currently contains four accepted skills against five Rabbit skills. Do
 not re-enable or present retired `keen-senses`; its Detection-versus-Avoidance
 idea remains a separate future cross-species experiment.
 
@@ -96,7 +96,7 @@ to change.
 **Acceptance gate:** The agent can explain how the flag travels from UI or batch
 input into a frozen expedition, where both species' rules are replaced at a
 boundary, and how both acquisitions remain replayable. No implementation starts
-if the only proposed design is to put Fox responses inside the selected Hare's
+if the only proposed design is to put Fox responses inside the selected Rabbit's
 Mutation progression.
 
 ### CSR-1 - Add the isolated feature toggle
@@ -110,7 +110,7 @@ current default.
 - Reject `true` unless the feature ID is `bev-experimental`.
 - Add a default-off serialized preview setting and expose it through the existing
   ViewModel/settings application path.
-- Add one `Coupled Hare/Fox Responses` checkbox near the other developer
+- Add one `Coupled Rabbit/Fox Responses` checkbox near the other developer
   simulation settings. It may be changed only before a run starts.
 - Include the flag in saved defaults without changing older saved-settings
   behavior when the field is absent.
@@ -146,7 +146,7 @@ not add a second feature-bundle framework or another settings screen.
 **Deliverable:** A deterministic response lookup using the table in this pack.
 
 **Acceptance gate:** Focused plain-C# tests cover every table row, both player
-species, Skip, toggle off, missing Fox/Hare, unknown IDs, response caps, and
+species, Skip, toggle off, missing Fox/Rabbit, unknown IDs, response caps, and
 atomic rejection. Repeated resolution of the same inputs returns the same pair.
 
 ### CSR-3 - Apply both species changes at one phase boundary
@@ -160,7 +160,7 @@ species.
   dictionary, and `ContinueWithBoundaryState`.
 - Track response levels separately from the selected species' paid progression;
   do not charge response costs or mix its levels into the player's currency UI.
-- At purchase, validate both changes, build the next Hare and Fox rules, combine
+- At purchase, validate both changes, build the next Rabbit and Fox rules, combine
   both snapshots into the effective ordered loadout, and install them at the
   same boundary.
 - Preserve cells, resources, entity state, absolute tick, previous-perception
@@ -168,7 +168,7 @@ species.
 - Keep the response active for subsequent phases and reset it only with a new
   expedition.
 
-**Deliverable:** Toggle-on Hare and Fox purchases update both species without
+**Deliverable:** Toggle-on Rabbit and Fox purchases update both species without
 restarting or reseeding the board.
 
 **Acceptance gate:**
@@ -187,7 +187,7 @@ restarting or reseeding the board.
 
 **Work:**
 
-- Extend each supported reward preview with `Fox responds:` or `Hare responds:`
+- Extend each supported reward preview with `Fox responds:` or `Rabbit responds:`
   plus the response name and immediate rule effect.
 - After purchase, show both selected and response changes in the phase summary.
 - Record both target species, order, effective tick, acquisition source
@@ -220,8 +220,8 @@ making the player's `tough-hide` choice meaningless?
 3. Use opposed-roll combat and record the exact build, scenario/ruleset
    fingerprint, grid, seed set, phase schedule, toggle state, and both loadouts.
 
-**Primary metric:** Fox successful-hit conversion against Hare under opposed
-rolls. Keep Hare `PREY`/`pAVI`, Fox `HAT`/`KIL`/`hAVG`, populations, extinctions,
+**Primary metric:** Fox successful-hit conversion against Rabbit under opposed
+rolls. Keep Rabbit `PREY`/`pAVI`, Fox `HAT`/`KIL`/`hAVG`, populations, extinctions,
 and recovery as diagnostics.
 
 **Pass condition:** The matched aggregate should satisfy:
@@ -244,7 +244,7 @@ before adding another response pair.
 
 ### CSR-6 - Expand one pair at a time and hand off
 
-**Purpose:** Complete the initial Hare/Fox map without hiding weak interactions
+**Purpose:** Complete the initial Rabbit/Fox map without hiding weak interactions
 inside a large combination sweep.
 
 **Work:**
@@ -261,7 +261,7 @@ inside a large combination sweep.
 - Write a handoff with changed files, commit/source identity, commands, result
   paths, failures, skipped checks, and remaining balance questions.
 
-**Deliverable:** A complete experimental Hare/Fox response map with trustworthy
+**Deliverable:** A complete experimental Rabbit/Fox response map with trustworthy
 functional and evidence status for every pair.
 
 **Acceptance gate:**
@@ -313,7 +313,7 @@ do not duplicate its full ledger here.
 | Failure | Required response |
 | --- | --- |
 | Toggle requested without `bev-experimental` | Reject the settings or batch request; do not silently enable the bundle. |
-| Forest Edge lacks Hare or Fox | Reject Coupled Responses for that run; do not substitute a role-wide species. |
+| Forest Edge lacks Rabbit or Fox | Reject Coupled Responses for that run; do not substitute a role-wide species. |
 | Pair lookup, prerequisite, exclusion, or cap fails | Leave currency, both rule sets, progression histories, and the active run unchanged. |
 | Boundary continuation cannot install both rules | Remain at the decision boundary and report the error; never claim a successful purchase. |
 | Toggle-off deterministic comparison differs | Stop feature expansion and isolate the regression before interpreting balance. |
@@ -324,7 +324,7 @@ do not duplicate its full ledger here.
 ## Explicit non-goals
 
 - Plant or Fern responses and tuning.
-- More than the explicit Hare/Fox map above.
+- More than the explicit Rabbit/Fox map above.
 - Random, weighted, pressure-scored, rubber-band, or AI-selected responses.
 - Mid-tick changes, population spawning, healing, or world resets.
 - Scent, pack coordination, inherited traits, shelters, or a generalized
@@ -345,9 +345,9 @@ the real branch, dirty worktree, recent history, project guidance, relevant
 handoffs, current UI/runtime flow, and active upgrade concerns before editing.
 Preserve unrelated untracked files.
 
-The required feature is one default-off "Coupled Hare/Fox Responses" toggle
+The required feature is one default-off "Coupled Rabbit/Fox Responses" toggle
 inside the existing bev-experimental bundle. When enabled, a supported paid
-Hare or Fox Mutation grants exactly one deterministic, authored response level
+Rabbit or Fox Mutation grants exactly one deterministic, authored response level
 to the opposing species at the same frozen phase boundary. When disabled, the
 current behavior and RNG sequence must remain unchanged. Skip grants no
 response. Apply and record both sides atomically. Do not add plant work, random

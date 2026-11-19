@@ -14,11 +14,11 @@ mini PC while a job runs.
 From the desktop, submit a job and push the queue file:
 
 ```powershell
-.\tools\Submit-CellSimJob.ps1 -JobName 'hare-threat-exposure-level-1' `
-  -PlayerSpeciesId hare -UpgradeId threat-exposure `
+.\tools\Submit-CellSimJob.ps1 -JobName 'rabbit-threat-exposure-level-1' `
+  -PlayerSpeciesId rabbit -UpgradeId threat-exposure `
   -ExperimentalFeatures bev-experimental -UpgradeValueOverride 0.5
 git add automation/CellSimQueue/Pending
-git commit -m 'Queue CellSim hare experiment'
+git commit -m 'Queue CellSim rabbit experiment'
 git push
 ```
 
@@ -28,7 +28,7 @@ On the mini PC, pull and run one job:
 git pull
 .\tools\Start-CellSimWorker.ps1 -Once
 git add automation/CellSimQueue/Completed automation/CellSimQueue/Failed artifacts
-git commit -m 'Complete CellSim hare experiment'
+git commit -m 'Complete CellSim rabbit experiment'
 git push
 ```
 
@@ -46,7 +46,7 @@ startup task.
 
 The desktop then pulls the completed record and its tracked result bundle. Each
 completed job contains `report.json`, the existing per-seed `report.csv`, the
-per-seed `statline.csv` for `bev-experimental` Hare runs, `manifest.json`, and
+per-seed `statline.csv` for `bev-experimental` Rabbit runs, `manifest.json`, and
 the Unity batch `unity.log`. Validate a pulled bundle before analysis:
 
 ```powershell

@@ -21,7 +21,7 @@ internal static class RunChecks
         {
             Name = "Workbench tooling check", Owner = "Bevin / tooling validation", Question = "Does the UI preserve the requested experiment and execute/export its exact seed coverage?",
             Hypothesis = "The compiler and pinned runner produce the requested condition/seed matrix.", SuccessCriteria = "Exact coverage, reconciled output, safe stop/resume and immutable inputs.", FailureCriteria = "Changed inputs accepted, missing/duplicate seeds, unrelated work stopped or missing workbook.",
-            Snapshot = Path.GetFullPath(snapshot), SeedStart = 80000, SeedCount = 2, Width = 16, Height = 12, Plants = 65, Hares = 12, Foxes = 4, PhaseTicks = 3, Workers = 2, ChunkSize = 1,
+            Snapshot = Path.GetFullPath(snapshot), SeedStart = 80000, SeedCount = 2, Width = 16, Height = 12, Plants = 65, Rabbits = 12, Foxes = 4, PhaseTicks = 3, Workers = 2, ChunkSize = 1,
             Strategies = ["skip-all", "gardeners"], Purchases = ["none", "each-one"]
         };
         var snapshotHash = RunTools.Hash(options.Snapshot);
@@ -50,14 +50,14 @@ internal static class RunChecks
             Require(JsonSerializer.Serialize(RunTools.LoadPreset(path)) == JsonSerializer.Serialize(options));
         });
         var comparisonOptions = options with { Name = "Workbench comparison wiring check", SeedCount = 1,
-            Comparisons = [new("hare-population", "8, 12"), new("fox:energy.starting", "120, 160")] };
+            Comparisons = [new("rabbit-population", "8, 12"), new("fox:energy.starting", "120, 160")] };
         Check("Comparison values validate numbers, duplicates, bounds and total budget", () =>
         {
             Require(RunTools.VariantCount(comparisonOptions) == 4 && RunTools.RunCount(comparisonOptions) == 16);
             RunTools.Validate(comparisonOptions);
-            foreach (var axis in new[] { new ComparisonAxis("hare-population", "1.5"), new("hare-population", "0"), new("hare-population", "8,8"), new("plant:resource.wilt-chance", "1.1"), new("map-width", "nope"), new("missing-key", "1") })
+            foreach (var axis in new[] { new ComparisonAxis("rabbit-population", "1.5"), new("rabbit-population", "0"), new("rabbit-population", "8,8"), new("plant:resource.wilt-chance", "1.1"), new("map-width", "nope"), new("missing-key", "1") })
                 Reject(() => RunTools.Validate(options with { Comparisons = [axis] }));
-            Reject(() => RunTools.Validate(options with { Comparisons = [new("hare-population", "1"), new("hare-population", "2")] }));
+            Reject(() => RunTools.Validate(options with { Comparisons = [new("rabbit-population", "1"), new("rabbit-population", "2")] }));
             Reject(() => RunTools.Validate(options with { Comparisons = [new("map-width", "1,16")] }));
             Reject(() => RunTools.Validate(comparisonOptions with { SeedCount = 1000000 }));
             var path = Path.Combine(Path.GetDirectoryName(resultPath)!, "comparison-preset-check.json");
@@ -69,9 +69,9 @@ internal static class RunChecks
         {
             var setup = options with { Name = "Gestation comparison check", SeedCount = 1,
                 Strategies = ["skip-all"], Purchases = ["none"],
-                Comparisons = [new("hare:reproduction.gestation-ticks", "0,48"), new("fox:reproduction.gestation-ticks", "0,48")] };
+                Comparisons = [new("rabbit:reproduction.gestation-ticks", "0,48"), new("fox:reproduction.gestation-ticks", "0,48")] };
             Require(RunTools.RunCount(setup) == 4);
-            Reject(() => RunTools.Validate(setup with { Comparisons = [new("hare:reproduction.gestation-ticks", "1.5")] }));
+            Reject(() => RunTools.Validate(setup with { Comparisons = [new("rabbit:reproduction.gestation-ticks", "1.5")] }));
             Reject(() => RunTools.Validate(setup with { Comparisons = [new("fox:reproduction.gestation-ticks", "-1")] }));
             var preset = Path.Combine(Path.GetDirectoryName(resultPath)!, "gestation-preset-check.json");
             RunTools.SavePreset(preset, setup);
@@ -83,7 +83,7 @@ internal static class RunChecks
                 var args = c.GetProperty("arguments").EnumerateArray().Select(a => a.GetString()!).ToArray();
                 return args[Array.IndexOf(args, "-speciesStats") + 1];
             }).ToHashSet();
-            Require(values.Count == 4 && values.Any(v => v.Contains("hare:reproduction.gestation-ticks=0") && v.Contains("fox:reproduction.gestation-ticks=48")));
+            Require(values.Count == 4 && values.Any(v => v.Contains("rabbit:reproduction.gestation-ticks=0") && v.Contains("fox:reproduction.gestation-ticks=48")));
             Require(Execute(preparedGestation, false) == 0);
             Require(File.ReadLines(Path.Combine(preparedGestation.Batch, "runs.jsonl")).Count() == 4);
         });
@@ -110,12 +110,12 @@ internal static class RunChecks
             Require(conditions.Length == 16 && !Directory.Exists(compared.Batch));
             var values = conditions.Select(c => c.GetProperty("arguments").EnumerateArray().Select(a => a.GetString()!).ToArray()).ToArray();
             Require(values.All(a => a[a.ToList().IndexOf("-startingPopulations") + 1].Contains("plant=65")));
-            Require(values.Count(a => a[a.ToList().IndexOf("-startingPopulations") + 1].Contains("hare=8")) == 8);
+            Require(values.Count(a => a[a.ToList().IndexOf("-startingPopulations") + 1].Contains("rabbit=8")) == 8);
             Require(values.Count(a => a[a.ToList().IndexOf("-speciesStats") + 1] == "fox:energy.starting=160") == 8);
             // Exercise the quick-override overlap without launching a second batch.
             using var spec = JsonDocument.Parse(JsonSerializer.Serialize(RunTools.Specification(comparisonOptions with { OverrideStats = true })));
             var baseline = spec.RootElement.GetProperty("baseArguments").EnumerateArray().Select(a => a.GetString()).ToArray();
-            Require(baseline[Array.IndexOf(baseline, "-speciesStats") + 1] == "hare:awareness.vision-range=9");
+            Require(baseline[Array.IndexOf(baseline, "-speciesStats") + 1] == "rabbit:awareness.vision-range=9");
         });
         Check("Comparison runner executes exact per-condition populations and seed coverage", () =>
         {
@@ -125,7 +125,7 @@ internal static class RunChecks
             {
                 using var row = JsonDocument.Parse(line); var result = row.RootElement.GetProperty("run");
                 Require(result.GetProperty("seed").GetInt32() == 80000);
-                expected.Add(result.GetProperty("populationHistory")[0].GetProperty("species").EnumerateArray().Single(s => s.GetProperty("speciesId").GetString() == "hare").GetProperty("population").GetInt32()); found++;
+                expected.Add(result.GetProperty("populationHistory")[0].GetProperty("species").EnumerateArray().Single(s => s.GetProperty("speciesId").GetString() == "rabbit").GetProperty("population").GetInt32()); found++;
             }
             Require(found == 16 && expected.SetEquals([8,12]));
         });
@@ -226,8 +226,8 @@ internal static class RunChecks
             }
             sections.SelectedIndex = 2;
             page.Apply(options with { SeedCount = 1, Strategies = ["skip-all"], Purchases = ["none"],
-                Comparisons = [new("hare:reproduction.gestation-ticks", "0,12,24,48"), new("fox:reproduction.gestation-ticks", "48")] });
-            Find<ComboBox>(page).Single().SelectedItem = SetupParameters.Find("hare:reproduction.gestation-ticks");
+                Comparisons = [new("rabbit:reproduction.gestation-ticks", "0,12,24,48"), new("fox:reproduction.gestation-ticks", "48")] });
+            Find<ComboBox>(page).Single().SelectedItem = SetupParameters.Find("rabbit:reproduction.gestation-ticks");
             Checks.PumpUi();
             Require(Find<Label>(page).Any(l => l.Text.Contains("Frozen snapshot value: 48.")));
             Require(Find<DataGridView>(page).Single(g => g.AccessibleName == "Condition preview").RowCount == 4);

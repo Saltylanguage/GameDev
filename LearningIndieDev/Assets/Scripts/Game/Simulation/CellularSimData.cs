@@ -140,6 +140,14 @@ namespace SaltyGame
                             "Starting populations cannot be negative.");
                     }
 
+                    var speciesPopulationLimit = copiedRules[entry.Key].MaximumPopulation;
+                    if (speciesPopulationLimit > 0 && entry.Value > speciesPopulationLimit)
+                    {
+                        throw new ArgumentException(
+                            $"Starting population for {entry.Key} exceeds its species maximum of {speciesPopulationLimit}.",
+                            nameof(startingPopulations));
+                    }
+
                     copiedStartingPopulations.Add(entry.Key, entry.Value);
                 }
             }

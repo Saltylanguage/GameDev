@@ -27,9 +27,9 @@ promote any proposed visual direction to a final aesthetic decision.
 ## Project context the board must support
 
 - The current product direction is a cellular-automata roguelike.
-- The first slice is Forest Edge: fern as support/resource, hare as the player
+- The first slice is Forest Edge: fern as support/resource, rabbit as the player
   species, and fox as opposition.
-- The player develops the hare through Trailblazer, Warren, and Gardeners build
+- The player develops the rabbit through Trailblazer, Warren, and Gardeners build
   directions.
 - The board must make the simulation readable: species, terrain, food,
   selection, danger, upgrade effects, and causes of population change.
@@ -202,7 +202,7 @@ that information.
 [AREA] Deliverable — State or Variant
 ```
 
-Examples: `[SPECIES] Hare — gameplay-scale identity`, `[TERRAIN] Bare Ground —
+Examples: `[SPECIES] Rabbit — gameplay-scale identity`, `[TERRAIN] Bare Ground —
 47-mask blob family`, and `[UI] Upgrade Card — selected state`.
 
 ### Description sections
@@ -321,7 +321,7 @@ In-Game Acceptance:
 ### Foundation
 
 - Forest Edge — gold-standard board target.
-- Hare — resolve Rabbit/Hare identity.
+- Rabbit — resolve Rabbit/Rabbit identity.
 - Fox — gameplay-scale gold standard.
 - Fern — dedicated visual language.
 - Grass — noise and readability review.

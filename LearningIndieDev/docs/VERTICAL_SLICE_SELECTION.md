@@ -4,7 +4,7 @@ Status: **initial selection for validation**. This is the working content target
 
 > **Historical roster proposal:** Fern as a playable/supporting species is on
 > hold under the current S3-02 contract. Current player-flow acceptance is
-> Forest Edge with Hare and Fox; retain Fern references here as design history,
+> Forest Edge with Rabbit and Fox; retain Fern references here as design history,
 > not as a current playable-slice commitment.
 
 ## Curated scenario: Forest Edge
@@ -12,21 +12,21 @@ Status: **initial selection for validation**. This is the working content target
 Use the existing `ForestEdge` scenario as the vertical-slice foundation. It is the smallest authored ecosystem that contains a complete and immediately readable pressure chain:
 
 ```text
-fern -> hare -> fox
+fern -> rabbit -> fox
  food    player   predator
 ```
 
-The player develops the **hare** species. Ferns are the supporting resource species and foxes are the opposing predator species. No fourth species enters the initial slice.
+The player develops the **rabbit** species. Ferns are the supporting resource species and foxes are the opposing predator species. No fourth species enters the initial slice.
 
-This choice keeps causal explanations legible: hare population changes should primarily trace to food access, reproduction/crowding, or fox pressure. `OpenRange` and `Wetland` remain useful later scenarios, but their five-species rosters add interactions before the core upgrade loop has been proven.
+This choice keeps causal explanations legible: rabbit population changes should primarily trace to food access, reproduction/crowding, or fox pressure. `OpenRange` and `Wetland` remain useful later scenarios, but their five-species rosters add interactions before the core upgrade loop has been proven.
 
 ## Roster roles
 
 | Species | Slice role | Pressure created | Why it earns a place |
 | --- | --- | --- | --- |
-| Fern | Supporting food/resource | Patch depletion and recovery constrain where hares can thrive. | Makes movement, food efficiency, and seed dispersal visibly valuable. |
-| Hare | Player species | Must balance feeding, reproduction, crowding, and predator avoidance. | Its fast movement and dependence on both food and mates support several understandable build directions. |
-| Fox | Opposing predator | Converts dense or exposed hare populations into direct losses. | Prevents population growth from being the only concern and gives defensive/spatial upgrades a clear purpose. |
+| Fern | Supporting food/resource | Patch depletion and recovery constrain where rabbits can thrive. | Makes movement, food efficiency, and seed dispersal visibly valuable. |
+| Rabbit | Player species | Must balance feeding, reproduction, crowding, and predator avoidance. | Its fast movement and dependence on both food and mates support several understandable build directions. |
+| Fox | Opposing predator | Converts dense or exposed rabbit populations into direct losses. | Prevents population growth from being the only concern and gives defensive/spatial upgrades a clear purpose. |
 
 ## Three intended build styles
 
@@ -36,7 +36,7 @@ This choice keeps causal explanations legible: hare population changes should pr
 
 - Prioritizes movement speed, food-search reach, and efficient movement patterns.
 - Visible strength: spreads into available food sooner and recovers from local resource collapse.
-- Visible weakness: rapid dispersal makes mate contact less reliable and does not directly protect a caught hare.
+- Visible weakness: rapid dispersal makes mate contact less reliable and does not directly protect a caught rabbit.
 - Different choice pressure: favors mobility and perception over reproduction rate or direct protection.
 
 ### 2. Warren
@@ -50,7 +50,7 @@ This choice keeps causal explanations legible: hare population changes should pr
 
 ### 3. Gardeners
 
-**Fantasy:** hares sustain their own food frontier through feeding efficiency and seed dispersal.
+**Fantasy:** rabbits sustain their own food frontier through feeding efficiency and seed dispersal.
 
 - Prioritizes food value/energy efficiency, carried seed reserve, and seed-drop chance or pattern.
 - Visible strength: creates renewable fern patches and supports longer population recovery.
@@ -61,7 +61,7 @@ This choice keeps causal explanations legible: hare population changes should pr
 
 The current explicit upgrade implementation covers movement speed, attack amount, and block amount. That is enough to prototype part of Trailblazer and Warren, but it does **not** yet support all three intended builds:
 
-- Hare has no attack pattern, so an attack-amount reward currently provides no meaningful hare build identity and should not appear in the slice reward pool without a corresponding rule change.
+- Rabbit has no attack pattern, so an attack-amount reward currently provides no meaningful rabbit build identity and should not appear in the slice reward pool without a corresponding rule change.
 - Warren needs a measurable protection behavior and at least one crowding or reproduction-control choice.
 - Gardeners needs upgrades that affect feeding efficiency and seed dispersal.
 - Upgrade contribution telemetry must show movement attributable to mobility, prevented losses attributable to protection, and food/fern creation attributable to ecosystem upgrades.
@@ -70,13 +70,13 @@ These gaps should feed the separate Sprint 0 upgrade inventory task. They are no
 
 ## First validation pass
 
-Use the existing Forest Edge data as a baseline, then evaluate the same fixed seed set for the base hare and one minimal prototype of each build.
+Use the existing Forest Edge data as a baseline, then evaluate the same fixed seed set for the base rabbit and one minimal prototype of each build.
 
 Record:
 
-- hare extinction frequency and final population;
+- rabbit extinction frequency and final population;
 - fern minimum/final population and food consumed;
-- hare births, starvation deaths from low food or crowding, and predator deaths;
+- rabbit births, starvation deaths from low food or crowding, and predator deaths;
 - movement, successful seed drops, and protection activations;
 - whether each build changes the visible population shape or survival story, not merely the final number.
 
@@ -87,7 +87,7 @@ Keep the selection only if players can distinguish the three strategies from boa
 The vertical-slice working target is therefore:
 
 - **Scenario:** Forest Edge
-- **Player:** Hare
+- **Player:** Rabbit
 - **Support:** Fern
 - **Opponent:** Fox
 - **Builds:** Trailblazer, Warren, Gardeners

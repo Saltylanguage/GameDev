@@ -71,8 +71,8 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Simulation/SpeciesSimulation.cs",
             "Assets/Scripts/Game/Simulation/SpeciesSimulationMetrics.cs",
             "Assets/Scripts/Game/Simulation/SpeciesSimulationRunner.cs",
-            "Assets/Scripts/Game/Simulation/HareLineage.cs",
-            "Assets/Scripts/Game/Simulation/HareBurrows.cs",
+            "Assets/Scripts/Game/Simulation/RabbitLineage.cs",
+            "Assets/Scripts/Game/Simulation/RabbitBurrows.cs",
             "Assets/Editor/SimulationTools/CellularSimulationExperimentRunner.cs",
             "Assets/Editor/SimulationTools/SimulationReportSerialization.cs",
             "Assets/Editor/SimulationTools/CellSimPortable.cs"
@@ -89,7 +89,7 @@ namespace SaltyGame.EditorTools
             WrapEdgesArgument, GridWidthArgument, GridHeightArgument, StartingPopulationsArgument,
             NodeStartingPopulationsArgument,
             RunTicksArgument, PhaseLengthTicksArgument, PhasesPerNodeArgument, PhaseUpgradeScheduleArgument,
-            PhaseUpgradeAssetScheduleArgument, MutationPolicyArgument, "-harePurchasePolicy",
+            PhaseUpgradeAssetScheduleArgument, MutationPolicyArgument, "-rabbitPurchasePolicy",
             MutationPolicyEarlyFirstChoiceArgument, RunDurationArgument, StepIntervalArgument, "-speciesStats",
             FoxIntroductionTicksArgument
         };
@@ -162,8 +162,8 @@ namespace SaltyGame.EditorTools
         public static string PortableRunStateDigest(SimulationRunState run)
         {
             var surface = PortableStateDigest(run.Cells);
-            var hareJourneyState = run.GetHareJourneyStateFingerprint();
-            return hareJourneyState == null ? surface : PortableHash(surface + "|" + hareJourneyState);
+            var rabbitJourneyState = run.GetRabbitJourneyStateFingerprint();
+            return rabbitJourneyState == null ? surface : PortableHash(surface + "|" + rabbitJourneyState);
         }
 
         public static SpeciesGenomeMapSnapshot CaptureRabbitGenomeCatalog(string assetPath)
@@ -189,7 +189,7 @@ namespace SaltyGame.EditorTools
             var map = frozenCatalog ?? CaptureRabbitGenomeCatalog(catalogPath);
             if (map.SpeciesId != GenomeContract.RabbitSpeciesId)
             {
-                throw new ArgumentException("The Rabbit Genome catalog must target 'hare'.");
+                throw new ArgumentException("The Rabbit Genome catalog must target 'rabbit'.");
             }
             var genome = new GenomeSimulationSnapshot(new[] { new SpeciesGenomeSnapshot(map.SpeciesId, ids) })
                 .Resolve(new GenomeCatalogSnapshot(new[] { map }));
@@ -773,6 +773,7 @@ namespace SaltyGame.EditorTools
             public float reproductionChance;
             public int reproductionFoodRequired;
             public int maxReproductionGroupSize;
+            public int maximumPopulation;
             public int startingEnergy;
             public float wiltChance;
             public int crowdingMetabolismMultiplier;
@@ -820,6 +821,7 @@ namespace SaltyGame.EditorTools
                     reproductionChance = value.ReproductionChance,
                     reproductionFoodRequired = value.ReproductionFoodRequired,
                     maxReproductionGroupSize = value.MaxReproductionGroupSize,
+                    maximumPopulation = value.MaximumPopulation,
                     startingEnergy = value.StartingEnergy,
                     wiltChance = value.WiltChance,
                     crowdingMetabolismMultiplier = value.CrowdingMetabolismMultiplier,
@@ -866,6 +868,7 @@ namespace SaltyGame.EditorTools
                 reproductionChance: reproductionChance,
                 reproductionFoodRequired: reproductionFoodRequired,
                 maxReproductionGroupSize: maxReproductionGroupSize,
+                maximumPopulation: maximumPopulation,
                 startingEnergy: startingEnergy,
                 wiltChance: wiltChance,
                 crowdingMetabolismMultiplier: crowdingMetabolismMultiplier,

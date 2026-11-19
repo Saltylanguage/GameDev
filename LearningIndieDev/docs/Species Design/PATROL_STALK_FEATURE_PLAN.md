@@ -2,7 +2,7 @@
 
 **Status:** Proposed feature plan for review (2026-09-27)
 
-**First fixture:** Forest Edge, Fox hunting Hare
+**First fixture:** Forest Edge, Fox hunting Rabbit
 
 **Scope:** Patrol and solo stalking; corralling and pack coordination deferred
 
@@ -11,16 +11,16 @@
 ## Intended player experience
 
 A Fox searches a recognizable part of the board when it has no prey in sight. If
-it finds a Hare, it can approach cautiously, but the Hare has a readable chance
+it finds a Rabbit, it can approach cautiously, but the Rabbit has a readable chance
 to notice and escape. Failed searches and approaches cost the Fox time and
-energy. Hare dispersal and terrain can break the hunt, allowing recovery after
+energy. Rabbit dispersal and terrain can break the hunt, allowing recovery after
 a Fox pressure wave.
 
 Patrol answers **where and in what pattern the hunter searches**. Stalking
 answers **how it approaches one prey animal**. Neither behavior implies shared
 targets, pack roles, or control over another hunter.
 
-This is a proposed follow-on to the [Hare/Fox implementation
+This is a proposed follow-on to the [Rabbit/Fox implementation
 plan](HARE_FOX_IMPLEMENTATION_PLAN.md), not a replacement for its baseline and
 promotion gates. The [hunting strategies note](HUNTING_STRATEGIES_IDEATION.md)
 remains the wider idea set. Start this feature's implementation only after the
@@ -32,7 +32,7 @@ current chase/escape behavior has a fixed-seed baseline and a readable outcome.
   `SpeciesSimulation` resolves attacks before movement and processes movement in
   shuffled order with destination claims.
 - `SpeciesPerception` finds visible prey and threats. Vision uses a range
-  pattern, without terrain occlusion. A Hare becomes `Threatened` when a Fox is
+  pattern, without terrain occlusion. A Rabbit becomes `Threatened` when a Fox is
   visible and tries to increase its distance from that Fox.
 - `SpeciesNavigation` finds a first step toward interaction range on the grid.
   Current prey pursuit routes toward the prey's current position. The
@@ -56,13 +56,13 @@ phase continuation, checkpoints, ruleset fingerprints, and reports.
 ### 1. Patrol
 
 - **Entry:** a hunt-eligible Fox has no currently visible or legitimately
-  remembered Hare and is not resolving a higher-priority survival or mating
+  remembered Rabbit and is not resolving a higher-priority survival or mating
   action. Decide the exact hunger/mating precedence against the current rules
   before writing code.
 - **Search area:** choose a bounded local area from information available to that
   Fox, such as its previous prey sighting or a local terrain feature. A stable
   fallback is needed for a Fox that has never seen prey. Do not use the live
-  location or density of unseen Hares to choose a patrol point.
+  location or density of unseen Rabbits to choose a patrol point.
 - **Pattern:** support two tunable search shapes in the first patrol slice:
   a serpentine sweep through adjacent lanes of a bounded area, and a direct
   shuttle that travels between two reachable nodes and reverses. The shuttle
@@ -81,7 +81,7 @@ phase continuation, checkpoints, ruleset fingerprints, and reports.
 - **Exit:** seeing prey hands control to an approach or chase decision; loss of
   hunt eligibility, a higher-priority need, or search timeout returns to the
   existing behavior priorities.
-- **Prey response:** patrol itself grants no attack bonus. A Hare that sees the
+- **Prey response:** patrol itself grants no attack bonus. A Rabbit that sees the
   Fox keeps its normal warning and escape opportunity.
 
 The source of patrol nodes is separate from the pattern that traverses them.
@@ -96,7 +96,7 @@ and scent are outside this pass.
 
 ### 2. Solo stalking
 
-- **Entry:** a hunt-eligible Fox has directly observed a Hare and there is a
+- **Entry:** a hunt-eligible Fox has directly observed a Rabbit and there is a
   feasible cautious approach. A failed feasibility check falls back to the
   existing chase or abandonment rule; it must not freeze the hunter.
 - **Information:** store the last observed prey position and age of that
@@ -108,8 +108,8 @@ and scent are outside this pass.
   cost, and the agreed detection rule. This permits cautious positioning now
   and, later, a different source of destination suggestions for interception
   or flank positions. It does not require a general strategy framework.
-- **Prey detection:** define a visible rule for when the Hare notices the Fox
-  and how long that alert lasts. Preserve the current Hare escape behavior once
+- **Prey detection:** define a visible rule for when the Rabbit notices the Fox
+  and how long that alert lasts. Preserve the current Rabbit escape behavior once
   alerted. Terrain may affect detection only if its effect is explicit in the
   simulation and visible enough for a player to understand.
 - **Commit:** attack or switch to the existing chase only at a specified
@@ -120,19 +120,19 @@ and scent are outside this pass.
   excessive energy cost, or the target's death ends the setup. The Fox pays a
   bounded cost and returns to patrol, chase, or other existing priorities.
 
-The current circular vision and immediate Hare threat response may leave no
-useful approach on some boards. Prove a fair approach and a viable Hare escape
+The current circular vision and immediate Rabbit threat response may leave no
+useful approach on some boards. Prove a fair approach and a viable Rabbit escape
 in a small fixture before committing to a specific cover or alert model.
 
 ## Work packages and gates
 
 | Work | Deliverable | Gate to continue |
 | --- | --- | --- |
-| PS-0 — Chase baseline | Fixed seeds and compact board examples for visible pursuit, Hare escape, no-prey behavior, Fox energy, and prey recovery; record the current ruleset and current unverified balance changes. | The team can explain a sampled hunt and escape without patrol or stalking. |
+| PS-0 — Chase baseline | Fixed seeds and compact board examples for visible pursuit, Rabbit escape, no-prey behavior, Fox energy, and prey recovery; record the current ruleset and current unverified balance changes. | The team can explain a sampled hunt and escape without patrol or stalking. |
 | PS-1 — Patrol contract | Specify hunt/mate priority, search-area information, timeout, and fallback; implement Fox-only serpentine sweep and two-node shuttle in small fixtures, using generated local nodes. Expose only tuning knobs that change their measured behavior. | Both patterns produce distinct, reproducible routes; Foxes reach or skip blocked nodes, react to visible prey, leave fruitless searches, and retain existing occupancy and reproduction behavior. |
-| PS-2 — Stalking feasibility | Prototype last-seen memory and one explicit detection/alert rule in small layouts: open space, edge transition, obstructed route, and dispersed Hares. Compare with chase under the same seeds. | At least one layout produces a legible cautious approach, and at least one lets an alerted Hare escape. If not, revise the interaction before production integration. |
-| PS-3 — Solo stalking | Implement destination selection, commit/abort costs, state propagation, and focused telemetry; connect only the Fox/Hare fixture first. | Stalking uses no hidden live target information, cannot run indefinitely, survives continuation/checkpoint, and does not break fixed-seed replay. |
-| PS-4 — Readability and ecology | Add a selected-hunter intent/last-seen cue and concise hunt outcome in existing presentation/report paths; compare sweep, shuttle, and baseline under matched seeds for search effort, encounters, kills, escapes, starvation, and Hare recovery. | Players can distinguish patrol, stalk, chase, abandonment, and a successful Hare response; the patterns create different search paths without making ecological pressure unrecoverable. |
+| PS-2 — Stalking feasibility | Prototype last-seen memory and one explicit detection/alert rule in small layouts: open space, edge transition, obstructed route, and dispersed Rabbits. Compare with chase under the same seeds. | At least one layout produces a legible cautious approach, and at least one lets an alerted Rabbit escape. If not, revise the interaction before production integration. |
+| PS-3 — Solo stalking | Implement destination selection, commit/abort costs, state propagation, and focused telemetry; connect only the Fox/Rabbit fixture first. | Stalking uses no hidden live target information, cannot run indefinitely, survives continuation/checkpoint, and does not break fixed-seed replay. |
+| PS-4 — Readability and ecology | Add a selected-hunter intent/last-seen cue and concise hunt outcome in existing presentation/report paths; compare sweep, shuttle, and baseline under matched seeds for search effort, encounters, kills, escapes, starvation, and Rabbit recovery. | Players can distinguish patrol, stalk, chase, abandonment, and a successful Rabbit response; the patterns create different search paths without making ecological pressure unrecoverable. |
 
 Implement each package as a focused change. Runtime behavior tests should cover
 priority transitions, target loss/death, blocked routes, destination conflicts,
@@ -179,11 +179,11 @@ pack data structures, role enums, shared blackboards, or coordination code now.
   terrain edge, or another bounded location derived without hidden prey data?
 - Which patrol settings produce a meaningful difference between sweep and
   shuttle without adding more authoring controls than a designer can tune?
-- What counts as Hare detection during a stalk, and does the existing terrain
+- What counts as Rabbit detection during a stalk, and does the existing terrain
   offer a meaningful way to approach without immediate alert?
 - What exact condition makes a Fox commit, switch to chase, or give up?
 - Which small board cue best communicates a search, cautious approach, and
-  alerted Hare without filling the whole board with paths?
+  alerted Rabbit without filling the whole board with paths?
 
 Resolve these through PS-0 and PS-2 fixtures before adding broad authored
 species fields or a generalized hunting strategy API.

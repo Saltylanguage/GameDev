@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory)][string]$OutputPath,
     [string]$ScenarioPath = 'Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset',
     [string]$FieldDataDefinitionPath,
-    [string[]]$ScientificArguments = @('-playerSpeciesId', 'hare', '-runTicks', '700', '-combatMode', 'opposed-roll', '-experimentalFeatures', 'bev-experimental'),
+    [string[]]$ScientificArguments = @('-playerSpeciesId', 'rabbit', '-runTicks', '700', '-combatMode', 'opposed-roll', '-experimentalFeatures', 'bev-experimental'),
     [ValidateRange(0, 2147483647)][int]$SeedStart = 1,
     [ValidateRange(1, 1000)][int]$ReferenceSeeds = 4,
     [string]$UnityPath
@@ -26,7 +26,7 @@ $allowed = @('-playerSpeciesId','-rabbitGenomeNodeIds','-rabbitGenomeCatalogPath
     '-upgradeValueOverride','-combatMode','-attackOpportunityMode','-experimentalFeatures','-foxAttackCooldownTicks',
     '-preContactAvoidanceChance','-coupledSpeciesResponses','-wrapEdges','-gridWidth','-gridHeight','-startingPopulations',
     '-nodeStartingPopulations','-runTicks','-phaseLengthTicks','-phasesPerNode','-phaseUpgradeSchedule','-phaseUpgradeAssetSchedule','-mutationPolicy',
-    '-mutationPolicyEarlyFirstChoice','-harePurchasePolicy','-runDurationSeconds','-stepIntervalSeconds','-speciesStats','-foxIntroductionTicks')
+    '-mutationPolicyEarlyFirstChoice','-rabbitPurchasePolicy','-runDurationSeconds','-stepIntervalSeconds','-speciesStats','-foxIntroductionTicks')
 $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 for ($i = 0; $i -lt $ScientificArguments.Count; $i += 2) {
     if ($allowed -cnotcontains $ScientificArguments[$i] -or -not $seen.Add($ScientificArguments[$i]) -or

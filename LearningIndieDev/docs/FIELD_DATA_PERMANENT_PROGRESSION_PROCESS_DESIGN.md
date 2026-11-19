@@ -84,13 +84,13 @@ reopened.
 2. A successful journey deposits data only into the wallet matching its
    selected Genome species. The player can then unlock that species' path.
 3. A path license grants access to the tree; it has no gameplay effect by
-   itself. The first implementation includes the Hare tree only. Hare path
-   license cost is provisionally 10 Hare Data.
+   itself. The first implementation includes the Rabbit tree only. Rabbit path
+   license cost is provisionally 10 Rabbit Data.
 4. The player purchases eligible nodes using that species' data. Nodes remain
    permanently unlocked. Each purchase activates the node immediately if the
    species' active capacity permits; otherwise the purchase is blocked.
-5. The first Hare catalog uses all five existing placeholder IDs and keeps
-   their authored prerequisite graph. Each costs 5 Hare Data and uses 2 points
+5. The first Rabbit catalog uses all five existing placeholder IDs and keeps
+   their authored prerequisite graph. Each costs 5 Rabbit Data and uses 2 points
    of the existing eight-point active capacity, so at most four can be active.
    The tuning sheet v0.2 proposes supported effects from Salty's pushed
    mechanics and clearer display names, approved by Bevin on October 24.
@@ -131,7 +131,7 @@ before the affected behavior is called complete.
 The slice is ready for internal acceptance when a new profile can complete a
 journey and receive the correct two deposits once; a failed journey loses only
 its FD; existing profile progress survives migration; the player can unlock
-the matching Hare path and purchase/configure eligible nodes without exceeding
+the matching Rabbit path and purchase/configure eligible nodes without exceeding
 capacity; reset costs Research Data and refunds no species data; and the UI
 shows the balances and effects clearly. Focused tests must cover arithmetic,
 retry/save behavior, and profile migration. A passing code test alone is not

@@ -23,7 +23,7 @@ proposed implementation sequence and evidence requirements. A completed stage
 must have the stated evidence before its delivery checkbox is marked complete.
 
 The slice contains Simulation → Shop → Simulation → Shop → Simulation,
-18 rounds of 100 ticks, six population controls, income modifiers, signed Hare
+18 rounds of 100 ticks, six population controls, income modifiers, signed Rabbit
 shop effects, free rewards and paid income reordering. Permanent-currency
 rewards/conversion, external-player research and additional content are deferred.
 
@@ -35,14 +35,14 @@ foundations while delivering the missing Field Data loop; the stages below do
 not ask the team to reimplement them.
 
 Current source already provides continuous simulation boundaries, a journey-local
-wallet, free species upgrades, a seeded Add Hare path and a Noesis journey UI.
+wallet, free species upgrades, a seeded Add Rabbit path and a Noesis journey UI.
 It does not implement the complete approved Field Data slice.
 
 | Current process observed in source | Required process |
 | --- | --- |
 | Six-phase preview and a two-cycle journey prototype | Three six-round simulation nodes with two shop visits |
 | Population income settled in preview boundary/completion handlers | One identifiable settlement per successful round, plus distinct node-clear awards |
-| One-Hare purchase using existing progression currency | All six fixed-quantity controls with atomic rejection and last-selected-individual protection |
+| One-Rabbit purchase using existing progression currency | All six fixed-quantity controls with atomic rejection and last-selected-individual protection |
 | Existing species rewards and condition-node claims | Approved free round/node rewards, shop offers and explicit income modifiers |
 | Progression is reset on a legacy next-simulation path | One continuous world and retained journey progression across this slice |
 | Profile currency/unlock storage exists separately | Preserve it; perform no Field Data cash-out in this slice |

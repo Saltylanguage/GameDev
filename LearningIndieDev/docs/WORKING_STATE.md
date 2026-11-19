@@ -3,11 +3,27 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
-**M2 independent manual review:** Josh and Sim can use the same [questionnaire](M2_MANUAL_REVIEW_QUESTIONNAIRE.md), [run packet](M2_INDEPENDENT_REVIEW_PACKET.md), and separate copies of the [response template](M2_MANUAL_REVIEW_RESPONSE_TEMPLATE.md). They answer before comparing results; no human answers are recorded yet. A failed authored Hare route is blocked evidence, not a completed journey. Josh retains the factual-report and M2 closeout decisions.
+**November 18 Rabbit identity:** Josh confirmed Rabbit, Fox, Owl, Deer, and
+Wolf as the planned playable test roster. Rabbit is the canonical gameplay
+species name and ID; the former `hare` identity is retained only for profile
+migration and historical evidence. The current rename branch is
+`codex/rabbit-identity-rename`. The November 19 five-species sandbox handoff
+records provisional production definitions for Deer, Owl, and Wolf, the
+test-only five-species ecology, and Desktop scenario/species/upgrade selection.
+It supports roster testing without changing the pinned M2 Forest Edge/Rabbit
+route or approving balance values. Unity Editor import and visual verification
+remain pending because the local Editor could not be launched. See the
+[five-species sandbox handoff](handoffs/2026-11-19-1343-codex-fivespeciessandbox.md).
+The November 18 clean Unity check passed 779 EditMode tests (one skipped) and
+101 PlayMode tests (seven skipped). The sole PlayMode failure is the previously
+recorded authored Forest Edge seed 10101 route, which loses the player species
+before the first shop; the rename did not close that M2 blocker.
 
-**November 16 M2 art review and sharing:** Chrono's latest Hero and Rabbit originals now occupy the existing runtime art paths, with the Rabbit 32/64/128 and atlas-compatible exports rebuilt in Unity. The remaining delivered UI and animal PNGs are packaged as source candidates for Josh and Sim. Focused Desktop/board visual tests passed and were inspected at 1280×720 and 1920×1080. All M2 items remain open pending human validation; the known Hare route blocker and M2-04 report review remain separate. See the [M2 review handoff](handoffs/2026-11-16-1055-codex-m2-05-art-and-m2-review-handoff.md).
+**M2 independent manual review:** Josh and Sim can use the same [questionnaire](M2_MANUAL_REVIEW_QUESTIONNAIRE.md), [run packet](M2_INDEPENDENT_REVIEW_PACKET.md), and separate copies of the [response template](M2_MANUAL_REVIEW_RESPONSE_TEMPLATE.md). They answer before comparing results; no human answers are recorded yet. A failed authored Rabbit route is blocked evidence, not a completed journey. Josh retains the factual-report and M2 closeout decisions.
 
-**November 15 evening M2 implementation readiness:** Direct Mutation-effect counters now export at run and phase level in CellSim schema 42 and PlayMode logger schema 13; the existing Chrono `reward_v1.png` is wired as the provisional journey reward icon. Stale fixtures behind the earlier eight EditMode failures were repaired. The clean EditMode suite passed 778 with zero failures and one skip, and the journey map visual test passed at 1280×720 and 1920×1080. The authored Hare route remains a real M2-03 blocker, missing Chrono originals remain an M2-05 gap, and Josh's M2-04 factual-report decision remains `Needs Review`. No balance values changed. See the [evening readiness handoff](handoffs/2026-11-15-1907-codex-m2-implementation-readiness.md).
+**November 16 M2 art review and sharing:** Chrono's latest Hero and Rabbit originals now occupy the existing runtime art paths, with the Rabbit 32/64/128 and atlas-compatible exports rebuilt in Unity. The remaining delivered UI and animal PNGs are packaged as source candidates for Josh and Sim. Focused Desktop/board visual tests passed and were inspected at 1280×720 and 1920×1080. All M2 items remain open pending human validation; the known Rabbit route blocker and M2-04 report review remain separate. See the [M2 review handoff](handoffs/2026-11-16-1055-codex-m2-05-art-and-m2-review-handoff.md).
+
+**November 15 evening M2 implementation readiness:** Direct Mutation-effect counters now export at run and phase level in CellSim schema 42 and PlayMode logger schema 13; the existing Chrono `reward_v1.png` is wired as the provisional journey reward icon. Stale fixtures behind the earlier eight EditMode failures were repaired. The clean EditMode suite passed 778 with zero failures and one skip, and the journey map visual test passed at 1280×720 and 1920×1080. The authored Rabbit route remains a real M2-03 blocker, missing Chrono originals remain an M2-05 gap, and Josh's M2-04 factual-report decision remains `Needs Review`. No balance values changed. See the [evening readiness handoff](handoffs/2026-11-15-1907-codex-m2-implementation-readiness.md).
 
 **November 15 M2 prevalidation implementation:** Local code now covers the
 remaining M2-01, M2-06, M2-08 contribution, and M2-10 gaps alongside the
@@ -17,14 +33,14 @@ validation batch](handoffs/2026-11-15-0940-codex-m2-validation-batch.md)
 now records Unity and visual evidence for all ten rows. The [approved M2-04
 comparison](Research/Experiments/M2-04-Three-Response-20261115/REPORT.md)
 completed 48 matched seed runs: control and all three one-rank responses lost
-every Hare before node two. Its headless report lacks direct Mutation-effect
+every Rabbit before node two. Its headless report lacks direct Mutation-effect
 counters. M2 acceptance remains open: the authored route also fails in two
 visual/PlayMode seeds, real process relaunch and player checks are pending, and
 the questionnaire has no answers yet. Missing Chrono source originals remain
 an art gap. The earlier [implementation handoff](handoffs/2026-11-15-0152-codex-m2-prevalidation-implementation.md)
 retains the code scope.
 
-**November 15 M2-04 Hare responses, local implementation:** The Forest Edge
+**November 15 M2-04 Rabbit responses, local implementation:** The Forest Edge
 opening offers avoidance, survival, and faster reproduction. Fresh profiles can
 stack those temporary Mutations through their existing caps on the introductory
 route; research still governs other routes and Field Data. Focused mechanics and
@@ -33,14 +49,14 @@ effects, tradeoffs, and viable paths before acceptance. See the
 [M2-04 handoff](handoffs/2026-11-14-1204-codex-m2-04-hare-response-implementation.md).
 
 **November 15 M2-02 live-run UI, local implementation:** A board click now
-selects a cell for a live ledger readout, the Hare objective and next action are
+selects a cell for a live ledger readout, the Rabbit objective and next action are
 stated, and the four speed controls change cadence. Unity, XML, and two-resolution
 visual checks passed; hands-on pointer/zoom behavior and player comprehension
 remain open. See the
 [M2-02 handoff](handoffs/2026-11-15-0120-codex-m2-02-live-run-ui-implementation.md).
 
 **November 15 M2-08 results first and second slices:** Canonical Field Data and
-prototype results show expedition-wide, phase-backed Hare births/deaths,
+prototype results show expedition-wide, phase-backed Rabbit births/deaths,
 predator pressure, and a leading recorded loss. A later local pass added
 closed-phase counters for three directly resolved introductory Mutation
 effects; other upgrades remain unisolated. Unity tests and result captures pass;
@@ -50,20 +66,20 @@ and [prevalidation handoff](handoffs/2026-11-15-0152-codex-m2-prevalidation-impl
 **November 14 M2-07 local feedback implementation:** The board now caps birth
 flourishes, checks tracked Fox cue positions against the rendered grid, and both
 Noesis hosts use one completed-tick reaction path for grouped births, recorded
-Hare losses, and a zero-Hare warning. The focused PlayMode test and cue captures
+Rabbit losses, and a zero-Rabbit warning. The focused PlayMode test and cue captures
 pass; crowded 1×/4× player review remains open. See the [M2-07 handoff](handoffs/2026-11-14-2041-codex-m2-07-feedback-implementation.md).
 
 **November 14 M2 vision consolidation:** Josh confirmed that every official M2
 entry must reach completion, while new discoveries and design decisions must
 not be overwritten to manufacture milestone progress. The [roadmap v2.6](../ROADMAP.md#m2-outcome-contract--consolidated-2026-11-14)
 now holds all ten outcomes and their acceptance boundaries. [S6](Sprints/S6-control-record.md#m2-alignment--november-14-vision-consolidation)
-proves the predator-first Hare journey and three Mutation responses; S7 remains
+proves the predator-first Rabbit journey and three Mutation responses; S7 remains
 the unscheduled full integration and external-player gate. This documentation
 update does not start S6, close S5/M2, select balance values, or alter gameplay.
 
 **November 13 Chrono art integration, local and in progress:** The verified `simulation.png` original is imported and wired to journey map simulation nodes; `reward_v1.png` was imported as a source variant and provisionally wired on November 15 as noted above. A focused Unity visual test passed 1/1 and captured the rendered simulation icon. The remaining UI, animal, and latest Hero originals are still unavailable locally after repeated Trello browser download stalls. Grass and desert terrain were explicitly deferred. See the [art handoff](handoffs/2026-11-13-1850-codex-chrono-art-integration.md) for the exact file list, evidence, and next step.
 
-**November 13 Fox carcass-value validation:** The GUID conflict is resolved to the branch's canonical `Genome.meta` GUID `c576ac05bbb49f7488aa54f8ac574eaa`. Focused `SpeciesDomainTests` passed 160/160; the full Unity Clean run completed but retained 12 failed tests (EditMode 8, PlayMode 4). The approved carcass-value experiment completed its five-arm 20-seed panel plus the contract-triggered expansion of all three 2:1 scale arms to 100 seeds each: 340 accepted runs total. At the same 2:1 ratio, the chance a seed records at least one Fox starvation death was 47%, 82%, and 100% for 2/1, 4/2, and 6/3; all Hares went extinct in those arms. This is evidence against treating 96 Hare energy / 48 Fox maintenance as a stable ecology ratio. No production balance value changed. See the [factual report](Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md), [separate AI analysis](Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md), [contract](Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md), and [handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md).
+**November 13 Fox carcass-value validation:** The GUID conflict is resolved to the branch's canonical `Genome.meta` GUID `c576ac05bbb49f7488aa54f8ac574eaa`. Focused `SpeciesDomainTests` passed 160/160; the full Unity Clean run completed but retained 12 failed tests (EditMode 8, PlayMode 4). The approved carcass-value experiment completed its five-arm 20-seed panel plus the contract-triggered expansion of all three 2:1 scale arms to 100 seeds each: 340 accepted runs total. At the same 2:1 ratio, the chance a seed records at least one Fox starvation death was 47%, 82%, and 100% for 2/1, 4/2, and 6/3; all Rabbits went extinct in those arms. This is evidence against treating 96 Rabbit energy / 48 Fox maintenance as a stable ecology ratio. No production balance value changed. See the [factual report](Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md), [separate AI analysis](Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md), [contract](Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md), and [handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md).
 
 **November 12 blocked Unity attempt (superseded November 13):** The first focused attempt found a missing fixture argument, which was fixed. The corrected launch was stopped by the Clean wrapper while the Unity project lock was unreachable. Headless Clean validation later ran on November 13; the earlier blocked-run details remain in the [carcass handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md#unity-verification-november-12).
 
@@ -79,14 +95,14 @@ The November GLJP code was fast-forward integrated into `feature/s6-fun-pass`.
 
 **November 10 lower-Fox diagnostic:** Josh approved a gentler-count screen. The [8/10/12-Fox panel](Research/Experiments/S6-Fox-Soft-Opening-20261110/REPORT.md) completed 36/36 diagnostic runs and validated each fresh-node opening/reset ledger. Each arm had 2/12 first-node failures and 4/2/3 cumulative failures by node two; the small panel triggered no confirmation. One 10-Fox node-two run reached zero Plants. No balance value changed. The [analysis](Research/Experiments/S6-Fox-Soft-Opening-20261110/AI_ANALYSIS.md) proposes considering separate static Fox counts by node, which the current experiment input does not yet support. See the [handoff](handoffs/2026-11-10-1350-codex-for-josh-s6-lower-fox-opening-diagnostic.md).
 
-**November 10 Hare/Fox stat reference:** The [source-backed report](Research/S6-Predator-First-Relevant-Statistics-20261110.md) records the current Hare (player Rabbit) and Fox rules, Forest Edge starting counts, effective reproduction/forage thresholds, base opposed-roll lethality, and the outcome measures tied to the three S6 strategies. It is a read-only reference; no runtime or balance values changed. See the [handoff](handoffs/2026-11-10-1537-codex-for-josh-s6-hare-fox-relevant-statistics.md).
+**November 10 Rabbit/Fox stat reference:** The [source-backed report](Research/S6-Predator-First-Relevant-Statistics-20261110.md) records the current Rabbit (player Rabbit) and Fox rules, Forest Edge starting counts, effective reproduction/forage thresholds, base opposed-roll lethality, and the outcome measures tied to the three S6 strategies. It is a read-only reference; no runtime or balance values changed. See the [handoff](handoffs/2026-11-10-1537-codex-for-josh-s6-hare-fox-relevant-statistics.md).
 
-**November 10 S6 Fox-count sweep:** The [approved 16/18/20-Fox experiment](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) completed 336/336 retained-world runs. On 100 disjoint matched seeds per count, Hare extinction by node one was 19%, 15%, and 20%. The recorded cumulative node-two figures of 25%, 26%, and 31% apply only to that retained-world variant; see the correction above. The original [analysis v1](Research/Experiments/S6-Fox-Start-Sweep-20261110/AI_ANALYSIS.md) and [handoff](handoffs/2026-11-10-0939-codex-s6-fox-start-sweep.md) remain historical evidence. No authored balance value changed.
+**November 10 S6 Fox-count sweep:** The [approved 16/18/20-Fox experiment](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) completed 336/336 retained-world runs. On 100 disjoint matched seeds per count, Rabbit extinction by node one was 19%, 15%, and 20%. The recorded cumulative node-two figures of 25%, 26%, and 31% apply only to that retained-world variant; see the correction above. The original [analysis v1](Research/Experiments/S6-Fox-Start-Sweep-20261110/AI_ANALYSIS.md) and [handoff](handoffs/2026-11-10-0939-codex-s6-fox-start-sweep.md) remain historical evidence. No authored balance value changed.
 
 **November 9 S6 predator-first diagnostic:** Josh locked Fox overhunting as the
-opening Hare pressure and avoidance, survival, and faster reproduction as the
+opening Rabbit pressure and avoidance, survival, and faster reproduction as the
 three temporary Mutation responses. The [approved 12-seed diagnostic](Research/Experiments/S6-Predator-First-Diagnostic-20261109/REPORT.md)
-found six first-node Hare extinctions and seven by the second node, with first-node
+found six first-node Rabbit extinctions and seven by the second node, with first-node
 combat deaths exceeding starvation and Plants present in all seeds at tick 600.
 The current published checkout's Unity fixture and portable replay both stop
 seed 10100 at tick 236; the earlier tick-1210 evidence came from a different
@@ -105,13 +121,13 @@ No balance value or gameplay asset changed.
 
 **November 8 GLJP-05 research source caption:** Profile-researched Field Data cards now identify the Gene Lab unlock and temporary lifetime. The existing fresh-profile flow buys research, resets the loadout, and proves that owned, unequipped Burrowing or Seed Dispersal still appears and can be chosen. The profileless route fixture shows only the lifetime caption. Both resolutions passed and were inspected. See [GLJP-05 caption evidence](handoffs/2026-11-06-gljp-trello-evidence.md#november-8-gljp-05-research-source-caption).
 
-**GLJP status snapshot — November 9, 2026:** The sprint change log and ticket-by-ticket remaining LOE are in [GLJP sprint status](GLJP_SPRINT_STATUS_2026-11-08.md). Live Trello state last checked today: GLJP-02/03 Done; GLJP-01/06 In Progress; GLJP-04/05 Current Work. After the Editor recovered, the November baseline suite passed 762 EditMode tests (1 skip) and 97 PlayMode tests (2 failures, 2 skips) in `artifacts/unity-tests-20261108-230644`. Seed 10100 again failed at tick 1210. The Cave Preview failure logged a Unity AI Assistant relay connection error and passed in isolation in `artifacts/unity-tests-20261108-231227`. GLJP-01/04/05 still need bounded design/owner review and acceptance; GLJP-06 follows Bevin's Nov 9 direction: November is canonical, no further October-value comparisons; completed October evidence remains historical. The November seed 10100 diagnostic captured the final plant consumed at tick 915 and the terminal Hare combat death at tick 1210, after two shops. See the [GLJP-06 resource diagnostic](handoffs/2026-11-07-gljp06-route-preflight.md#november-seed-10100-resource-depletion). Estimate for GLJP-01 through 05: 1–2 focused engineering days after open decisions and visual review; GLJP-06 effort depends on the bounded November route scope. The portable journey digest now includes Hare ancestry before Burrowing is acquired. Current-source Unity compilation, 11 Burrowing tests, 3 portable provenance tests, and focused fresh-profile and Burrow marker captures passed. The standalone Release build and self-test passed. See the [Burrowing runtime handoff](handoffs/2026-11-08-gljp04-burrowing-runtime.md). No commit or push.
+**GLJP status snapshot — November 9, 2026:** The sprint change log and ticket-by-ticket remaining LOE are in [GLJP sprint status](GLJP_SPRINT_STATUS_2026-11-08.md). Live Trello state last checked today: GLJP-02/03 Done; GLJP-01/06 In Progress; GLJP-04/05 Current Work. After the Editor recovered, the November baseline suite passed 762 EditMode tests (1 skip) and 97 PlayMode tests (2 failures, 2 skips) in `artifacts/unity-tests-20261108-230644`. Seed 10100 again failed at tick 1210. The Cave Preview failure logged a Unity AI Assistant relay connection error and passed in isolation in `artifacts/unity-tests-20261108-231227`. GLJP-01/04/05 still need bounded design/owner review and acceptance; GLJP-06 follows Bevin's Nov 9 direction: November is canonical, no further October-value comparisons; completed October evidence remains historical. The November seed 10100 diagnostic captured the final plant consumed at tick 915 and the terminal Rabbit combat death at tick 1210, after two shops. See the [GLJP-06 resource diagnostic](handoffs/2026-11-07-gljp06-route-preflight.md#november-seed-10100-resource-depletion). Estimate for GLJP-01 through 05: 1–2 focused engineering days after open decisions and visual review; GLJP-06 effort depends on the bounded November route scope. The portable journey digest now includes Rabbit ancestry before Burrowing is acquired. Current-source Unity compilation, 11 Burrowing tests, 3 portable provenance tests, and focused fresh-profile and Burrow marker captures passed. The standalone Release build and self-test passed. See the [Burrowing runtime handoff](handoffs/2026-11-08-gljp04-burrowing-runtime.md). No commit or push.
 
-**November 8 GLJP-04 portable digest regression:** Added a test that hides a Hare in a Burrow and proves `PortableRunStateDigest` differs from a control run with the identical visible grid but no Burrow state. The `CellSim.Batch` Release build and portable self-test both passed, including the new assertion and existing journey replay checks. The matching Unity Editor regression is not verified: the clean Editor exited before NUnit results when Unity Package Manager failed its local IPC connection, leaving an unreachable `Temp/UnityLockfile`. The project-targeted `unity close` found no Editor associated with this project; the lock remains untouched, and the runner refuses another clean attempt until the Unity environment is recovered. Detailed evidence is appended to the [burrowing runtime handoff](handoffs/2026-11-08-gljp04-burrowing-runtime.md#portable-hidden-state-digest-regression-november-8-2026-later).
+**November 8 GLJP-04 portable digest regression:** Added a test that hides a Rabbit in a Burrow and proves `PortableRunStateDigest` differs from a control run with the identical visible grid but no Burrow state. The `CellSim.Batch` Release build and portable self-test both passed, including the new assertion and existing journey replay checks. The matching Unity Editor regression is not verified: the clean Editor exited before NUnit results when Unity Package Manager failed its local IPC connection, leaving an unreachable `Temp/UnityLockfile`. The project-targeted `unity close` found no Editor associated with this project; the lock remains untouched, and the runner refuses another clean attempt until the Unity environment is recovered. Detailed evidence is appended to the [burrowing runtime handoff](handoffs/2026-11-08-gljp04-burrowing-runtime.md#portable-hidden-state-digest-regression-november-8-2026-later).
 
 **November 8 design-context cleanup:** Updated the “Current game direction” section in `PROJECT_CONTEXT.md` to replace the stale October 29 permanent Genome POC costs/effects with the later GLJP decisions and current open questions. This is documentation only; no Unity tests were run for this edit.
 
-**November 8 GLJP Unity suite rerun:** The full PlayMode suite completed **97 passed / 2 failed / 2 skipped** (`artifacts/unity-tests-20261108-210949`). The new Burrowing player flow, existing Seed Dispersal flow, and repaired wallet forfeiture fixture all passed. The empty-offer fixture then passed its focused rerun (`artifacts/unity-tests-20261108-211323`) after using the same research predicate as the live session when exhausting the pool. The other failure was GLJP-06's default seed-10100 route, which lost its last Hare at tick 1210 with no Plants and three Foxes. The two skipped tests require the visual runner. See the [validation handoff](handoffs/2026-11-08-gljp04-burrowing-runtime.md#unity-suite-rerun-november-8-2026).
+**November 8 GLJP Unity suite rerun:** The full PlayMode suite completed **97 passed / 2 failed / 2 skipped** (`artifacts/unity-tests-20261108-210949`). The new Burrowing player flow, existing Seed Dispersal flow, and repaired wallet forfeiture fixture all passed. The empty-offer fixture then passed its focused rerun (`artifacts/unity-tests-20261108-211323`) after using the same research predicate as the live session when exhausting the pool. The other failure was GLJP-06's default seed-10100 route, which lost its last Rabbit at tick 1210 with no Plants and three Foxes. The two skipped tests require the visual runner. See the [validation handoff](handoffs/2026-11-08-gljp04-burrowing-runtime.md#unity-suite-rerun-november-8-2026).
 
 **November 8 GLJP-04/05 fresh profile flow:** Fixed the desktop launch validator rejecting purchased Burrow nodes when equipped. The launch now accepts all four Burrow nodes and leaves their effects to research and simulation. A PlayMode fixture went from a fresh profile with zero offers to a Gene Lab purchase and the visible Burrowing CHOOSE button in the next Field Data journey. The burrow system initialized on the following tick. The focused run passed 1/1. Full EditMode passed 757/0/1, with the replay parity case requiring a retained manifest. See the [launch and capture handoff](handoffs/2026-11-08-gljp04-burrowing-runtime.md#fresh-profile-to-burrowing-choice-november-8-2026).
 
@@ -119,27 +135,27 @@ No balance value or gameplay asset changed.
 
 **November 8 GLJP-05 permanent Gene Lab:** The inspector now identifies Born Burrower as a starter gene, uses the existing Burrowing illustration for the research node, and says that buying equips the Genome node. The permanent Gene Lab PlayMode fixture checks all catalog IDs, Burrowing's provisional research offer, Born Burrower's prerequisite, and purchase, save, and launch behavior. It passed 1/1. See the [rendered research and starter states](handoffs/2026-11-08-gljp04-burrowing-runtime.md#permanent-gene-lab-captures-november-8-2026). Full GLJP-05 acceptance remains open.
 
-**November 8 GLJP-04 runtime:** Field Data Hare journeys can acquire Burrowing, Shared Burrows and Expanded Burrows, or start with Burrowing via an equipped Born Burrower. Hares dig, hide and emerge, including after blocked expiry. Hidden Hares count toward the population and persist through checkpoints. A simple brown circle now marks each Burrow on the simulation board. The seven focused burrow tests, journey reward handoff, authored catalog check, and targeted PlayMode marker-render test pass in Unity; focused Gene Lab and journey-choice UI fixtures also pass. The PlayMode board fixture captured digging, hiding, emergence, and collapse. GLJP-04 remains open for player review and final research prices. See the [Burrowing runtime handoff](handoffs/2026-11-08-gljp04-burrowing-runtime.md).
+**November 8 GLJP-04 runtime:** Field Data Rabbit journeys can acquire Burrowing, Shared Burrows and Expanded Burrows, or start with Burrowing via an equipped Born Burrower. Rabbits dig, hide and emerge, including after blocked expiry. Hidden Rabbits count toward the population and persist through checkpoints. A simple brown circle now marks each Burrow on the simulation board. The seven focused burrow tests, journey reward handoff, authored catalog check, and targeted PlayMode marker-render test pass in Unity; focused Gene Lab and journey-choice UI fixtures also pass. The PlayMode board fixture captured digging, hiding, emergence, and collapse. GLJP-04 remains open for player review and final research prices. See the [Burrowing runtime handoff](handoffs/2026-11-08-gljp04-burrowing-runtime.md).
 
-**November 8 GLJP-04 first slice:** Continuous Hare journeys now record both parents at immediate and gestating births and retain the ancestry across checkpoints. Restart clears the ancestry for the discarded run. Both lineage cases passed against the shared standalone runner, and its Release build and portable self-test passed. Unity's focused EditMode process timed out during startup without a result. Burrow creation, hiding, emergence, and Mutation wiring are the next implementation work. See the [lineage handoff](handoffs/2026-11-08-gljp04-hare-lineage.md).
+**November 8 GLJP-04 first slice:** Continuous Rabbit journeys now record both parents at immediate and gestating births and retain the ancestry across checkpoints. Restart clears the ancestry for the discarded run. Both lineage cases passed against the shared standalone runner, and its Release build and portable self-test passed. Unity's focused EditMode process timed out during startup without a result. Burrow creation, hiding, emergence, and Mutation wiring are the next implementation work. See the [lineage handoff](handoffs/2026-11-08-gljp04-hare-lineage.md).
 
-**November 8 GLJP validation update:** The full PlayMode run after the approved 0.5 Hare reproduction baseline reported **93 passed / 4 failed / 2 skipped**. Two baseline-sensitive assertions were updated; focused reruns had passed for the herbivore progression boundary and Fox offer cap behavior before the latest restart. The natural-failure wallet fixture now advances through the configured route, but that run left the Unity Editor unresponsive before producing a result; cancellation timed out. Bevin authorized closing the frozen Editor, so only the exact project Editor process was stopped. A restarted Editor briefly reconnected; a focused rerun request stalled and the Editor process exited without a test result. The fixed-seed route-survival failure remains unresolved; do not tune ecology values without a balance decision. See the [GLJP-01 capability handoff](handoffs/2026-11-08-gljp01-capability-pass.md).
+**November 8 GLJP validation update:** The full PlayMode run after the approved 0.5 Rabbit reproduction baseline reported **93 passed / 4 failed / 2 skipped**. Two baseline-sensitive assertions were updated; focused reruns had passed for the herbivore progression boundary and Fox offer cap behavior before the latest restart. The natural-failure wallet fixture now advances through the configured route, but that run left the Unity Editor unresponsive before producing a result; cancellation timed out. Bevin authorized closing the frozen Editor, so only the exact project Editor process was stopped. A restarted Editor briefly reconnected; a focused rerun request stalled and the Editor process exited without a test result. The fixed-seed route-survival failure remains unresolved; do not tune ecology values without a balance decision. See the [GLJP-01 capability handoff](handoffs/2026-11-08-gljp01-capability-pass.md).
 
-**November 8 GLJP-01 capability pass (local, uncommitted):** Implemented Keen Senses as a distinct +1 predator-detection tile Mutation per rank, separate from Long Vision's general vision range. Larger Litters now caps at rank 3 and rank 3 also raises minimum litter to 2 when needed; its applied snapshot records both effects. The production Hare's reproduction chance is now 0.5. Full EditMode passed **747/0/1** (`artifacts/unity-tests-20261108-110527`), including the new Keen Senses range, litter rank-3, cap, and production baseline checks. The focused Heightened Senses offer PlayMode check passed **1/1** (`artifacts/unity-tests-20261108-110628`). GLJP-01 remains In Progress: minimum-litter Mutation rank limit, Faster Gestation implementation, final costs/prerequisites, and visual/player acceptance remain open. Details in [the capability handoff](handoffs/2026-11-08-gljp01-capability-pass.md).
+**November 8 GLJP-01 capability pass (local, uncommitted):** Implemented Keen Senses as a distinct +1 predator-detection tile Mutation per rank, separate from Long Vision's general vision range. Larger Litters now caps at rank 3 and rank 3 also raises minimum litter to 2 when needed; its applied snapshot records both effects. The production Rabbit's reproduction chance is now 0.5. Full EditMode passed **747/0/1** (`artifacts/unity-tests-20261108-110527`), including the new Keen Senses range, litter rank-3, cap, and production baseline checks. The focused Heightened Senses offer PlayMode check passed **1/1** (`artifacts/unity-tests-20261108-110628`). GLJP-01 remains In Progress: minimum-litter Mutation rank limit, Faster Gestation implementation, final costs/prerequisites, and visual/player acceptance remain open. Details in [the capability handoff](handoffs/2026-11-08-gljp01-capability-pass.md).
 
 **November 8 GLJP-03 closed:** The card moved to Done after its explicit allowance, sequential income tier, payout timing, pricing, and idempotency acceptance tests passed in the full EditMode suite (744 passed / 0 failed / 1 parity skip), and the focused current-revision graphics shop run passed 1/1. Its evidence and the unrelated GLJP-06 ecology failure are documented in the [Trello evidence handoff](handoffs/2026-11-06-gljp-trello-evidence.md#november-8-gljp-03-closeout-evidence).
 
-**November 8 GLJP-06 direction and implementation:** Bevin decided ordinary Fox pursuit of Hare movement scent should default off. An independent experimental runtime option now gates Fox acquisition and defaults false; Hare movement markers and dropping scent remain intact. Focused Unity `Simulation` EditMode passed 518/518. The full PlayMode run completed **96 passed / 1 failed / 2 skipped**; a focused rerun confirms its sole failure is ecological extinction in the fixed seed-10100, four-simulation test route at tick 1130: no Plants or Foxes remain, then the final Hares die. This is not a shop/map transition failure. The test now retains recent population counts in its failure message. The pinned scratch full-route A/B is seed-sensitive: seed 10100 failed at tick 237 with pursuit on / closed at tick 1800 with it off, while seed 10108 closed at tick 1800 with pursuit on / failed at tick 236 with it off. Those older diagnostic-runner results are not current Unity journey acceptance. Keep route survival and balance open; no ecological values changed. See the [diagnostic handoff](handoffs/2026-11-07-gljp06-route-preflight.md#november-8-default-decision-and-route-result).
+**November 8 GLJP-06 direction and implementation:** Bevin decided ordinary Fox pursuit of Rabbit movement scent should default off. An independent experimental runtime option now gates Fox acquisition and defaults false; Rabbit movement markers and dropping scent remain intact. Focused Unity `Simulation` EditMode passed 518/518. The full PlayMode run completed **96 passed / 1 failed / 2 skipped**; a focused rerun confirms its sole failure is ecological extinction in the fixed seed-10100, four-simulation test route at tick 1130: no Plants or Foxes remain, then the final Rabbits die. This is not a shop/map transition failure. The test now retains recent population counts in its failure message. The pinned scratch full-route A/B is seed-sensitive: seed 10100 failed at tick 237 with pursuit on / closed at tick 1800 with it off, while seed 10108 closed at tick 1800 with pursuit on / failed at tick 236 with it off. Those older diagnostic-runner results are not current Unity journey acceptance. Keep route survival and balance open; no ecological values changed. See the [diagnostic handoff](handoffs/2026-11-07-gljp06-route-preflight.md#november-8-default-decision-and-route-result).
 
-**November 7 GLJP-06 Fox scent result:** The approved November-only test used one diagnostic build and snapshot, with ordinary Fox pursuit of movement scent enabled or disabled. The enabled arm reproduced the previous November results byte for byte. With pursuit disabled, Hare, Fox, and Plant counts matched October at every tick from 0 through 100 for both seeds. This isolates the measured early population divergence. The November 8 decision to default ordinary Fox pursuit off is recorded in the updated handoff. See the [diagnostic handoff](handoffs/2026-11-07-gljp06-route-preflight.md#approved-november-fox-scent-comparison).
+**November 7 GLJP-06 Fox scent result:** The approved November-only test used one diagnostic build and snapshot, with ordinary Fox pursuit of movement scent enabled or disabled. The enabled arm reproduced the previous November results byte for byte. With pursuit disabled, Rabbit, Fox, and Plant counts matched October at every tick from 0 through 100 for both seeds. This isolates the measured early population divergence. The November 8 decision to default ordinary Fox pursuit off is recorded in the updated handoff. See the [diagnostic handoff](handoffs/2026-11-07-gljp06-route-preflight.md#approved-november-fox-scent-comparison).
 
-**November 7 GLJP-06 follow-up executed:** Bevin approved the first 100 ticks for seeds 10100 and 10108 on both frozen runners. All four detailed standalone traces reached tick 100. Species counts first differed at tick 17 for 10100 and tick 41 for 10108. All four compact batch jobs failed Hare population accounting because the no-preset stat line omits combat deaths. The detailed Hare counts reconcile independently against combat and starvation events. The full route cause remains open. See the [preflight and execution handoff](handoffs/2026-11-07-gljp06-route-preflight.md).
+**November 7 GLJP-06 follow-up executed:** Bevin approved the first 100 ticks for seeds 10100 and 10108 on both frozen runners. All four detailed standalone traces reached tick 100. Species counts first differed at tick 17 for 10100 and tick 41 for 10108. All four compact batch jobs failed Rabbit population accounting because the no-preset stat line omits combat deaths. The detailed Rabbit counts reconcile independently against combat and starvation events. The full route cause remains open. See the [preflight and execution handoff](handoffs/2026-11-07-gljp06-route-preflight.md).
 
 **November 7 GLJP-06 route preflight:** A fresh standalone Release build matched all 55 embedded shared source files to the live worktree. The runner rejected the verified October snapshot at the source hash check and wrote a failure record before simulation. The retained seed-10100 journey reports used the same empty action schedule and already differ at tick 100, before the first reward decision. The seed-10108 Unity fixture reaches Shop, but there is no equivalent current no-action report to localize the divergence. See [preflight results and proposed comparison](handoffs/2026-11-07-gljp06-route-preflight.md) before further GLJP feature work.
 
 **November 7 retained scent telemetry:** The separate current-source seed-10100 Unity reference records 271 Fox ordinary-scent detections and 2,558 scent-pursuit decisions over 1,800 ticks, with zero dropping detections and an empty upgrade loadout (`artifacts/gljp-finite-pool-unity-20261106/artifacts/gljp-parity-current.reference.jsonl`). Ordinary scent was active in that reference run. These aggregate, non-journey counters do not establish detection timing or the cause of the tick-237 journey failure. No experiment run or tuning changed. See [route evidence comparison](handoffs/2026-11-06-gljp-route-evidence-comparison.md).
 
-**November 7 exact-source comparison:** The historical shared source lacks scent processing; the current code adds ordinary Hare scent and carnivore scent memory/pursuit independently of the conditional Fertile Droppings bonus. Git attributes the movement-scent addition to `be98b03`. This is a candidate mechanism for earlier predator-prey divergence, not a demonstrated cause: retained journey reports inspected do not provide scent counters and multiple code paths changed. No tuning or experiment. See [route evidence comparison](handoffs/2026-11-06-gljp-route-evidence-comparison.md).
+**November 7 exact-source comparison:** The historical shared source lacks scent processing; the current code adds ordinary Rabbit scent and carnivore scent memory/pursuit independently of the conditional Fertile Droppings bonus. Git attributes the movement-scent addition to `be98b03`. This is a candidate mechanism for earlier predator-prey divergence, not a demonstrated cause: retained journey reports inspected do not provide scent counters and multiple code paths changed. No tuning or experiment. See [route evidence comparison](handoffs/2026-11-06-gljp-route-evidence-comparison.md).
 
 **November 7 historical-source recovery:** The frozen October runner embeds 50 shared source files. Extracted copies in `artifacts/gljp-historical-embedded-source-20261107/` reproduce the manifest/snapshot source hash; the runner DLL also matches its manifest hash. This corrects the earlier assumption that exact historical shared source was unavailable. Current `LoadSnapshot` rejects a snapshot with a different source hash, so the proposed old-snapshot/current-runner experiment cannot run unchanged. No experiment, historical-file modification or guard bypass was performed. See [route evidence comparison](handoffs/2026-11-06-gljp-route-evidence-comparison.md).
 
@@ -151,13 +167,13 @@ No balance value or gameplay asset changed.
 
 **November 7 authored-route visual failure:** The previously skipped visual capture fixture was enabled in isolated graphics PlayMode. It failed at seed 10100, tick 237, `Failed` before reaching the first shop. Its assertion now reports tick and journey state, and the test captures the unexpected-stop screen before failing. The inspected screenshot shows the expedition failure and 18 Field Data lost. Result `artifacts/gljp-finite-pool-unity-20261106/Authored-route-stop-results.xml`; capture `authored-route-stop-capture/gljp-authored-route-unexpected-stop.png`. This direct test-scene fixture is not a fresh-profile acceptance or balance result. No tuning changed.
 
-**November 7 income shop label and capture:** An enabled visual fixture revealed the shop's incorrect `No copy cap` label for one-time income offers. The label now says one-time purchase; multiplier tiers say they replace the previous tier. The formerly skipped fixture was updated from removed signed-species offers to the current income-only shop. Its latest isolated graphics PlayMode run passed **1/1**, buying both +1 FD per Hare and 1.5x through the UI, then checking paid reorders and later controls. It uses synthetic stable populations and the direct test scene's legacy research policy, so it is neither balance evidence nor fresh-profile acceptance. Result `artifacts/gljp-finite-pool-unity-20261106/Income-shop-both-results.xml`; inspected captures in `income-shop-both-capture/`. The preceding full PlayMode result predates this label edit.
+**November 7 income shop label and capture:** An enabled visual fixture revealed the shop's incorrect `No copy cap` label for one-time income offers. The label now says one-time purchase; multiplier tiers say they replace the previous tier. The formerly skipped fixture was updated from removed signed-species offers to the current income-only shop. Its latest isolated graphics PlayMode run passed **1/1**, buying both +1 FD per Rabbit and 1.5x through the UI, then checking paid reorders and later controls. It uses synthetic stable populations and the direct test scene's legacy research policy, so it is neither balance evidence nor fresh-profile acceptance. Result `artifacts/gljp-finite-pool-unity-20261106/Income-shop-both-results.xml`; inspected captures in `income-shop-both-capture/`. The preceding full PlayMode result predates this label edit.
 
 **November 7 checkpoint layout:** The Field Data checkpoint no longer renders an empty bordered `PhaseRewardText` box: its visibility tracks whether the text is nonblank. The isolated graphics rank-five test passed **1/1** checking collapsed and injected nonempty visible states; the fresh-profile checkpoint test passed **1/1** and its inspected capture still shows the no-Mutations guidance and Skip. Results: `artifacts/gljp-finite-pool-unity-20261106/No-empty-message-final-results.xml` and `No-empty-fresh-results.xml`; the fresh-state capture and scoped evidence were added and read back on GLJP-05. The subsequent full graphics PlayMode suite completed **96 passed / 1 failed / 2 skipped** (`Full-after-layout-results.xml`): the sole failure remains the seed-10100 route at tick 237. Player visual acceptance remains open.
 
-**November 7 rank-five allowance integration:** The extended `PopulationReservesRanksArePurchasedInGeneLabForOneSlot` graphics PlayMode test passed **1/1** in the isolated project. The test-funded profile acquired rank 1 through the profile API and ranks 2–5 in the Gene Lab UI; the one-slot node produced 35 allowed Hare purchases, displayed as 35 then 34 left after one successful purchase in Field Data. `Rank-5-journey-results.xml` and `rank-5-journey-capture/` are under `artifacts/gljp-finite-pool-unity-20261106/`. The capture and scoped result were added and read back on GLJP-03; this is not player or balance acceptance.
+**November 7 rank-five allowance integration:** The extended `PopulationReservesRanksArePurchasedInGeneLabForOneSlot` graphics PlayMode test passed **1/1** in the isolated project. The test-funded profile acquired rank 1 through the profile API and ranks 2–5 in the Gene Lab UI; the one-slot node produced 35 allowed Rabbit purchases, displayed as 35 then 34 left after one successful purchase in Field Data. `Rank-5-journey-results.xml` and `rank-5-journey-capture/` are under `artifacts/gljp-finite-pool-unity-20261106/`. The capture and scoped result were added and read back on GLJP-03; this is not player or balance acceptance.
 
-**November 7 route evidence inspection:** Historical and current retained portable snapshots have equal authored species, terrain, grid and simulation argument payloads, but their no-action seed-10100 reports already differ at tick 100: historical 25 Hares versus current 16, before the first auto-skip. The snapshots have different source hashes, income catalogs and ordinary rewards; equal authored payloads do not prove identical initialization or runtime behavior. This read-only comparison narrows the investigation but does not identify a cause or approve balance. See [route evidence comparison](handoffs/2026-11-06-gljp-route-evidence-comparison.md).
+**November 7 route evidence inspection:** Historical and current retained portable snapshots have equal authored species, terrain, grid and simulation argument payloads, but their no-action seed-10100 reports already differ at tick 100: historical 25 Rabbits versus current 16, before the first auto-skip. The snapshots have different source hashes, income catalogs and ordinary rewards; equal authored payloads do not prove identical initialization or runtime behavior. This read-only comparison narrows the investigation but does not identify a cause or approve balance. See [route evidence comparison](handoffs/2026-11-06-gljp-route-evidence-comparison.md).
 
 **November 7 research snapshot timing:** `ResearchAcquiredDuringFieldDataIsDeferredUntilTheNextJourney` passed **1/1** in isolated graphics PlayMode. The test changes a test-funded profile directly after a Field Data journey starts; the first checkpoint stays empty, and after abandoning, closing and reopening Simulation the next journey offers the newly researched Seed Dispersal. The injected profile change checks snapshot timing and does not claim the lab is accessible during a running simulation. Results: `artifacts/gljp-finite-pool-unity-20261106/Research-frozen-results.xml`; the result was posted and read back on GLJP-01.
 
@@ -165,13 +181,13 @@ No balance value or gameplay asset changed.
 
 **November 7 focused replay parity:** The previously skipped Unity-to-standalone Field Data parity test passed **1/1** in the isolated project using a newly exported current-source snapshot and two newly generated standalone replay fixtures (no actions and population actions). Both fixtures reached natural failure at ticks 237 and 246; later shops and successful completion are outside this evidence. Results: `artifacts/gljp-finite-pool-unity-20261106/Parity-current-results.xml`; manifest and inputs are in its `artifacts/gljp-parity-*` files. The full EditMode run below still records its original skip. The focused test is correctness verification, not a balance experiment; historical frozen files were not changed. The result and limitations were posted and read back on GLJP-05.
 
-**November 6 GLJP-05 empty state:** The Field Data empty-reward message now covers capped or excluded choices as well as unresearched choices and clarifies that further Gene Lab research applies to a future journey. An isolated broad PlayMode run failed on a relay error. A shorter one-round test initially checked before the next frame refresh, then passed **1/1** after yielding a frame; its two inspected captures show the empty message, Skip, and the Hare allowance decreasing to 9. The isolated test does not replace full PlayMode or player acceptance. See [handoff](handoffs/2026-11-06-gljp-empty-reward-message.md).
+**November 6 GLJP-05 empty state:** The Field Data empty-reward message now covers capped or excluded choices as well as unresearched choices and clarifies that further Gene Lab research applies to a future journey. An isolated broad PlayMode run failed on a relay error. A shorter one-round test initially checked before the next frame refresh, then passed **1/1** after yielding a frame; its two inspected captures show the empty message, Skip, and the Rabbit allowance decreasing to 9. The isolated test does not replace full PlayMode or player acceptance. See [handoff](handoffs/2026-11-06-gljp-empty-reward-message.md).
 
 **November 6 full PlayMode rerun:** The full suite in `artifacts/gljp-isolated-unity-20261106-173144` was deliberately stopped at Editor PID 34852 after its working set grew from roughly 3.9 GB to over 8 GB while the log remained quiet and its fixture had a potential billions-of-iterations loop. There is no completed full-suite result; do not classify it as a pass or assertion failure. Before launch, every file in source Assets and Packages matched the copy by hash; source ProjectSettings matched except `ProjectSettings.asset` (intentional copied product-name isolation) and `ShaderGraphSettings.asset` (line-ending-only diff). A reverse inventory while running found only an `InitTestScene` and its meta in copied Assets, created at suite startup; no copy-only files in Packages or ProjectSettings.
 
-The last logged PlayMode activity traces to `FieldDataTestRouteCanBeSelectedFromTheJourneyMapBeforeFirstSimulation` at `SpeciesPresentationPlayModeTests.cs:330`, inside the seventh round's 100 simulation steps. The last tracked Hare transition reports age 641, the same age as the final tracked transition in the earlier isolated broad run that ended on the relay error. The Editor was still responding and accumulating CPU after log output stopped; this identifies the last logged work, not a completed test or proof that simulation itself is stuck.
+The last logged PlayMode activity traces to `FieldDataTestRouteCanBeSelectedFromTheJourneyMapBeforeFirstSimulation` at `SpeciesPresentationPlayModeTests.cs:330`, inside the seventh round's 100 simulation steps. The last tracked Rabbit transition reports age 641, the same age as the final tracked transition in the earlier isolated broad run that ended on the relay error. The Editor was still responding and accumulating CPU after log output stopped; this identifies the last logged work, not a completed test or proof that simulation itself is stuck.
 
-Investigation found a concrete subsequent test-fixture hazard: the same test loops until it exhausts each eligible reward, while both litter Mutations currently have `int.MaxValue` rank limits and the default unbound research policy permits them. The local test now supplies a finite researched pool excluding those two unlocks; it still checks a real exhausted-pool/Skip state. The revised filtered test passed **1/1 in 3.98 seconds** in `artifacts/gljp-finite-pool-unity-20261106` (`Finite-pool-results.xml`, `Finite-pool.log`). Its copied product name isolates its profile and the revised test hash was verified. The subsequent full batch PlayMode run completed **90 passed / 5 failed / 2 skipped** (`Full-playmode-results.xml`, `Full-playmode.log`): a Gene Lab test could not find the rendered `hare.escape-instinct` button; the fixed-seed natural-failure test reached Shop instead of Failed; the seed-10100 success route failed at tick 237; and two terrain tests failed because `WaitForEndOfFrame` is unavailable in batch mode. The fixture fix passing does not settle those failures or imply user acceptance. Litter rank limits are parked in [morning review](GLJP_MORNING_REVIEW.md); no player-facing cap was invented. The old stopped run's last logged line alone does not prove it reached the loop.
+Investigation found a concrete subsequent test-fixture hazard: the same test loops until it exhausts each eligible reward, while both litter Mutations currently have `int.MaxValue` rank limits and the default unbound research policy permits them. The local test now supplies a finite researched pool excluding those two unlocks; it still checks a real exhausted-pool/Skip state. The revised filtered test passed **1/1 in 3.98 seconds** in `artifacts/gljp-finite-pool-unity-20261106` (`Finite-pool-results.xml`, `Finite-pool.log`). Its copied product name isolates its profile and the revised test hash was verified. The subsequent full batch PlayMode run completed **90 passed / 5 failed / 2 skipped** (`Full-playmode-results.xml`, `Full-playmode.log`): a Gene Lab test could not find the rendered `rabbit.escape-instinct` button; the fixed-seed natural-failure test reached Shop instead of Failed; the seed-10100 success route failed at tick 237; and two terrain tests failed because `WaitForEndOfFrame` is unavailable in batch mode. The fixture fix passing does not settle those failures or imply user acceptance. Litter rank limits are parked in [morning review](GLJP_MORNING_REVIEW.md); no player-facing cap was invented. The old stopped run's last logged line alone does not prove it reached the loop.
 
 The Gene Lab case passed **1/1** in a graphics-enabled, non-batch filtered rerun in the same isolated project (`GeneLab-graphic-results.xml`, `GeneLab-graphic.log`, `genelab-rerun-capture/`). The subsequent full non-batch PlayMode run completed **92 passed / 3 failed / 2 skipped** (`Full-graphic-results.xml`, `Full-graphic.log`, 129.6 seconds): Gene Lab still failed to find the rendered Escape Instinct button, natural-extinction seed 10108 reached Shop, and fixed route seed 10100 failed at tick 237. The two batch-only `WaitForEndOfFrame` failures disappeared. The focused Gene Lab pass versus full-suite failure suggests an execution-context or ordering difference but does not establish the cause. No ecology tuning has been changed to force a pass.
 
@@ -191,25 +207,25 @@ The historical October snapshot and frozen runner are locally available; the sna
 
 **November 6 GLJP standalone integration:** Restored the standalone runner build after research gating introduced a profile dependency, kept the profile inputs in the portable source hash, and corrected the replay self-test to check rejection before the reward is resolved. Release build and expanded standalone self-test pass, including a four-simulation portable journey with three successive tier purchases; the result was added to GLJP-03 and read back. Unity PlayMode and cross-runner parity remain unverified on this revision. See [handoff](handoffs/2026-11-06-gljp-standalone-build.md). GLJP remains incomplete and unpushed.
 
-**November 6 GLJP Codex pickup:** Escape Instinct, Increased Minimum Litter, and Larger Litters are provisional 5 Hare Data research roots. Faster Gestation stays locked. Full EditMode is 744 / 0 / 1 (`artifacts/unity-tests-20261106-163829`). The following PlayMode run timed out when the Editor Pipeline disconnected, so it has no result. See [Codex pickup](handoffs/2026-11-06-gljp-codex-pickup.md). No push. GLJP-01's Trello description still has unsaved edits.
+**November 6 GLJP Codex pickup:** Escape Instinct, Increased Minimum Litter, and Larger Litters are provisional 5 Rabbit Data research roots. Faster Gestation stays locked. Full EditMode is 744 / 0 / 1 (`artifacts/unity-tests-20261106-163829`). The following PlayMode run timed out when the Editor Pipeline disconnected, so it has no result. See [Codex pickup](handoffs/2026-11-06-gljp-codex-pickup.md). No push. GLJP-01's Trello description still has unsaved edits.
 
 **November 6 GLJP third-shop route:** Journey length now follows the route. A test-only four-simulation route buys the 1.5×, 1.75×, and 2× payout tiers at three separate shops. The authored starter route is still five nodes, and its fingerprint is unchanged. Focused EditMode `FieldDataJourney` is 46/46 (`artifacts/unity-tests-20261106-143107`). The seed-10100 survival failure and exact production shop placement remain open. See [handoff](handoffs/2026-11-06-gljp-third-shop-route.md). No push.
 
 **November 6 GLJP testing and route investigation:** Fixed standalone expedition currency being erased at restart, updated stale shop/profile/population UI test setup, and made permanent-results tests use the stable acceptance scenario. At that checkpoint full EditMode was 742 / 0 / 1 and PlayMode 94 / 1 / 2; the authored route seed failed at tick 239. The updated delayed-start test and results visual tests pass focused; saved, pending, and failed results captures were inspected. The newer route-length foundation is described in the third-shop handoff above. See [handoff](handoffs/2026-11-06-gljp-playmode-and-route.md) and [morning review](GLJP_MORNING_REVIEW.md). GLJP remains incomplete and unpushed.
 
-**November 6 GLJP research capacity:** Crowding Tolerance and Reproductive Drive are provisional-price research unlocks; buying a ninth research node with 8/8 equipped preserves ownership without equipping it. Crowding and full-loadout purchase have inspected passing in-game captures. The default Hare reproduction chance is already 100%; Field Data suppresses the no-effect Reproductive Drive offer at that cap, while a test-only 50% scenario confirms the Mutation works. Balance choice remains open. Full EditMode 742 / 0 / 1; full PlayMode 87 / 8 / 2, with the same eight failures as the earlier November 6 run. See [handoff](handoffs/2026-11-06-gljp-crowding-reproduction.md). GLJP remains incomplete and unpushed.
+**November 6 GLJP research capacity:** Crowding Tolerance and Reproductive Drive are provisional-price research unlocks; buying a ninth research node with 8/8 equipped preserves ownership without equipping it. Crowding and full-loadout purchase have inspected passing in-game captures. The default Rabbit reproduction chance is already 100%; Field Data suppresses the no-effect Reproductive Drive offer at that cap, while a test-only 50% scenario confirms the Mutation works. Balance choice remains open. Full EditMode 742 / 0 / 1; full PlayMode 87 / 8 / 2, with the same eight failures as the earlier November 6 run. See [handoff](handoffs/2026-11-06-gljp-crowding-reproduction.md). GLJP remains incomplete and unpushed.
 
-**November 6 GLJP continuation:** Founding Hares is a permanent one-point starter gene (5 Hare Data, +5 at launch), and Seed Dispersal is one research unlock with the older Fertile Droppings concept removed from the permanent lab; Seed's 5-data price and root path are explicitly provisional. Long Stride is available as a temporary Field Data choice. Each has an inspected, passing in-game capture. Full EditMode 738 / 0 / 1 and PlayMode 84 / 8 / 2; the eight failure names match the earlier run. GLJP-01 and the wider slice remain incomplete. See [handoff](handoffs/2026-11-06-gljp-starter-seed.md) and [open decisions](GLJP_MORNING_REVIEW.md). No push.
+**November 6 GLJP continuation:** Founding Rabbits is a permanent one-point starter gene (5 Rabbit Data, +5 at launch), and Seed Dispersal is one research unlock with the older Fertile Droppings concept removed from the permanent lab; Seed's 5-data price and root path are explicitly provisional. Long Stride is available as a temporary Field Data choice. Each has an inspected, passing in-game capture. Full EditMode 738 / 0 / 1 and PlayMode 84 / 8 / 2; the eight failure names match the earlier run. GLJP-01 and the wider slice remain incomplete. See [handoff](handoffs/2026-11-06-gljp-starter-seed.md) and [open decisions](GLJP_MORNING_REVIEW.md). No push.
 
 **November 5 GLJP-02 complete:** Ranked Population Reserves, one-point equipment, per-node purchase allowance and version 9 migration are implemented locally. The generic and FD2 paths count one point per active node while preserving legacy effect metadata; oversized legacy loadouts are preserved but cannot launch or be re-created. Full EditMode was 732 passed / 0 failed / 1 skipped (`artifacts/unity-tests-20261105-203710`); Gene Lab rank-5 visual passed (`artifacts/visual-evidence-20261105-204015`). PlayMode previously reported 79 / 8 / 2 with eight previously recorded failure names. GLJP-02 was marked complete and moved to Done on Trello, read back November 5. Local work is uncommitted; no push. See [handoff](handoffs/2026-11-05-gljp02-rank-foundation.md).
 
-**November 5 GLJP-01 continuation:** Existing Tough Hide, Heightened Senses, Long Stride and Efficient Digestion research nodes no longer grant permanent stats; their stable IDs, ownership, prices and prerequisite paths remain. Heightened Senses offers Long Vision and Keen Senses; Long Vision's former two-tile test effect and one rank are provisional, not balance-approved. Both choices and descriptions were captured in-game, and Long Vision was selected; see [handoff](handoffs/2026-11-05-gljp-capacity-senses.md). Full EditMode 735 / 0 / 1; final full PlayMode 80 / 8 / 2, with the same eight failure names as the prior run. Keen Senses currently tracks only creature food targets, so its practical Hare behavior needs review. GLJP-01 is in Trello In Progress; the rest of the catalog, starter genes and Burrowing remain incomplete.
+**November 5 GLJP-01 continuation:** Existing Tough Hide, Heightened Senses, Long Stride and Efficient Digestion research nodes no longer grant permanent stats; their stable IDs, ownership, prices and prerequisite paths remain. Heightened Senses offers Long Vision and Keen Senses; Long Vision's former two-tile test effect and one rank are provisional, not balance-approved. Both choices and descriptions were captured in-game, and Long Vision was selected; see [handoff](handoffs/2026-11-05-gljp-capacity-senses.md). Full EditMode 735 / 0 / 1; final full PlayMode 80 / 8 / 2, with the same eight failure names as the prior run. Keen Senses currently tracks only creature food targets, so its practical Rabbit behavior needs review. GLJP-01 is in Trello In Progress; the rest of the catalog, starter genes and Burrowing remain incomplete.
 
 **November 5 human acceptance:** Bevin confirmed the GLJP-01 research gate is working as intended after testing it. This accepts the gate and its fresh-profile flow; the remaining catalog work stays open. See [acceptance record](handoffs/2026-11-05-gljp01-research-gate.md).
 
 **November 5 GLJP-01 research gate:** Player-profile journey offers now require permanent owned research, independently of equipment. Opening/phase/Field Data and authored reward paths are gated, application checks reject locked Mutations, and fresh profiles can continue/skip empty rewards. Verified full EditMode 708/0/1, real-profile empty/owned opening checks 1/1 each, and inspected empty-research Field Data capture 1/1. See [handoff](handoffs/2026-11-05-gljp01-research-gate.md). Current permanent stat bonuses and unauthored research nodes remain catalog work; GLJP-01 is partially complete. `Bev Test 11/5/2026` remains zero-research. Local uncommitted changes; no push.
 
-**November 1 overnight GLJP implementation:** Per-node Hare purchase allowance, remaining-count UI, one-time additive income, replacement payout tiers including 1.75x/40 FD, active-shop duplicate removal, Founding Hares price 5, Escape Instinct naming, and portable maximum-rank preservation are implemented locally. Full EditMode is 705 passed / 0 failed / 1 skipped (`artifacts/unity-tests-20261101-233137`). Final full PlayMode is 76 passed / 8 failed / 2 skipped (`artifacts/unity-tests-20261101-233903`); focused Gene Lab is 9/9 and three inspected visual runs pass 1/1 each. Remaining runtime failures are enumerated in the handoff. See [handoff](handoffs/2026-11-01-gljp-overnight-progress.md) and [morning questions](GLJP_MORNING_REVIEW.md). Ranked research/save migration, full capability catalog, and burrowing remain incomplete. Trello browser controls are unavailable; no card closed and no progress comment posted. Existing local UI/recovery work is preserved.
+**November 1 overnight GLJP implementation:** Per-node Rabbit purchase allowance, remaining-count UI, one-time additive income, replacement payout tiers including 1.75x/40 FD, active-shop duplicate removal, Founding Rabbits price 5, Escape Instinct naming, and portable maximum-rank preservation are implemented locally. Full EditMode is 705 passed / 0 failed / 1 skipped (`artifacts/unity-tests-20261101-233137`). Final full PlayMode is 76 passed / 8 failed / 2 skipped (`artifacts/unity-tests-20261101-233903`); focused Gene Lab is 9/9 and three inspected visual runs pass 1/1 each. Remaining runtime failures are enumerated in the handoff. See [handoff](handoffs/2026-11-01-gljp-overnight-progress.md) and [morning questions](GLJP_MORNING_REVIEW.md). Ranked research/save migration, full capability catalog, and burrowing remain incomplete. Trello browser controls are unavailable; no card closed and no progress comment posted. Existing local UI/recovery work is preserved.
 
 **November 1 Gene Lab/Journey progression design:** Created [PDD-GLJP-001](GENE_LAB_JOURNEY_PROGRESSION_PROCESS_DESIGN.md) and [SDD-GLJP-001](GENE_LAB_JOURNEY_PROGRESSION_SDD.md) from Bevin's item-by-item decisions. Five implementation tickets are in Trello Current Work: [GLJP-01](https://trello.com/c/dR2z6ENf/149-gljp-01-replace-hare-genome-stat-nodes-with-researched-journey-unlocks), [GLJP-02](https://trello.com/c/o4q7Necn/150-gljp-02-enforce-one-point-genome-capacity-and-ranked-population-reserves), [GLJP-03](https://trello.com/c/h4wxvWAp/151-gljp-03-add-hare-purchase-allowance-and-journey-shop-income-tiers), [GLJP-04](https://trello.com/c/DQwFKLSF/152-gljp-04-implement-burrowing-family-hiding-and-burrow-upgrades), and [GLJP-05](https://trello.com/c/Htt7PJBY/153-gljp-05-integrate-gene-lab-and-journey-upgrade-ui-tests-and-captures). All five cards include acceptance criteria and are in Current Work. The final capacity decision is 1 point per equipped node, max 8; existing 2-point Genome asset values and FD2 default constant are now changed to 1. A focused Unity run found one stale FD2 capacity assertion; it has been updated and the focused rerun is in progress. This is local uncommitted work; do not push without an explicit request.
 
@@ -288,8 +304,8 @@ distinction from run Mutations and Field Data-funded choices. No new mechanics,
 balance or release approval was implied.
 
 **Latest October 28 playtest choice:** Bevin reported that 400/20/10 led to
-Hare collapse too quickly to test or play and chose to return to 400 Plants /
-55 Hares / 20 Foxes for continued playtesting. This is a current playtest choice,
+Rabbit collapse too quickly to test or play and chose to return to 400 Plants /
+55 Rabbits / 20 Foxes for continued playtesting. This is a current playtest choice,
 not balance acceptance. Per-round Field Data spending is enabled. Bevin confirmed
 a live round-one population purchase worked; 16 FD became 6 with one intervention.
 The earlier population correction below is historical; the journey continues.
@@ -297,7 +313,7 @@ The earlier population correction below is historical; the journey continues.
 **October 28 FD2 integration and gameplay validation:** FD2 is integrated into
 local unpushed `BevBranch`. The original 43 dirty/untracked files were
 hash-backed up and retained in stash `520cc9cb`; recovery files and earlier
-working-state content remain. The older 400 Plants / 55 Hares / 20 Foxes
+working-state content remain. The older 400 Plants / 55 Rabbits / 20 Foxes
 starting population was mistakenly restored in `a2035b3` and the test was
 aligned in `28de090`; an October 22 decision selected 400/20/10 for launch.
 Bevin chose to stop the 55/20 playthrough and correct the setting. Corrected full EditMode: 701 passed, zero failed, one
@@ -307,7 +323,7 @@ now occurs at tick 237). Portable build and self-test passed.
 
 Bevin approved a 200-seed matched natural balance screen; 400/400 journeys
 completed and were independently audited. Baseline versus four selected nodes:
-31/200 versus 30/200 successes; 71 versus 42 had living Hares at tick 600.
+31/200 versus 30/200 successes; 71 versus 42 had living Rabbits at tick 600.
 Five seeds succeeded in both, 26 baseline only and 25 four-node only. This 55/20 screen is not the October 22 launch setting, the exact T12 live
 loadout, or balance approval. The factual report and
 per-seed evidence are in `artifacts/fd2-integration-20261028/natural-screen-200x2/`.
@@ -330,7 +346,7 @@ after reset immediately activated it and ended free selection. Local code
 `330d94d` requires applying the replacement first and explains why. Full
 EditMode701 passed/0 failed/1 existing skip;focused graphics8/8 and final guard
 capture1/1 pass. The actual user-selected build reloads and launches;confirmed
-End forfeits20 newFD and retains172Hare/0RD,fiveowned,fouractive,five receipts.
+End forfeits20 newFD and retains172Rabbit/0RD,fiveowned,fouractive,five receipts.
 Demo Editor closed;temporary storage/helper/import residue cleaned;original
 exact profile keys/four source hashes unchanged. No push,merge,original-source
 integration,player-build or balance acceptance. T12 is marked complete in live Done; final acceptance comment
@@ -360,12 +376,12 @@ See the [acceptance review](FD2_PERMANENT_PROGRESSION_ACCEPTANCE.md) and
 [T12 handoff](handoffs/2026-10-27-1613-codex-fd2-t12-permanent-progression-end-to-end-acceptance.md).
 
 **October 27 FD2-T11 Gene Lab controls verified:** MainMenu profile launch
-now uses the permanent Hare catalog and shared Research purchases. Wallets,
+now uses the permanent Rabbit catalog and shared Research purchases. Wallets,
 prices, resulting balances, prerequisites, owned/active/draft states and capacity
 are shown. Each replacement requires a fresh20 RD reset with no refund; select
 owned nodes from empty and apply once for free. Save errors/retry, stale profile
 and reset generation, insufficient funds and over-capacity states are explained.
-Legacy refundable Hare allocations retain labeled POC controls until their
+Legacy refundable Rabbit allocations retain labeled POC controls until their
 legacy reset; direct authoring-scene entry stays POC. Running T09 snapshots
 remain frozen. New domain10/10 and scene4/4 pass; focused T11/POC8/8. Full
 EditMode700 passed/zero failed/one existing parity skip. Final graphics4/4 and
@@ -398,7 +414,7 @@ preserved. Proof: `artifacts/fd2-board-20261027/t10-done.png`.
 Next T11 wires visible Gene Lab controls; T12 retains end-to-end acceptance.
 See the [T10 handoff](handoffs/2026-10-27-1137-codex-fd2-t10-permanent-settlement-results-and-retry.md).
 
-**October 27 FD2-T09 launch freezing verified:** Permanent Hare ownership uses
+**October 27 FD2-T09 launch freezing verified:** Permanent Rabbit ownership uses
 the canonical FD2 resolver; POC/other-species catalogs retain their own rules.
 Desktop explicitly captures the owning profile at first simulation start,
 including direct next-journey commands. Opening Mutations/map choices are retained,
@@ -418,7 +434,7 @@ settlement/failure results; visible Lab controls remain T11. See the
 [T09 handoff](handoffs/2026-10-26-2315-codex-fd2-t09-freeze-permanent-genome-at-launch.md).
 
 **October 26 FD2-T08 reset/arrangement verified:** Bevin confirmed a fresh
-20 RD reset for each replacement loadout. Reset clears active Hare nodes without
+20 RD reset for each replacement loadout. Reset clears active Rabbit nodes without
 refund or ownership loss; free full selection applies from empty, and a changed
 selection after application requires another paid reset. Identical selection
 is a no-op. Schema v7 preserves a per-Genome reset generation for stale-callback
@@ -434,9 +450,9 @@ proof: `artifacts/fd2-board-20261026/t08-done.png`. T01-T07 remain Done. Next T0
 the FD2 loadout into the next launch; visible controls remain T11. See the
 [T08 handoff](handoffs/2026-10-26-2254-codex-fd2-t08-reset-and-arrange-permanent-loadouts.md).
 
-**October 26 FD2-T07 permanent Hare nodes verified:** The new FD2 purchase
-charges canonical 5 Hare Data, permanently unlocks and activates in one saved
-transaction. Matching profile, Hare path license, owned ancestors and the full
+**October 26 FD2-T07 permanent Rabbit nodes verified:** The new FD2 purchase
+charges canonical 5 Rabbit Data, permanently unlocks and activates in one saved
+transaction. Matching profile, Rabbit path license, owned ancestors and the full
 8-point catalog capacity are required. Permanent purchases create no refundable
 POC allocations. All32 new node cases/all96 profile transaction cases pass;
 full clean EditMode630 passed/zero failed/one parity skip. Independent Editor
@@ -450,8 +466,8 @@ Done. Proof: `artifacts/fd2-board-20261026/t07-done.png`. Next T08 resets/arrang
 the permanent loadout; T09/T11 own launch/UI wiring. See the
 [T07 handoff](handoffs/2026-10-26-2109-codex-fd2-t07-permanent-hare-node-purchases.md).
 
-**October 26 FD2-T06 Hare license verified:** The FD2 purchase charges canonical
-10 Hare Data once, saves the fee/license flag together, preserves all other
+**October 26 FD2-T06 Rabbit license verified:** The FD2 purchase charges canonical
+10 Rabbit Data once, saves the fee/license flag together, preserves all other
 wallets/research/Genomes/settlement state and grants no node effect. No schema
 change beyond existing v6 is needed. Focused license16/16; full clean EditMode
 598 passed/zero failed/one parity skip, with all64 profile transaction cases
@@ -476,7 +492,7 @@ distinct-process write/read and focused PlayMode4/4 pass. Profile/recovery value
 are unchanged; portable build/self-test pass. Live T05 is complete in Done with
 verification comment posted/read back, joining T01-T04. Proof in the isolated
 checkout is `artifacts/fd2-board-20261026/t05-done.png`. No push or active-checkout
-source integration occurred. Next: T06 Hare path license; T10/T11 still wire player
+source integration occurred. Next: T06 Rabbit path license; T10/T11 still wire player
 results and Gene Lab controls. See the [T05 handoff](handoffs/2026-10-26-1351-codex-fd2-t05-conversion-research-purchases.md).
 
 **October 26 FD2-T04 verified and T01-T04 board closeout:** Local code commit
@@ -580,7 +596,7 @@ progression direction after accepting FD1. The FD2 process design, solution
 design and 12-card actionable ticket breakdown are documented in the three
 linked FD2 files. All 12 cards were created in the board's **🎯 Upcoming Work**
 list, with Bevin (Nick Nevins) assigned and recorded as owner and reviewer; no
-sprint placement was made. The initial numeric settings are in the [FD2 tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md). FD2-T01 is now in Trello In Progress. Hare effects remain placeholders pending Salty's core-mechanics push, so the ticket stays open. This is design and ticket planning only; no FD2 implementation or runtime verification is claimed. The document package is published to both branches; latest shared commit before this T01 update was `9f9ed11` (2026-10-21). See the [Trello ticket index](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md#published-trello-cards-2026-10-21).
+sprint placement was made. The initial numeric settings are in the [FD2 tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md). FD2-T01 is now in Trello In Progress. Rabbit effects remain placeholders pending Salty's core-mechanics push, so the ticket stays open. This is design and ticket planning only; no FD2 implementation or runtime verification is claimed. The document package is published to both branches; latest shared commit before this T01 update was `9f9ed11` (2026-10-21). See the [Trello ticket index](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md#published-trello-cards-2026-10-21).
 
 **October 21 publication and closeout:** All FD-T01–FD-T16 are verified in
 Trello Done, with complete flags and all 79 current checklist resolutions.
@@ -616,8 +632,8 @@ only; no tests, tuning, live Trello changes, commit or push were performed.
 
 **October 20 human playthrough and APS fix:** Bevin completed the full route,
 reported that it felt good and described near population misses for both Foxes
-and Hares. The captured seed10100/tick1800 run exposed missing paid-intervention
-accounting:8 Hares added/9 removed were omitted, making expected144 disagree
+and Rabbits. The captured seed10100/tick1800 run exposed missing paid-intervention
+accounting:8 Rabbits added/9 removed were omitted, making expected144 disagree
 with actual143 and invalidating APS. Run counters, live/snapshot metric factories,
 UI and reports now include separate ADD/REM for all controls; natural births/deaths
 stay separate. Corrected captured APS is about1.19; Fox accounting also reconciles.
@@ -630,9 +646,9 @@ decisions are not invented. No ecology tuning, board changes or push occurred.
 **October 19 current parity/cohort refresh:** The authored 20-Fox setup and
 current rules have a fresh export, eight-fixture direct Unity/headless parity
 pass (1/1 test, zero skips), and **600/600 validated journeys** across 200 matched
-seeds and three v3 schedules. Survival: Remove Hare 58/200, Add Hare 1/200,
+seeds and three v3 schedules. Survival: Remove Rabbit 58/200, Add Rabbit 1/200,
 save for ×2 52/200. The first payout affords a 10-FD action in 180/200 seeds,
-but all removal survivors and 51/52 saving survivors finish with one Hare.
+but all removal survivors and 51/52 saving survivors finish with one Rabbit.
 No ecology values or prices changed; T13 human acceptance and T16 recorded
 self-play/accept-revise remain open. See the [refresh handoff](handoffs/2026-10-19-1601-codex-field-data-current-parity-and-matched-cohort-refresh.md)
 and [report](Research/Experiments/FD-Current-Loop-Refresh-20261019/REPORT.md).
@@ -643,7 +659,7 @@ push were made for this refresh.
 first simulation exhausted the ordinary reward pool because every skill was
 treated as single-use. Round 7 then displayed disabled legacy Attack/Data-cost
 cards. A regression reproduced the empty pool exactly at round 7. Field Data
-now reoffers the six Hare skills up to their existing level caps (10), retaining
+now reoffers the six Rabbit skills up to their existing level caps (10), retaining
 the separate shop cap and legacy authored-upgrade rules. Missing choices are
 hidden and an empty pool explains Skip. Focused EditMode passes 91 tests with
 one dedicated parity skip; focused PlayMode passes 4 with two separate graphics
@@ -663,18 +679,18 @@ captures were reviewed. See the
 Earlier pre-shop round-6 control rules are superseded. Human acceptance remains open.
 
 **October 18 approved playtest default:** Bevin approved switching Forest Edge
-from 35 to **20 starting Foxes**; 55 Hares and 400 Plants remain. The authored
+from 35 to **20 starting Foxes**; 55 Rabbits and 400 Plants remain. The authored
 asset now resolves to the tested 20-Fox candidate. This is the next playtest
 setting, with later population crashes still open. See the
 [change record](handoffs/2026-10-18-fd-20-fox-playtest-default.md).
 
-**October 18 opening-population diagnostic:** Bevin reports Hares collapse too
+**October 18 opening-population diagnostic:** Bevin reports Rabbits collapse too
 quickly. An 80-run current-source screen (20 matched seeds x four settings)
-finds 3.8 Hares at the first baseline payout on average; 0/20 can afford the
-10-FD intervention. Starting 20 Foxes instead of 35 gives 16.55 Hares and
+finds 3.8 Rabbits at the first baseline payout on average; 0/20 can afford the
+10-FD intervention. Starting 20 Foxes instead of 35 gives 16.55 Rabbits and
 18/20 affordability, but only 5/20 no-action journeys survive to tick 1800
-(four with one Hare). Ten Foxes gives a gentler opening followed by worse
-full-route survival; raising Hare starting energy shifts losses to starvation.
+(four with one Rabbit). Ten Foxes gives a gentler opening followed by worse
+full-route survival; raising Rabbit starting energy shifts losses to starvation.
 Forty actual FD replays match the baseline/candidate screen, and two Unity
 session cases match the standalone boundaries. Recommend temporary 20-Fox
 playtests on matched seeds 10100/10102, not a production balance approval.
@@ -688,7 +704,7 @@ shows five visible node cards before explicit Start, with the correct route
 heading and accessible Map buttons in round/shop and results panels. Map
 round trips preserve the session, tick and wallet; Reproductive Drive is now
 bounded at reproduction chance 1.0 instead of throwing. Shop-only income and
-the six-skill Hare pool have regression coverage. Clean suites passed 399
+the six-skill Rabbit pool have regression coverage. Clean suites passed 399
 EditMode / 49 PlayMode (1 dedicated parity and 6 graphics skips); final graphics
 passed 6/6 at 1280x720 and the authored route 1/1 at 1920x1080. Screenshots were
 reviewed. The final graphics runs include the panel Map buttons added after
@@ -699,14 +715,14 @@ Trello change or push is claimed. See the [validation handoff](handoffs/2026-10-
 **October 17 Field Data UX/economy correction:** Bevin reported that choosing
 the test route immediately launched simulation, the active Field Data journey
 had no usable route map at round/shop decisions, and a generic attack upgrade
-appeared for Hares while income modifiers appeared outside shops. Source review
+appeared for Rabbits while income modifiers appeared outside shops. Source review
 confirmed: route selection configured and started in one action; the map toggle
 was hidden during Field Data decisions and the Field Data path had no mapped
-JourneyMap nodes; the ordinary Hare fallback included generic attack; the
-starter definition allowed +1/Hare at round rewards and ×1.5 at node rewards.
+JourneyMap nodes; the ordinary Rabbit fallback included generic attack; the
+starter definition allowed +1/Rabbit at round rewards and ×1.5 at node rewards.
 Local changes now show a five-node route preview before an explicit Start,
 expose an in-journey map summary/toggle through round and shop decisions, limit
-Hare free rewards to the six approved Hare skills, and restrict all income
+Rabbit free rewards to the six approved Rabbit skills, and restrict all income
 modifiers to shop offers in both authoring validation and reward generation.
 Unity compile/tests and human visual review have **not** been run for this
 follow-up. Earlier T08/T15 evidence used the superseded income-source rule and
@@ -774,13 +790,13 @@ editor setting and was not evidence for the authored asset.
 T14's authored Forest Edge snapshot and 200-seed Unity reference export now
 exist under `artifacts/field-data-t14/`. A no-purchase headless journey on seed
 10100 completed 18 population awards and three node rewards, then discarded
-52 leftover FD on success. Its final Hare/Fox/Plant populations (1/0/717)
+52 leftover FD on success. Its final Rabbit/Fox/Plant populations (1/0/717)
 match the Unity reference. Full Unity/headless receipt/order parity for
 scheduled purchases and reorders remains open.
 
 T15's v2 policies ran all 600 matched replays for seeds 10100–10299; all 600
 reports completed and each seed appears once in all three arms. The baseline
-Unity reference had 45/200 Hare survivors; removal had 50/200, additive Hare
+Unity reference had 45/200 Rabbit survivors; removal had 50/200, additive Rabbit
 intervention 0/200, and save-for-second-shop ×2 45/200. The detailed aggregate
 and every replay are under `artifacts/field-data-t15/run-20261017/`.
 Automated replay runtime totals 872,424.8 ms across the 600 runs (1,454 ms
@@ -806,7 +822,7 @@ mode, and bridges decision/shop/result state; the preview remains the only
 simulation clock forwarder. The focused `FieldData` EditMode suite passed
 24/24 in the connected Editor (`artifacts/unity-tests-20261016-204629`). A
 session test exposed and fixed disposal leaving the state at Failed; the route
-fixture now uses a stable Hare rule to test flow only, not ecology balance.
+fixture now uses a stable Rabbit rule to test flow only, not ecology balance.
 Rendered preview/runtime behavior remains unverified. FD-T04 remains In
 Progress and all five criteria remain open. FD-T05 now has a journey-local
 wallet ledger with idempotent population and node-clear receipts, failure
@@ -1056,7 +1072,7 @@ and authorized publication on October 13; see the
 
 **October 12 tooling publication and Salty integration:** The Workbench/export
 work and compact confirmation review were pushed to BevBranch in `07d78de9`.
-Salty's checkpoint `876f3cf7` is integrated with Hare spatial telemetry and
+Salty's checkpoint `876f3cf7` is integrated with Rabbit spatial telemetry and
 guaranteed first-offer access to all three paths; BevBranch's existing avoidance
 fix and portable records are retained. Merged checks pass: 160 focused EditMode,
 25 presentation PlayMode, 31 worksheet tests, runner self-test, 16 GUI groups,
@@ -1072,7 +1088,7 @@ Earlier local/uncommitted statements below describe their original checkpoints.
 five presets and supplied cumulative exports ending at 8,000 runs/80 conditions.
 The best observed condition is preset 04 (64x48 H4/F16), Gardeners + Restore:
 10/100 ecology goals; no reliable baseline is established. Overall 261 goals,
-2,167 Hare survivors and 1,438 all-three survivors. Matched choices show useful
+2,167 Rabbit survivors and 1,438 all-three survivors. Matched choices show useful
 effects; 60 no-purchase goals include 15 fully unassisted successes. All five
 completed raw hashes, 40 frozen files and 7,720 workbook metrics verify.
 Analysis: `artifacts/confirmation-review-20261012/ai-analysis-v1.md`.
@@ -1102,11 +1118,11 @@ Local/uncommitted; see the
 [large export handoff](handoffs/2026-10-10-2209-codex-workbench-large-excel-export-memory-fix.md).
 
 **October 10 statistical worksheets and promising seeds, local:** The exporter
-now uses all matching runs for goal/Hare-survival rates with 95% Wilson bounds,
+now uses all matching runs for goal/Rabbit-survival rates with 95% Wilson bounds,
 endpoint/birth/purchase/decision-access statistics, and matched Mutation/purchase
 controls on a new Choice impact sheet. Review defaults to promising seeds;
 Lowest seeds remains available, and Run data still matches the selected rows.
-Editable export floors default to 5 Hares / 5 Foxes / 100 Plants, inferred from
+Editable export floors default to 5 Rabbits / 5 Foxes / 100 Plants, inferred from
 Bevin's latest experiment notes rather than approved as production tuning.
 31 worksheet checks, 16 GUI groups and 15 setup/run groups (47 fixture runs) pass;
 raw-count/Wilson and saved-workbook readbacks reconcile. Re-exporting the existing
@@ -1130,13 +1146,13 @@ Bevin's save-and-close permission. Research batch remains unstarted; source
 local/uncommitted. See the [metadata fix handoff](handoffs/2026-10-10-2051-codex-workbench-large-saved-plan-metadata-fix.md).
 
 **October 10 Workbench gestation controls and baseline review, local:** Bevin's
-1,000-run Gestation Baseline had 53 Hares-surviving runs at tick 600 (5.3%);
-836 runs recorded no Hare births. All conditions used Hare/Fox gestation 48,
+1,000-run Gestation Baseline had 53 Rabbits-surviving runs at tick 600 (5.3%);
+836 runs recorded no Rabbit births. All conditions used Rabbit/Fox gestation 48,
 so this is a poor baseline, not an isolated test of gestation's effect.
-Compare values now offers independent Hare/Fox gestation ticks, including zero
+Compare values now offers independent Rabbit/Fox gestation ticks, including zero
 for immediate births, with readable help, frozen values, presets and numeric
 Excel exports. Production defaults remain 48. A prepared, unstarted preset
-compares Hare 0/12/24/48 with Fox fixed at 48 across the original 1,000 seeds.
+compares Rabbit 0/12/24/48 with Fox fixed at 48 across the original 1,000 seeds.
 All 326 EditMode tests, 21 worksheet checks, 14 GUI checks and 14 setup/run
 groups (46 fixture runs) pass. The canonical executable was rebuilt and
 reopened after Bevin saved and authorized closing the previous window.
@@ -1148,16 +1164,16 @@ the 4,000-run comparison and any production tuning remain open.
 comparison-preview fixes were pushed as `a82d1cd4`. Salty's gestation checkpoint
 (`65e47386`) is merged as `10c13f4`, preserving both contributors' working-state
 entries. Portable snapshots now preserve gestation, and parity checks include
-pending-litter state with normalized mate identity. Production Hare/Fox use a
+pending-litter state with normalized mate identity. Production Rabbit/Fox use a
 provisional 48-tick delay; earlier frozen batches retain their original model.
 See the [integration and testing-impact handoff](handoffs/2026-10-10-2004-codex-bevbranch-salty-gestation-integration-and-testing-impact.md)
 for current validation, new-snapshot requirements, and proposed comparison controls.
 
 **S4-03 Trailblazer diagnostic: 2026-10-11, needs design review.** A
-five-arm replay of the existing 20 matched seeds added Hare spatial observations
+five-arm replay of the existing 20 matched seeds added Rabbit spatial observations
 without changing any of the 100 archived run outcomes. Both Trailblazer orders
 increase post-choice movement, but population-wide map coverage gains are small
-and inconsistent. The current crowding rule only triggers at seven Hare
+and inconsistent. The current crowding rule only triggers at seven Rabbit
 neighbors; Josh's approved four-neighbor density surcharge is still pending,
 so the replay cannot judge intended crowding pressure. The first rotating
 three-card offer nominally contained a Trailblazer starter in 12/20 seeds under
@@ -1170,7 +1186,7 @@ balance evidence. See the
 [analysis](Sprints/S4-03-trailblazer-spatial-20261011/ai-analysis-v1.md), plus
 the [offer-path handoff](handoffs/2026-10-12-0132-codex-s4-hare-path-starter-offer.md).
 
-**S4-03 Hare strategy screen: 2026-10-11, needs in-game review.** The
+**S4-03 Rabbit strategy screen: 2026-10-11, needs in-game review.** The
 predeclared 13-arm × 20-seed screen on 400/20/10 is complete. A scheduled
 Threat Avoidance bug and a stale combat gate were fixed and the affected arms
 replayed on the same seeds; 319 EditMode and 42 PlayMode tests passed. Movement
@@ -1181,7 +1197,7 @@ its [analysis](Sprints/S4-03-screen-20261011/ai-analysis-v1.md). Josh and Sim's
 player-flow review and accept/revise decision remain open.
 
 **S4 gestation checkpoint: 2026-10-10, ready for review on codex/s4-gestation-checkpoint-20261010.**
-Hare and Fox now use a provisional 48-tick gestation period, with pending litters
+Rabbit and Fox now use a provisional 48-tick gestation period, with pending litters
 preserved through movement and whole-litter births waiting for space. Full
 isolated-worktree Unity suites passed (317 EditMode and 42 PlayMode). The S4
 record also captures Trailblazer, Warren, and Gardeners identities and
@@ -1192,7 +1208,7 @@ balance and team review remain open. See the
 **S4-03 exploratory pilot: 2026-10-10; main fixture selected 2026-10-11.** A
 five-seed matched control/Gardeners pilot after gestation found poor
 choice reach at 400/25/15 and more observable seed renewal at the existing
-400/20/10 manual fixture. Both fixtures still had frequent Hare extinction.
+400/20/10 manual fixture. Both fixtures still had frequent Rabbit extinction.
 Josh selected 400/20/10 for the main screen, with 400/25/15 retained as a
 stress comparison. The inputs are frozen in the
 [screen plan](Sprints/S4-03-screen-plan-20261011.md). See the
@@ -1200,7 +1216,7 @@ stress comparison. The inputs are frozen in the
 
 
 **October 10 comparison-preview hang investigated locally:** Windows logged an
-Application Hang for the canonical Workbench. Bevin reported Hare/Fox vision
+Application Hang for the canonical Workbench. Bevin reported Rabbit/Fox vision
 1-15, twelve seeds and all strategies/policies; adding Plant energy1,2,3 crosses
 the inherited10,000-condition limit. Automated checks reproduce the warning but
 did not reproduce the original hang. Preview row updates now batch layout and
@@ -1262,7 +1278,7 @@ See [guide](CELLSIM_EXCEL_EXPORT.md) and
 Local/uncommitted/unpushed on BevBranch; prior work and workbooks preserved.
 
 **October 9 Workbench readability iteration added locally:** New exports open
-on Batch summary, showing experiment context and actual settings, Hare and
+on Batch summary, showing experiment context and actual settings, Rabbit and
 all-three-species survival counts/percentages, and explicit missing data.
 Run review keeps its familiar layout with concise observations; detailed
 purchase-change narratives are optional in the GUI/CLI. The versioned report
@@ -1283,7 +1299,7 @@ and pinned runner without workers; progress, safe stop, resume/recheck and
 Open saved run connect to the existing executor. Completed chunks survive stop;
 changed/moved frozen evidence is refused. Export this run completes the
 setup → run → review → export workflow. Load D5 example proposes 24 runs and
-starts nothing. Scope is the neutral Plant/Hare/Fox six-round flow, not arbitrary
+starts nothing. Scope is the neutral Plant/Rabbit/Fox six-round flow, not arbitrary
 scenario authoring or a definition of human Gardeners play. Nine setup/run check
 groups (26 final fixture rows), twelve portable runner checks and native
 review/export regressions passed. Historical confirmation runner hash remains
@@ -1328,8 +1344,8 @@ Play Mode is stopped after checks. Source/docs remain local and uncommitted.
 Read the [display handoff](handoffs/2026-10-08-2242-codex-live-plant-population-display.md).
 
 **October 8 D5 visual review setup prepared locally:** Copied inspection scene
-`ForestEdge_D5_VisualReview` and scenario/Hare/Fox assets configure wrapped 54x32,
-325/30/15, Hare vision 9, Fox energy 160 and six 100-tick phases with Journey off.
+`ForestEdge_D5_VisualReview` and scenario/Rabbit/Fox assets configure wrapped 54x32,
+325/30/15, Rabbit vision 9, Fox energy 160 and six 100-tick phases with Journey off.
 All eight supplied seed/purchase-policy examples reproduced their stated Unity
 preview outcomes; the inspection-only runtime Inspector reset control passed
 all four first-boundary seed checks, Unity recompile and the existing S4 fixture
@@ -1340,14 +1356,14 @@ Read the [inspection handoff](handoffs/2026-10-08-2157-codex-d5-visual-inspectio
 and [run guide](Research/Experiments/S4-04-Hare-Purchase-Confirmation/VISUAL_REVIEW.md).
 This work is local, uncommitted and unpushed.
 
-**October 8 Hare-purchase confirmation complete:** All 96,000 runs, paired
+**October 8 Rabbit-purchase confirmation complete:** All 96,000 runs, paired
 analysis and purchase reports finished at 19:37:50 EDT. The 96 arms each have
 1,000 fresh matched seeds 60000-60999; all 1,920 chunks passed. Completion review
 verified frozen input/tool hashes, the 4.84 GB raw aggregate and analysis hashes,
 exact seed coverage, Valid APS/AHS n=1,000 in every arm, and all 480,000 assigned
 purchase windows with reconciled reached-window ledgers. Simulation took 4h 50m
 34s at 16 workers. The live dashboard now reports Completed / 96,000 / zero workers.
-Restoration and late-five improve Hare and all-species survival versus same-path
+Restoration and late-five improve Rabbit and all-species survival versus same-path
 no-buy controls on all twelve skill arms. Restoration also beats same-policy
 Skip all on both observed endpoints in all twelve arms. D5/S25 Gardeners
 restoration leads this panel at 52.2% all-species survival versus 35.8% no-buy,
@@ -1376,12 +1392,12 @@ Trello synchronization remains outstanding. The completion review above supersed
 the running status at this publication checkpoint. The final handoff commit
 `e250d32f` was also pushed and verified against the remote.
 
-**October 8 Hare-purchase confirmation launch checkpoint (now complete):** Bevin accepted the recommended
+**October 8 Rabbit-purchase confirmation launch checkpoint (now complete):** Bevin accepted the recommended
 first step with "okay lets begin step by step". The approved follow-up runs the
 same four candidates and four paths with six purchase policies (none, late-five,
 each-one, each-three, each-five, restore-toward-start), 1,000 fresh matched seeds
 60000-60999: 96,000 runs at 16 workers. It started at 14:37 EDT in
-`artifacts/cellsim-hare-confirmation-20261008-143725/`; all 96 scientific argument
+`artifacts/cellsim-rabbit-confirmation-20261008-143725/`; all 96 scientific argument
 sets match the corresponding screen arms, and the runner and snapshot are
 byte-identical to the validated screen. Portable self-test and frozen input
 checks passed. Prior Unity/reference/smoke validation is retained evidence,
@@ -1403,10 +1419,10 @@ elapsed/estimated remaining simulation time, 96 matrix cells and active chunks.
 completion metadata; no runner or frozen input changes. See the
 [dashboard handoff](handoffs/2026-10-08-codex-cellsim-progress-dashboard.md).
 
-**October 8 completed Hare-purchase panel:** Bevin retained
+**October 8 completed Rabbit-purchase panel:** Bevin retained
 D4/S19, D4/S14, C2/S14 and D5/S25 from the quarter-million grid as candidates to
-develop, then requested studying the upgrade-window Buy Hare choice. The current
-player purchase costs 10 Field Data per Hare, separate from the Mutation choice;
+develop, then requested studying the upgrade-window Buy Rabbit choice. The current
+player purchase costs 10 Field Data per Rabbit, separate from the Mutation choice;
 the legacy catalog's five-Data reinforcement price must not be substituted.
 The [purchase protocol](Research/Experiments/S4-03-Hare-Reinforcement-Candidate-Panel/PROTOCOL.md)
 and verified machine-readable panel cover eight purchase policies across those
@@ -1414,7 +1430,7 @@ four contexts and all four paths, with 100 fresh matched seeds 50000-50099 /
 12,800 runs at 16 workers. Bevin approved execution with "yes run it".
 The shared harness now handles wallet-aware purchases and window audits, validated
 against Unity and historical controls before launch. The batch started October 8
-at 13:34 EDT in `artifacts/cellsim-hare-purchase-20261008-132317/`, with automatic
+at 13:34 EDT in `artifacts/cellsim-rabbit-purchase-20261008-132317/`, with automatic
 paired analysis and purchase reports. All 12,800 runs and analysis completed at
 14:15 EDT; simulation time was 39.35 minutes. Completion review verified frozen
 input/raw/analysis hashes, 100 seeds per arm, APS/AHS Valid n=100 throughout and
@@ -1454,7 +1470,7 @@ SQLite integrity and exact coverage of 2,500 arms x 100 fresh seeds passed.
 The 625-context panel retains all 81 previous contexts and adds 544, at the same
 planned 600-tick horizon. Raw/SQLite/CSV evidence and compact completion reviews
 are in `artifacts/cellsim-250k-sweep-20261008-030316`.
-The new selected top arm (325/30/15, 54x32, Fox energy 80, Hare vision 9,
+The new selected top arm (325/30/15, 54x32, Fox energy 80, Rabbit vision 9,
 Gardeners) retained all species in 68/100 seeds versus 16/100 for skip-all.
 The earlier winning context replicated the Gardeners advantage (54/100 vs 18/100);
 its earlier vision-9 advantage did not clearly replicate (54 vs 51 at vision 5).
@@ -1464,13 +1480,13 @@ Read the [quarter-million handoff and completion](handoffs/2026-10-08-0303-codex
 for inputs, verification and evidence limits.
 
 **October 8 larger sweep complete:** All 32,400 runs and automatic analysis completed
-at 02:12 EDT: 81 population/grid/starting-stat contexts, four Hare path policies,
+at 02:12 EDT: 81 population/grid/starting-stat contexts, four Rabbit path policies,
 100 matched seeds and six 100-tick phases. Execution began at eight workers and
 resumed at Bevin's requested 32; total launch-to-analysis time was 39.86 minutes.
 Independent checks confirm all 1,296 chunks, exact per-condition seed coverage,
 raw/CSV hashes and SQLite integrity. Outputs and compact completion review are in
 `artifacts/cellsim-large-sweep-20261008-012921`. The strongest screened arm
-(250/20/10, 42x24, Fox energy 80, Hare vision 9, Gardeners) retained all species at
+(250/20/10, 42x24, Fox energy 80, Rabbit vision 9, Gardeners) retained all species at
 tick 600 in 60/100 seeds versus 19/100 for its matched skip-all control. This is an
 exploratory selected result; fresh-seed, tick-700 ecology and gameplay review remain
 pending. Read the [handoff and completion record](handoffs/2026-10-08-0135-codex-large-sweep-kickoff.md)
@@ -1480,13 +1496,13 @@ for the frozen inputs, verified outputs and evidence limits.
 
 **October 7 publication and journey integration:** S4 checkpoint `64a8e3b5` is pushed to BevBranch, and Salty's ProjectMain `fea55926` is integrated. The only content conflict was this document; both research and journey entries were retained. Fresh merged-revision checks passed 158 focused EditMode tests and one PlayMode journey continuity test with wrapping enabled. No fresh graphics review, full suite, build, or journey balance batch was run. The seven research packages below retain their original experiment dates and frozen-source provenance; older statements about local/uncommitted status describe those historical runs. See the [publication and integration handoff](handoffs/2026-10-07-2049-codex-s4-balance-publication.md). No new gameplay tuning is approved by this checkpoint.
 
-**S4-03 Trailblazer early-choice timing diagnostic: 2026-10-07, complete locally; human balance review pending.** Moving the first of five Trailblazer choices from tick 100 to tick 0 did not improve the matched all-species clear rate: 28/200 (14%) versus 30/200 (15%) on the same seeds, with a paired risk difference of -1 percentage point (95% CI -7.3 to +5.3; exact McNemar p=.878). The first-phase median Hare population ended higher (26 vs. 21), while median combat deaths changed only from 39 to 37.5; fewer candidate runs reached tick 600 (102 vs. 121). No gameplay values, defaults, or player-facing UX changed. See [protocol](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/PROTOCOL.md), [report](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/REPORT.md), [interpretation](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/ANALYSIS.md), and [handoff](handoffs/2026-10-07-0024-codex-s4-03-trailblazer-early-choice-timing.md). Raw run artifacts and validated summary remain under the ignored `artifacts/` directory.
+**S4-03 Trailblazer early-choice timing diagnostic: 2026-10-07, complete locally; human balance review pending.** Moving the first of five Trailblazer choices from tick 100 to tick 0 did not improve the matched all-species clear rate: 28/200 (14%) versus 30/200 (15%) on the same seeds, with a paired risk difference of -1 percentage point (95% CI -7.3 to +5.3; exact McNemar p=.878). The first-phase median Rabbit population ended higher (26 vs. 21), while median combat deaths changed only from 39 to 37.5; fewer candidate runs reached tick 600 (102 vs. 121). No gameplay values, defaults, or player-facing UX changed. See [protocol](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/PROTOCOL.md), [report](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/REPORT.md), [interpretation](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/ANALYSIS.md), and [handoff](handoffs/2026-10-07-0024-codex-s4-03-trailblazer-early-choice-timing.md). Raw run artifacts and validated summary remain under the ignored `artifacts/` directory.
 
 **S4-03 offer-aware strategy policy screen at 600/40/25: 2026-10-06, complete locally; balance review pending.** Four arms ran on 200 fresh common seeds (14200–14399) each. All-species clear rates were 16.0% skip-all, 15.0% Trailblazer, 17.0% Warren, and 25.5% Gardeners. Gardeners improved over skip-all on matched seeds (+9.5 percentage points, 95% CI +3.2 to +15.8); none reached the rough 40–50% target. Median Fox starvation deaths were 47–48 and energy-blocked reproduction candidates about 6,700–7,700 per run, flagging Fox persistence for diagnosis rather than immediate tuning. No gameplay values or defaults changed. See [protocol](Research/Experiments/S4-03-Strategy-Choice-Policy-Screen-600-40-25/PROTOCOL.md), [report](Research/Experiments/S4-03-Strategy-Choice-Policy-Screen-600-40-25/REPORT.md), [interpretation](Research/Experiments/S4-03-Strategy-Choice-Policy-Screen-600-40-25/ANALYSIS.md), and [handoff](handoffs/2026-10-06-2326-codex-s4-03-strategy-choice-policy-screen.md). Raw artifacts remain under the ignored `artifacts/` path.
 
 **S4-03 all-species threshold confirmation at 600/40/25: 2026-10-06, complete locally; human balance decision pending.** On 200 fresh common seeds per arm (14000-14199), the strict node-clear rate was 25/200 skip-all control, 58/200 Seed Dispersal, 50/200 Gardeners Digestion-first, and 57/200 Gardeners Dispersal-first. Each strategy cleared on more matched seeds than control alone; the two Gardeners orders did not differ decisively. Many horizon-reaching intervention failures miss the minimum-Fox threshold. No skill values, scenario defaults, or authored population settings were changed. See the [confirmation package](Research/Experiments/S4-03-Hare-Paired-Seed-Confirmation-600-40-25/README.md) and [handoff](handoffs/2026-10-06-1432-codex-s4-03-200-seed-threshold-confirmation.md). Full reports are local under the ignored experiment-artifact root.
 
-**S4-03 Hare paired-seed screen at 600/40/25: 2026-10-05, complete locally; human review pending.** Bevin selected 100 fresh common seeds per arm. The corrected 13-arm strategy matrix was run with 600 Plants / 40 Hares / 25 Foxes, wrapping on, 36x20, six 100-tick phases, 0.1-second steps, coupled responses off, and no reinforcements or added Genomes. Seeds 13000-13099 produced 1,300 runs and 7,219 observed phase windows; all run and slashline accounting checks passed. Seed Dispersal and both Gardeners orders retained all three species at tick 600 in 43/100 each, versus 19/100 control, while Hare survival was 60-61/100 versus 56/100. Both Trailblazer orders survived less often (42/100 and 46/100). These are contextual screening observations; medians remained low, means were skewed, and no tuning or balance decision is approved. See the [screen package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen-600-40-25/README.md) and [handoff](handoffs/2026-10-05-2348-codex-s4-600-40-25-paired-seed-screen.md). Raw evidence and exact dirty-source hashes are local under the ignored artifact root. No source or authored simulation asset was changed during the batch.
+**S4-03 Rabbit paired-seed screen at 600/40/25: 2026-10-05, complete locally; human review pending.** Bevin selected 100 fresh common seeds per arm. The corrected 13-arm strategy matrix was run with 600 Plants / 40 Rabbits / 25 Foxes, wrapping on, 36x20, six 100-tick phases, 0.1-second steps, coupled responses off, and no reinforcements or added Genomes. Seeds 13000-13099 produced 1,300 runs and 7,219 observed phase windows; all run and slashline accounting checks passed. Seed Dispersal and both Gardeners orders retained all three species at tick 600 in 43/100 each, versus 19/100 control, while Rabbit survival was 60-61/100 versus 56/100. Both Trailblazer orders survived less often (42/100 and 46/100). These are contextual screening observations; medians remained low, means were skewed, and no tuning or balance decision is approved. See the [screen package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen-600-40-25/README.md) and [handoff](handoffs/2026-10-05-2348-codex-s4-600-40-25-paired-seed-screen.md). Raw evidence and exact dirty-source hashes are local under the ignored artifact root. No source or authored simulation asset was changed during the batch.
 
 
 **Wrapping population search: 2026-10-04, complete locally; visual candidate selection pending.**
@@ -1517,13 +1533,13 @@ and [experiment package](Research/Experiments/S4-03-Wrapping-Grid-Screen/README.
 Source changes remain local and uncommitted with the prior paired-screen work.
 
 **S4-03 paired-seed screen: 2026-10-03, complete locally; human decision pending.** Bevin selected
-400 Plants / 20 Hares / 10 Foxes for the 13-arm, 20-seed comparison of six
-single Hare skills and both acquisition orders of the three core pairs. The
+400 Plants / 20 Rabbits / 10 Foxes for the 13-arm, 20-seed comparison of six
+single Rabbit skills and both acquisition orders of the three core pairs. The
 first screen exposed scheduled Threat Avoidance not reaching experimental
 options; follow-up exposed an obsolete flee-speed gate and process-wide entity
 IDs in avoidance hashing. Local fixes and three focused assertion checks pass. The corrected 260-run
 screen and avoidance replay validate: control survives in 7/20, Crowding
-Tolerance alone in 9/20, and pairs in 2/20 to 5/20; all median final Hare
+Tolerance alone in 9/20, and pairs in 2/20 to 5/20; all median final Rabbit
 populations are zero. No skill values or production assets were tuned.
 Read the [screen handoff](handoffs/2026-10-03-1200-codex-s4-paired-seed-development-screen.md)
 and [experiment package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen/README.md).
@@ -1551,7 +1567,7 @@ art checkpoint. See
 [art ownership and export instructions](Species%20Design/CHRONO_SPECIES_ART.md)
 and the [validation handoff](handoffs/2026-10-02-chrono-species-art-standardization.md).
 
-**S4-01 Hare strategy workbook: 2026-10-01, ready for Salty review.** Bevin
+**S4-01 Rabbit strategy workbook: 2026-10-01, ready for Salty review.** Bevin
 approved starting values, costs and example paths for Trailblazer, Warren
 and Gardeners. The workbook is now a repository review artifact; team review,
 implementation and balance evidence remain. Read the
@@ -1566,10 +1582,10 @@ now support the Trailblazer path, and the preview Inspector has an in-memory
 S4 fixture and paused single-tick controls. Focused validation passed 180
 EditMode and two PlayMode tests. Bevin closed the first manual visual-testing
 pass on October 1 after checking the controls, Movement acquisition and results.
-The seed-5, 400/20/10 run ended in Hare extinction at tick 180; Threat Avoidance
+The seed-5, 400/20/10 run ended in Rabbit extinction at tick 180; Threat Avoidance
 and the full five-pick path were not reached in that manual run. A clipped
 Movement card footer and stale Game-view setup display remain UI follow-ups.
-Bevin reports preferring 400 Plants / 20 Hares / 10 Foxes during population
+Bevin reports preferring 400 Plants / 20 Rabbits / 10 Foxes during population
 exploration. This is the next comparison candidate; the implemented S4 fixture
 and authored production defaults have not been changed. Seed Dispersal is now
 implemented locally with direct planting counters and a Gardeners offer path;
@@ -1586,7 +1602,7 @@ and the original [six-skill checklist](handoffs/2026-10-01-1947-codex-s4-02-impl
 Field Notes button now opens cumulative species metrics without Developer Mode,
 and both completed and failed results show the same slashline. Existing domain
 calculations, ADD accounting and N/A/INVALID statuses are reused. Live Unity
-checks covered Hare/Fox, paused updates, decisions, reinforcement and results;
+checks covered Rabbit/Fox, paused updates, decisions, reinforcement and results;
 rendered prototype panels were inspected. Bevin reported the new display looks
 good on October 2. The NUnit regression was updated but
 not executed, to preserve the open scene's unsaved edits. Read the
@@ -1613,7 +1629,7 @@ ownership and capacity; those older notes are not a fresh kickoff decision.
 **S4 active: 2026-10-01.** Sim accepts 20h (14h feature, 3h protected
 reserve, and 3h unallocated). Josh confirmed his 20h
 availability and responsibilities. Josh chose the active profile plus current
-defaults for P1-032 (Forest Edge, Hare, seed 10100), accepted its 6h estimate,
+defaults for P1-032 (Forest Edge, Rabbit, seed 10100), accepted its 6h estimate,
 deferred local profile-choice save/restore, and approved 400/25/15 with a
 0.1-second step as an experiment variant; the authored production asset
 remains 400/55/35 at 0.2 seconds. Missing or invalid profile context must fail
@@ -1650,11 +1666,11 @@ report changes. The M1 Trello card is COMPLETE, and S3-05 remains Backlog
 stretch work. See the [Sim kickoff handoff](handoffs/2026-09-29-1241-codex-s4-sim-kickoff-approvals.md)
 and [M1 closeout](handoffs/2026-09-29-codex-m1-closeout.md).
 
-**Hare purchase stat line: 2026-09-28, shared on BevBranch.** Successful phase-boundary
+**Rabbit purchase stat line: 2026-09-28, shared on BevBranch.** Successful phase-boundary
 population additions are now tracked as `ADD` in the run and checkpoint. The
 whole-run Herbivore and Predator Stat-Lines include `ADD` in expected FPO and
 survival denominators and exclude it from birth-based RFS. The in-game summary,
-JSON report, human report, CSV, and independent Hare validator expose or account
+JSON report, human report, CSV, and independent Rabbit validator expose or account
 for the new field; phase windows still start with their post-purchase opening
 population. Static diff inspection and script parsing passed. The locally
 installed Unity 6000.4.6f1 Editor compiled the project with zero Console
@@ -1663,7 +1679,7 @@ run was requested. The Editor instance used for compilation was closed.
 
 **Forest Edge population cleanup: 2026-10-01, ready for review on BevBranch.**
 See the [cleanup handoff](handoffs/2026-10-01-1916-codex-population-configuration-cleanup.md) for scope and verification. The shared
-production default remains 36x20, 400 Plants / 55 Hares / 35 Foxes, zero
+production default remains 36x20, 400 Plants / 55 Rabbits / 35 Foxes, zero
 starting probabilities and a 0.2-second step. The proposed S4 fixture uses
 400/25/15 and an explicit 0.1-second step through experiment inputs; it does
 not replace the production asset. `CellSim Run -StartingPopulations` now passes
@@ -1681,13 +1697,13 @@ Local results are under `artifacts/unity-tests-20261001-180224/`,
 validation, not a full-suite, visual Catalog interaction or balance acceptance.
 
 **Historical Forest Edge no-choice run: 2026-09-29, local on BevBranch.** This
-run used a locally edited 36x20 scenario with 400 Plants, 25 Hares and 15
+run used a locally edited 36x20 scenario with 400 Plants, 25 Rabbits and 15
 Foxes, all starting probabilities zero. It did not establish a shared baseline.
 A matched 200-seed no-choice run (10100–10299) through the locally installed
-Unity Editor, using the saved desktop 0.1-second step, observed Hare extinction
+Unity Editor, using the saved desktop 0.1-second step, observed Rabbit extinction
 in 178/200 runs (median tick 211) and Fox extinction in 196/200 (median tick
 351); only 4 runs reached tick 600. Plants averaged 402.05 at tick 200, while
-Hare combat deaths outnumbered starvation deaths, consistent with predation
+Rabbit combat deaths outnumbered starvation deaths, consistent with predation
 being the main early pressure in that configuration. Later checkpoint counts
 are censored by runs ending when the selected Fox player species goes extinct. The scenario
 asset still authors a 0.2-second step; this evidence is for the live saved
@@ -1697,11 +1713,11 @@ Raw reports and the original analysis remain in ignored local artifacts.
 **Historical composite-Mutation pilot: 2026-09-29, local.** The catalog Mutation,
 `warren-guarded-burrow` (block +2, movement speed -0.25), was tested alone
 against a same-seed no-Mutation control on seeds 10100-10119 using a local
-400/25/15 Forest Edge start, a 0.2-second step and Hare as the player species.
+400/25/15 Forest Edge start, a 0.2-second step and Rabbit as the player species.
 This differs from the 0.1-second, Fox-player historical baseline above.
 It was acquired after phase 1 and retained through
-the six 100-tick phases. Control had 2/20 Hare extinctions and mean terminal
-Hare 119.05; Guarded Burrow had 0/20 and mean terminal Hare 137.10. Mean APS
+the six 100-tick phases. Control had 2/20 Rabbit extinctions and mean terminal
+Rabbit 119.05; Guarded Burrow had 0/20 and mean terminal Rabbit 137.10. Mean APS
 was 1.35887 versus 1.56838. All 20 slash lines per arm independently validated
 with the documented HPS/EHS/ECN raw-event limitations. This is directional pilot
 evidence only. Guarded Burrow combines block and a movement penalty; it does
@@ -1710,7 +1726,7 @@ not validate the proposed S4 basic Hide skill. Reconcile the earlier full
 work. The [shared historical summary and per-seed slash lines](Research/Reports/2026-10-01-historical-forest-edge-populations/report.md)
 preserve the comparison; raw reports and validators remain local artifacts.
 
-**Previous Forest Edge baseline: 2026-09-29.** The 400 Plants / 55 Hares / 5
+**Previous Forest Edge baseline: 2026-09-29.** The 400 Plants / 55 Rabbits / 5
 Foxes run remains a historical comparison. Its report is local-only at
 `artifacts/forest-edge-startpop-screen-20260929/report.md`; it is not part of
 the shared evidence package.
@@ -1722,7 +1738,7 @@ persist them, then start or restart a preview without an explicit population
 override to use the selected scenario's authored values. The historical run
 loaded the locally edited scenario asset without a starting-population
 override and verified 400 Plants / 25
-Hares / 15 Foxes at tick zero in all 200 seeds. The screenshot/run values are
+Rabbits / 15 Foxes at tick zero in all 200 seeds. The screenshot/run values are
 recorded locally. This authoring tool does not approve a production balance change.
 
 **S3-08 Fox telemetry clarification: 2026-09-27, validated.** The report
@@ -1742,10 +1758,10 @@ user's screenshot are not the Safe Mode blocker. Artifacts are under
 handoff](handoffs/2026-09-27-codex-s3-08-fox-telemetry.md).
 
 **S3-04 Mutation readability and first bounded review: 2026-09-27.** The
-phase-choice path now offers three distinct free Hare Mutations plus Skip,
+phase-choice path now offers three distinct free Rabbit Mutations plus Skip,
 allows repeat picks to increase the level, and keeps the same expedition
 running. Tough Hide was approved as the first evidence candidate. A matched
-20-seed, six-phase Forest Edge/Hare comparison supports the directional copy
+20-seed, six-phase Forest Edge/Rabbit comparison supports the directional copy
 “Block more incoming attacks,” but does not establish a broad population
 benefit. The player-facing copy and generic A/B/C markers are accepted for this
 slice. Focused EditMode 1/1 and three PlayMode checks passed in the installed
@@ -1771,26 +1787,26 @@ then reported the project lock as unreachable. Doctor also reported the Unity
 licensing client and Unity services endpoint unreachable. The merged project
 compiled in the directly installed Unity 6000.4.6f1 Editor on 2026-09-27;
 full visual acceptance remains open. See the
-**Forest Edge Hare metabolism first pass: 2026-09-28.** The production Hare
+**Forest Edge Rabbit metabolism first pass: 2026-09-28.** The production Rabbit
 energy-loss interval is now 8 ticks instead of 10; grass, reproduction, and
-other Hare values are unchanged. This is a provisional first pass to intensify
-the no-predator famine, not a Fox–Hare equilibrium decision. The matched
-no-Fox 20-seed test showed a smaller mean Hare peak (155 vs. 171), grass
+other Rabbit values are unchanged. This is a provisional first pass to intensify
+the no-predator famine, not a Fox–Rabbit equilibrium decision. The matched
+no-Fox 20-seed test showed a smaller mean Rabbit peak (155 vs. 171), grass
 depletion about 25 ticks earlier, and extinction by tick 600 in 20/20 runs
-(baseline 11/20). The same in-progress Hare dispersal code was present in both
+(baseline 11/20). The same in-progress Rabbit dispersal code was present in both
 arms, so its effect is not isolated. See the [comparison analysis](../artifacts/cellular-experiment-20260928-034040/ai-analysis-v1.md),
 [candidate report](../artifacts/cellular-experiment-20260928-034040/report-summary.md),
 and [baseline report](../artifacts/cellular-experiment-20260928-033949/report-summary.md).
 
-**Crowded Hare dispersal: 2026-09-27.** The fallback Hare movement path now
-allows an overcrowded Hare to move into an adjacent passable, empty cell above
-the local group-size cap when that move reduces nearby Hare density. Normal
-mate-seeking, feeding, threat escape, and non-Hare movement retain their
+**Crowded Rabbit dispersal: 2026-09-27.** The fallback Rabbit movement path now
+allows an overcrowded Rabbit to move into an adjacent passable, empty cell above
+the local group-size cap when that move reduces nearby Rabbit density. Normal
+mate-seeking, feeding, threat escape, and non-Rabbit movement retain their
 existing priorities. A focused regression test was added, but the project test
 runner did not execute it because the connected Unity Editor is currently in
 Play Mode. No map-spread or starvation experiment has been run, so this is a
 provisional behavior change, not a validated population outcome. See the
-[crowded-Hare dispersal handoff](handoffs/2026-09-27-1124-codex-crowded-hare-dispersal.md).
+[crowded-Rabbit dispersal handoff](handoffs/2026-09-27-1124-codex-crowded-hare-dispersal.md).
 
 **Forest Edge board visual pass: 2026-09-27–28.** Work continues on
 `codex/forest-edge-visual-pass`, based on the birth-poof pilot. The board has a
@@ -1819,7 +1835,7 @@ an `ObjectDisposedException` and Package Manager IPC timed out; it produced no
 test verdict. See the
 [field-pass handoff](handoffs/2026-09-27-forest-edge-visual-pass.md).
 
-**Crowding and starvation: 2026-09-26.** Production Hares and Foxes use a
+**Crowding and starvation: 2026-09-26.** Production Rabbits and Foxes use a
 2× metabolism multiplier while their local group exceeds its size limit and
 tolerance. The crowding pass no longer kills creatures directly; lethal energy
 loss is classified as starvation. This is implemented in the
@@ -1836,15 +1852,15 @@ occupies the tile and resets after successful spread. Initial plant timers are
 seeded at staggered points in the cycle to avoid a synchronized first wave.
 This changes spreading; passive food-reserve regrowth keeps its current
 behavior. No tests or matched balance runs have been run for this change, so
-the interval remains unverified. Hare seed-drop chance is zero in the
+the interval remains unverified. Rabbit seed-drop chance is zero in the
 production definition, diagnostic definition, and scenario generator, so
-Hares consume grass locally without reseeding it. See the
+Rabbits consume grass locally without reseeding it. See the
 [time-based grass growth handoff](handoffs/2026-09-24-codex-time-based-grass-growth.md).
 
-**Hare mate-seeking and reproductive drive: 2026-09-24.** The production Hare
+**Rabbit mate-seeking and reproductive drive: 2026-09-24.** The production Rabbit
 now has a 100% reproduction chance and can seek a mate at 50% of its 48-energy
 cap (24 energy), matching the existing 50%-cap mating cost. Once eligible, a
-Hare paths toward the nearest same-species individual without a reproduction
+Rabbit paths toward the nearest same-species individual without a reproduction
 cooldown anywhere on the board before foraging; this social search is separate
 from vision so Fox-detection range stays unchanged. The local group limit is
 raised from 3 to 7 so a pair and its maximum five-offspring litter can use the
@@ -1881,15 +1897,15 @@ see [retained results](../artifacts/unity-tests-20260924-134934/). No matched
 Forest Edge balance batch has been run, so treat these as provisional values. See the
 [Fox tuning change](handoffs/2026-09-23-2054-codex-fox-hunt-mating-energy.md).
 
-**Forest Edge hare energy behavior: 2026-09-23.** Hare energy loss now occurs
+**Forest Edge rabbit energy behavior: 2026-09-23.** Rabbit energy loss now occurs
 once every 10 simulation ticks. Reserve feeding uses a 6-energy trigger and a
 24-energy refill target: dropping below 6 starts refilling; after reaching 24,
-the hare stops eating until it falls below 6 again. Other species retain their
+the rabbit stops eating until it falls below 6 again. Other species retain their
 existing per-tick metabolism. Focused tests cover the refill cycle, metabolism
 cadence, and maximum-energy upgrade behavior. The full Unity suite passed
 256/256 EditMode and 33/33 PlayMode on 2026-09-24; see
 [retained results](../artifacts/unity-tests-20260924-134934/).
-See the [hare feeding and mating handoff](handoffs/2026-09-23-codex-hare-full-energy-mate-seeking.md).
+See the [rabbit feeding and mating handoff](handoffs/2026-09-23-codex-hare-full-energy-mate-seeking.md).
 
 **Field observation board pan and zoom: 2026-09-22.** The custom board now
 handles captured left-drag panning and cursor-anchored wheel zoom (0.75x–4x),
@@ -1902,9 +1918,9 @@ Static diff checks and a scratch C# compile passed (0 errors; one external Syste
 Clean CellSim runs used seeds 10100-10119 at 600 and 1,200 ticks on commit
 `c6b3282`, with the authored 20x20 / 0.2-second Forest Edge setup, opposed-roll
 combat, natural attack opportunities, and no upgrades. Foxes ended extinct in
-20/20 seeds by tick 600; Hares ended extinct in 10/20 at both horizons and
+20/20 seeds by tick 600; Rabbits ended extinct in 10/20 at both horizons and
 averaged 0.80 / 0.85 final individuals. Mean Fox combat kills and starvation
-deaths were 15.65 and 15.85 per run, while mean Hare births were 0.60 / 0.80.
+deaths were 15.65 and 15.85 per run, while mean Rabbit births were 0.60 / 0.80.
 Bevin reports an exploratory two-stage concept with Salty: species survival to
 earn data first, where collapse without intervention is expected, then data
 investment in upgrades to build a healthy, collapse-resistant environment.
@@ -1915,17 +1931,17 @@ handoff](handoffs/2026-09-22-2200-codex-forest-edge-current-values-diagnostic-ba
 and its raw reports and summaries. The September 21 42x20 Fox-6 comparison and
 mating-fix evidence remain in the [first balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md).
 **Forest Edge balance iteration: 2026-09-21.** The first matched 600-tick
-Hare/Fox pass provisionally moves Forest Edge's explicit starting Fox population
+Rabbit/Fox pass provisionally moves Forest Edge's explicit starting Fox population
 from 4 to 6. Across seeds 10100–10119 this increased direct Fox pressure: mean
-Fox kills rose from 20.35 to 24.25 and Hare combat deaths rose from 20.35 to
-24.25, with no Hare extinction. Keep Fox 6 as the working comparison baseline.
-Fox/Hare population equality and final population are descriptive only, not the
+Fox kills rose from 20.35 to 24.25 and Rabbit combat deaths rose from 20.35 to
+24.25, with no Rabbit extinction. Keep Fox 6 as the working comparison baseline.
+Fox/Rabbit population equality and final population are descriptive only, not the
 balance score. The current direct measures are predation encounters and kills,
-Hare post-contact survival, starvation pressure, and whether phase 3 remains
+Rabbit post-contact survival, starvation pressure, and whether phase 3 remains
 weakened. A paired 300-tick continuation also found the existing Tough Hide →
-Threat Exposure path improved Hare post-contact survival (`pAVI` 0.39→0.46)
+Threat Exposure path improved Rabbit post-contact survival (`pAVI` 0.39→0.46)
 while increasing phase-3 starvation pressure (31.4→35.5 deaths/run). Evidence
-and the rejected Hare starting-energy trial are recorded in the [first balance
+and the rejected Rabbit starting-energy trial are recorded in the [first balance
 handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md).
 The same handoff records the subsequent Fox mating-state fix: mutually ready
 adjacent Foxes take mating priority over foraging and do not move while mating.
@@ -1942,12 +1958,12 @@ mating coverage passed 4/4 focused and 237/237 before this correction. The
 latest live five-seed
 continuation recorded three Fox births, but zero aggregate `Mating` state
 ticks; that telemetry/eligibility discrepancy remains a follow-up, not a
-Fox/Hare population-equality target.
+Fox/Rabbit population-equality target.
 
-**Historical Hare starvation comparison: 2026-09-22.** The grass reserve increase from
-10 to 11.5 did not change matched Hare starvation deaths, so it was not kept.
+**Historical Rabbit starvation comparison: 2026-09-22.** The grass reserve increase from
+10 to 11.5 did not change matched Rabbit starvation deaths, so it was not kept.
 Using the same Forest Edge scenario, seeds 1–20, 600 ticks, and the current
-Hare bite value of 5, grass reproduction `0.0015` produced 283 Hare
+Rabbit bite value of 5, grass reproduction `0.0015` produced 283 Rabbit
 starvation deaths. Grass reproduction `0.0115` produced 236, a provisional
 16.61% reduction. This chance-based value was superseded by the time-based
 spread interval on 2026-09-24; the measured result remains historical evidence,
@@ -1955,14 +1971,14 @@ not a validation of the new interval. Evidence is recorded in the
 [grass-starvation candidate](../artifacts/cellular-experiment-20260922-075959/report.json)
 and [matched control](../artifacts/cellular-experiment-20260922-074858/report.json).
 
-**Fox hunt / Hare escape follow-up: 2026-09-22.** Hungry Foxes now use their
-visible Hare target for vision-based pursuit while in `Hunting`, instead of
+**Fox hunt / Rabbit escape follow-up: 2026-09-22.** Hungry Foxes now use their
+visible Rabbit target for vision-based pursuit while in `Hunting`, instead of
 falling back to wandering unless prey is already adjacent. Herbivores now enter
 `Threatened` when a predator is visible, including a stationary Fox outside
 attack range, and the existing escape movement chooses an available cell that
 increases distance from that Fox. Focused EditMode checks cover visible-prey
 hunting, stationary-threat perception, stationary-Fox escape, and the existing
-Fox-pursuit fixture. This is a capability fix, not a claim that Fox and Hare
+Fox-pursuit fixture. This is a capability fix, not a claim that Fox and Rabbit
 populations should match; a matched Forest Edge run is still needed to assess
 its ecological effect.
 
@@ -2113,8 +2129,8 @@ The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will
 translate repeatable, predictable Stat-Line impacts into concise qualitative
 player guidance, with simpler directional language when the evidence cannot
 support a precise claim; raw statistics remain off the player surface. The
-earlier S3 bridge used two rotating Hare Mutations plus fixed repeatable
-Reinforcements. S3-04 replaced that offer with three distinct free Hare
+earlier S3 bridge used two rotating Rabbit Mutations plus fixed repeatable
+Reinforcements. S3-04 replaced that offer with three distinct free Rabbit
 Mutations from the five-effect pool; repeat selections at later boundaries
 increase the selected level. Skip has no S3-04 reward. The earlier population
 addition and its balance remain provisional historical work.
@@ -2125,7 +2141,7 @@ checkpoint replay, the headless schedule, and the accepted EX-010 execution.
 CF-6 duration/memory measurement is stretch work rather than an S3 closeout
 gate; the Windows player smoke and corrected scenario run are complete, and
 graphics acceptance is complete.
-The current Desktop acceptance contract directly starts Forest Edge with Hare
+The current Desktop acceptance contract directly starts Forest Edge with Rabbit
 when the player opens Simulation. This preserves the merged Bev/Sim simulation
 experience. The initial S3-01 baseline on 2026-09-17 had EditMode 247/249 with
 two terrain failures and PlayMode 28/29 with one justified graphics-only skip.
@@ -2155,8 +2171,8 @@ decision moments with three temporary Mutations or Skip at each, one after
 each of phases 1–5. Permanent currency purchases in
 the Gene Lab are Genome Upgrades that fill a Genome skill tree. Letting the
 player skip for extra currency is undecided and non-blocking; if adopted, it
-uses the same currency as Genome Upgrades. At Hare phase decisions, a separate
-repeatable reinforcement purchase adds one Hare to the next phase for 10 Field
+uses the same currency as Genome Upgrades. At Rabbit phase decisions, a separate
+repeatable reinforcement purchase adds one Rabbit to the next phase for 10 Field
 Data while space and Data remain; it does not use the Mutation choice. The
 phase screen shows the available Data and labels free Mutation offers. S3-04
 Mutation choices are free and
@@ -2183,11 +2199,11 @@ Simulations use different success scorecards. Scalable balance work uses shared
 capabilities and provisional Adaptation Value estimates, but requires
 mode-appropriate direct-effect, matchup, and ecosystem evidence under
 [`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md). The seven
-existing Hare assets are provisional Mutation candidates. The implemented
+existing Rabbit assets are provisional Mutation candidates. The implemented
 Genome foundation carries stable per-species unlocked and active node IDs
 through the local profile, launch request, run, checkpoint, and result. Generic
 ScriptableObject authoring types resolve metadata into an immutable catalog for
-the Gene Lab. The visualization-only five-node Hare and seven-node Fox maps,
+the Gene Lab. The visualization-only five-node Rabbit and seven-node Fox maps,
 their debug selector, and the player-scene provider were removed on 2026-09-17;
 the simulation's seven-item Mutation catalog and Bev experimental behavior were
 not changed. No production Genome map is currently assigned. Genome effects,
@@ -2231,7 +2247,7 @@ Open Range/Deer contract; Josh accepted its narrow ordered-combination finding
 on 2026-09-17. Reuse remains limited to that tested setup and does not approve
 individual-upgrade effects, production balance, or generalized transfer. No
 further experiment is selected.
-The `bev-experimental` Coupled Hare/Fox response path is enabled in the current
+The `bev-experimental` Coupled Rabbit/Fox response path is enabled in the current
 preview: it applies a deterministic free counterpart legacy upgrade at the same
 Expedition boundary and records both species' immutable snapshots, origins, and
 trigger IDs. Unity EditMode passed 239/239 and the focused same-boundary
@@ -2253,7 +2269,7 @@ population initialization fix, recorded:
 EditMode 251/251, no-graphics PlayMode 28 passed with two expected
 graphics-only skips, and graphics-capable PlayMode 30/30. The artifact is
 `artifacts/unity-tests-20260917-220612/`. PlayMode covers the direct-start
-Forest Edge/Hare route, Lab launch/return, and settings-rejection/run-
+Forest Edge/Rabbit route, Lab launch/return, and settings-rejection/run-
 preservation path. The earlier terrain blocker is resolved locally.
 The older paragraph above describes the 2026-09-17 validation snapshot. The
 Trello S3-01 card was subsequently marked Done; see the [S3 control
@@ -2277,9 +2293,9 @@ inconclusive.
 - Vertical-slice scenario, roster, and builds: [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md)
 - Future scientific-data economy: [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md)
 - Mutation, Genome, and balance delivery plan: [`UPGRADE_SYSTEM_DIRECTION.md`](UPGRADE_SYSTEM_DIRECTION.md)
-- Coupled Hare/Fox implementation goal pack: [`COUPLED_SPECIES_RESPONSE_GOAL_PACK.md`](COUPLED_SPECIES_RESPONSE_GOAL_PACK.md)
+- Coupled Rabbit/Fox implementation goal pack: [`COUPLED_SPECIES_RESPONSE_GOAL_PACK.md`](COUPLED_SPECIES_RESPONSE_GOAL_PACK.md)
 - Mutation authoring workflow: [`UPGRADE_AUTHORING_GUIDE.md`](UPGRADE_AUTHORING_GUIDE.md)
-- Hare Mutation acceptance matrix: [`UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md`](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md)
+- Rabbit Mutation acceptance matrix: [`UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md`](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md)
 - Official upgrade and ecology balance guideline: [`Studio Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md)
 - Official Noesis image resource pipeline: [`Studio Guidelines/SG-006-NOESIS-IMAGE-RESOURCE-PIPELINE.md`](Studio%20Guidelines/SG-006-NOESIS-IMAGE-RESOURCE-PIPELINE.md)
 - Upgrade-system planning concerns: [`Planning concerns/upgrade-system.md`](Planning%20concerns/upgrade-system.md)

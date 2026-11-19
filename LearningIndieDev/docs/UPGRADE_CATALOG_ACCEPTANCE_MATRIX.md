@@ -1,11 +1,11 @@
-# Hare Mutation Acceptance Matrix
+# Rabbit Mutation Acceptance Matrix
 
 **Status:** Contract and authoring gate complete. The two litter-size
 Mutations were approved for production by Josh on 2026-09-24; balance evidence
 and Adaptation Value calibration remain open.
 
 **Owner:** Josh
-**Scope:** Nine Hare Mutation definitions. The two production-approved litter
+**Scope:** Nine Rabbit Mutation definitions. The two production-approved litter
 Mutations are stored under
 `Assets/Data/ProductionData/CellularSimulation/Upgrades/Production/`. The seven
 earlier candidates remain under `Assets/Data/TestData/Upgrades/Production/`.
@@ -72,7 +72,7 @@ artifact is [`EditMode-results.xml`](../artifacts/unity-tests-20260905-064231/Ed
 | `larger-minimum-litter` | Produce at least one more offspring per litter | 5 | `reproduction.litter-minimum +1` | Yes | Authored minimum and observed litter-size distribution | Accepted | Production approved by Josh (2026-09-24) |
 | `larger-maximum-litter` | Allow one more offspring at the top of the litter range | 5 | `reproduction.litter-maximum +1` | Yes | Authored maximum and observed litter-size distribution | Accepted | Production approved by Josh (2026-09-24) |
 
-All nine rows target `hare`, have an empty prerequisite list and an empty
+All nine rows target `rabbit`, have an empty prerequisite list and an empty
 exclusion list, and use `PerRun` scope. The two approved assets are in the
 production folder; the seven older assets remain test data. The empty
 relationship lists are intentional for this catalog slice; branch
@@ -87,15 +87,15 @@ that this evidence has already been collected.
 
 | Mutation | Shared capability | Useful context | Ecological cost or obligation | Direct proof | Wider ecosystem review |
 | --- | --- | --- | --- | --- | --- |
-| Long Stride | Escape and migration | Predator pressure or separated food patches | Harder mate requirement | Movement attempts, arrivals, and missing-mate blocks | Hare survival, Fox contact, food access, and resource distribution |
+| Long Stride | Escape and migration | Predator pressure or separated food patches | Harder mate requirement | Movement attempts, arrivals, and missing-mate blocks | Rabbit survival, Fox contact, food access, and resource distribution |
 | Far Sight | Detection and foraging | Distant threats, mates, or food | Higher energy use | Newly detected targets and energy trend | Starvation, encounter rate, and population stability |
-| Guarded Burrow | Defense | Repeated predator contact | Slower movement; it does not yet unlock a literal burrow ability | Blocks, prevented damage, and movement | Hare and Fox survival plus encounter frequency |
-| Room to Breed | Reproduction and crowding resilience | Dense local Hare groups | Higher metabolism and local resource demand | Group-limit blocks, crowded metabolism, starvation, and births | Fern depletion, population volatility, and Fox opportunity |
-| Seed Pouches | Resource dispersal at launch | A new expedition with sparse starting food | Lower starting energy and no mid-expedition effect | Starting reserve/energy and successful seed drops | Early Hare survival and Fern distribution |
-| Careful Sowing | Resource recovery | A moving food frontier | Slower movement and delayed payoff | Seed attempts, successful drops, new Fern cells, and movement | Fern sustainability, Hare food access, and contested Fox locations |
-| Large Litters | Crowding resilience | Dense Hare pockets | **TBD before balance approval**; the current candidate has no explicit cost | Crowded metabolism, starvation deaths, and local density | Birth pressure, Fern demand, Fox opportunity, and runaway growth |
-| Larger Minimum Litter | Reproduction | Hare breeding groups that can sustain larger births | More immediate food and space demand | Effective minimum and resulting litter-size distribution | Hare density, Fern demand, Fox opportunity, and population volatility |
-| Larger Maximum Litter | Reproduction | Hare breeding groups with room for larger births | Greater possible food and space demand | Effective maximum and resulting litter-size distribution | Hare density, Fern demand, Fox opportunity, and population volatility |
+| Guarded Burrow | Defense | Repeated predator contact | Slower movement; it does not yet unlock a literal burrow ability | Blocks, prevented damage, and movement | Rabbit and Fox survival plus encounter frequency |
+| Room to Breed | Reproduction and crowding resilience | Dense local Rabbit groups | Higher metabolism and local resource demand | Group-limit blocks, crowded metabolism, starvation, and births | Fern depletion, population volatility, and Fox opportunity |
+| Seed Pouches | Resource dispersal at launch | A new expedition with sparse starting food | Lower starting energy and no mid-expedition effect | Starting reserve/energy and successful seed drops | Early Rabbit survival and Fern distribution |
+| Careful Sowing | Resource recovery | A moving food frontier | Slower movement and delayed payoff | Seed attempts, successful drops, new Fern cells, and movement | Fern sustainability, Rabbit food access, and contested Fox locations |
+| Large Litters | Crowding resilience | Dense Rabbit pockets | **TBD before balance approval**; the current candidate has no explicit cost | Crowded metabolism, starvation deaths, and local density | Birth pressure, Fern demand, Fox opportunity, and runaway growth |
+| Larger Minimum Litter | Reproduction | Rabbit breeding groups that can sustain larger births | More immediate food and space demand | Effective minimum and resulting litter-size distribution | Rabbit density, Fern demand, Fox opportunity, and population volatility |
+| Larger Maximum Litter | Reproduction | Rabbit breeding groups with room for larger births | Greater possible food and space demand | Effective maximum and resulting litter-size distribution | Rabbit density, Fern demand, Fox opportunity, and population volatility |
 
 For every row, the provisional tier, Adaptation Value range, reference-panel
 version, strong/weak contexts, and tested combinations remain open. The two

@@ -4,7 +4,7 @@
 - **Prepared:** 2026-10-15
 - **October21 human acceptance:** Bevin accepts this initial five-node implementation and confirms APS fixed in play. This supersedes the earlier open human-acceptance checkpoint below; it does not approve new content or complete production polish. See the [acceptance record](FIELD_DATA_SELF_PLAY_REVIEW.md).
 - **October 19 evidence refresh:** Current authored export and direct Unity/headless parity pass eight action fixtures (including all six skills owned before round 7); 600/600 current-rule journeys validate across 200 matched seeds and three policies. See the [report](Research/Experiments/FD-Current-Loop-Refresh-20261019/REPORT.md). No tuning or human acceptance is inferred.
-- **October 19 correction:** Field Data Hare skill rewards repeat to their existing per-skill level caps. Eligibility and reward application use the same cap; legacy authored single-use upgrades retain their contract. Empty/missing Field Data offers never display legacy priced cards. See the [round-7 handoff](handoffs/2026-10-19-fd-round7-reward-exhaustion.md).
+- **October 19 correction:** Field Data Rabbit skill rewards repeat to their existing per-skill level caps. Eligibility and reward application use the same cap; legacy authored single-use upgrades retain their contract. Empty/missing Field Data offers never display legacy priced cards. See the [round-7 handoff](handoffs/2026-10-19-fd-round7-reward-exhaustion.md).
 - **Node-navigation revision:** 2026-10-18 — player-controlled map entry between nodes, with no node-end population controls. See the [implementation handoff](handoffs/2026-10-18-fd-node-map-navigation.md).
 - **Source baseline:** `735b189c`, branch `BevBranch`, plus inspected local files
 - **Integration review:** 2026-10-16, merged `0928359` including `ProjectMain` through `341cc702`
@@ -219,8 +219,8 @@ missing bonus without replaying the population award. Serialize in-memory
 commands on the existing main-thread flow; no callbacks may observe a partially
 committed transaction.
 
-The calculator starts at the selected-species count. `AddPerHare` adds the ending
-Hare count at its current position; `MultiplyPopulation` multiplies the running
+The calculator starts at the selected-species count. `AddPerRabbit` adds the ending
+Rabbit count at its current position; `MultiplyPopulation` multiplies the running
 amount. Scope-filter operations before executing them. Store numeric intermediate
 amounts and operation IDs for the receipt; the ViewModel formats the explanation.
 Use decimal/rational constants for 1.5, 2 and price growth, then floor once.
@@ -490,7 +490,7 @@ existing values at 0-5 and appends Shop at 6.
 
 The resolver rejects route order/link errors, missing or duplicate control and
 offer IDs, unsupported starter effects, invalid prices, invalid source gates,
-and unsupported signed Hare targets before it returns a run definition. The
+and unsupported signed Rabbit targets before it returns a run definition. The
 signed-offer data shape exists, but the starter catalog stays empty until its
 effects receive the runtime mappings in FD-T07. The existing 29-node map is
 still separate; map selection and Desktop launch integration remain FD-T13.
@@ -509,8 +509,8 @@ remain FD-T13.
 
 **Status: complete.** The population payout calculator is implemented in
 [`FieldDataIncome.cs`](../Assets/Scripts/Game/Simulation/FieldDataIncome.cs).
-It accepts the selected-species and Hare closing counts plus an explicit ordered
-list of acquired modifier instances. The approved +1 FD per Hare, ×1.5 and ×2
+It accepts the selected-species and Rabbit closing counts plus an explicit ordered
+list of acquired modifier instances. The approved +1 FD per Rabbit, ×1.5 and ×2
 operations execute in that order using decimal intermediates; only the final
 population award is floored. The separate 10-FD node-clear reward is not part of
 this calculation, and the calculator has no wallet dependency or side effect.
@@ -529,7 +529,7 @@ Focused tests in
 passed **8/8**. They cover 80 vs. 60 for reversed order, fractional intermediate
 values and one final floor, empty populations, invalid inputs, wallet-range and
 decimal overflow rejection, and immutable prior receipts. The T02 definition
-tests also passed 7/7 after the `AddPerHare` operation name was clarified; its
+tests also passed 7/7 after the `AddPerRabbit` operation name was clarified; its
 serialized enum value remains 0. No full suite, player build, UI, journey
 settlement, or balance test was performed. T04 is in progress; T05 and T13
 remain outstanding.
@@ -556,7 +556,7 @@ for 18-round traversal, the two shop pauses, no time advancement while paused,
 the same run/progression/history, early abandonment, invalid route length,
 disposal and runner replacement. After forcing recompilation through the
 connected project Editor, the focused `FieldDataJourney` suite passed 16/16.
-The fixture uses a stable Hare rule to test the session state machine without
+The fixture uses a stable Rabbit rule to test the session state machine without
 making a Forest Edge balance claim. A failing test exposed and fixed disposal
 leaving the session in `Failed` rather than transitioning to `Closed`; a
 round-boundary extinction test confirms failure occurs without a payout or
@@ -664,7 +664,7 @@ Validation on October 16–17:
   zero warnings or errors.
 - `CellSim.Batch self-test` passed, including two deterministic 18-round
   replays, exact 18 population awards and three node-clear awards, successful
-  remainder discard, a successful scheduled choice and Hare intervention with
+  remainder discard, a successful scheduled choice and Rabbit intervention with
   a verified next-boundary population change, an off-boundary action retained
   as not executed, first affordability and a supplied human decision duration.
 - The earlier Unity Authoring EditMode category passed 20/20 at
@@ -725,7 +725,7 @@ saved and closed the Unity Editor for the authored export. The snapshot and its
 - `artifacts/field-data-t14/forest-edge-field-data-20261017.reference.jsonl`
 
 The snapshot contains the authored Forest Edge 36×20 starting populations,
-0.2-second step interval, selected Hare species, portable five-node definition,
+0.2-second step interval, selected Rabbit species, portable five-node definition,
 and upgrade catalogue. Its snapshot SHA-256 is
 `33fd190765379ab85c37716b5c07edf63dfdaf32d0f548f6255ad9a292d5ab96`; the
 reference JSONL SHA-256 is
@@ -745,7 +745,7 @@ The clean Desktop PlayMode route test now pins the authored scenario settings.
 On seed 10100 it passed all 18 rounds and both shop visits. A headless
 no-purchase replay on that seed completed with 18 population awards, three
 node-clear rewards, 52 FD discarded at successful results, and final
-populations of Hare 1, Fox 0 and Plant 717. Those final populations match the
+populations of Rabbit 1, Fox 0 and Plant 717. Those final populations match the
 Unity reference row. The earlier seed 10125 success was run with a 0.1-second
 editor setting and did not represent the authored 0.2-second snapshot; on the
 authored settings, that seed naturally fails during round 2. The corrected
@@ -756,10 +756,10 @@ failure and manual abandonment coverage passed 4/4 at
 
 The three frozen T15 policy schedules ran on every seed from 10100 through
 10299. The full set has 600 completed reports, exactly three per seed, with
-matching scenario/definition fingerprints. Baseline Unity-reference Hare
+matching scenario/definition fingerprints. Baseline Unity-reference Rabbit
 survival was 45/200. The removal arm survived 50/200, the addition arm 0/200,
 and the save-for-second-shop ×2 arm 45/200. Removal had 158 successful paid
-actions; additive Hare actions had 589; the ×2 offer was bought twice and was
+actions; additive Rabbit actions had 589; the ×2 offer was bought twice and was
 rejected for availability or affordability in 46 executed attempts. These
 descriptive results have no approved numeric pass/fail gate. Full reports,
 v2 action schedules, cohort index and aggregate are under

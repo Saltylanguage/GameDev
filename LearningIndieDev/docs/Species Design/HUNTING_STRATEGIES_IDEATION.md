@@ -180,7 +180,7 @@ Mastery data should reward varied evidence such as successful hunts in favorable
 4. **Stalking feasibility:** only then test short-lived last-seen memory and prey alertness as one bounded experiment.
 5. **Later strategies:** consider interception or coordination only if solo strategies remain strategically distinct.
 
-Use fixed seeds and the same Hare/Fox fixture for A/B comparisons. Change one strategy rule at a time before adjusting global attack strength.
+Use fixed seeds and the same Rabbit/Fox fixture for A/B comparisons. Change one strategy rule at a time before adjusting global attack strength.
 
 ## Promotion questions
 

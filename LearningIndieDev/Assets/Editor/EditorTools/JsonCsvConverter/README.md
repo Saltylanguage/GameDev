@@ -10,7 +10,7 @@ JSON-to-CSV input must be a JSON array whose items are objects:
 ```json
 [
   {
-    "name": "hare",
+    "name": "rabbit",
     "stats": {
       "energy": 45
     },

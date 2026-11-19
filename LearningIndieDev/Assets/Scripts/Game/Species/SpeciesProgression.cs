@@ -5,7 +5,7 @@ namespace SaltyGame
 {
     public sealed class SpeciesProgression
     {
-        public const int HarePurchaseCost = 10;
+        public const int RabbitPurchaseCost = 10;
 
         readonly Dictionary<string, int> purchasedUpgradeLevels =
             new Dictionary<string, int>(StringComparer.Ordinal);
@@ -13,15 +13,15 @@ namespace SaltyGame
         readonly List<SpeciesUpgradeSnapshot> appliedRunUpgrades =
             new List<SpeciesUpgradeSnapshot>();
         readonly Func<string, bool> mutationResearch;
-        readonly bool introductoryHareMutations;
+        readonly bool introductoryRabbitMutations;
 
         public SpeciesProgression(SpeciesDefinition definition, Func<string, bool> mutationResearch = null,
-            bool usesGeneLabResearch = false, bool introductoryHareMutations = false)
+            bool usesGeneLabResearch = false, bool introductoryRabbitMutations = false)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
             CurrentRules = definition.Rules;
             this.mutationResearch = mutationResearch;
-            this.introductoryHareMutations = introductoryHareMutations;
+            this.introductoryRabbitMutations = introductoryRabbitMutations;
             UsesGeneLabResearch = usesGeneLabResearch && mutationResearch != null;
         }
 
@@ -35,7 +35,7 @@ namespace SaltyGame
         public bool UsesGeneLabResearch { get; }
         public bool IsMutationResearched(string id) => mutationResearch == null || mutationResearch(id);
         public bool HasMutationAccess(string id) => IsMutationResearched(id)
-            || (introductoryHareMutations && Definition.Id.Value == "hare"
+            || (introductoryRabbitMutations && Definition.Id.Value == "rabbit"
                 && (id == SpeciesUpgradeCatalog.ThreatExposureId
                     || id == SpeciesUpgradeCatalog.ToughHideId
                     || id == SpeciesUpgradeCatalog.ReproductiveDriveId));

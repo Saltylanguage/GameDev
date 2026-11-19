@@ -44,8 +44,8 @@
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/FieldDataRewardChoices.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/FieldDataShopOffers.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/FieldDataSpeciesEffects.cs" />
-    <SharedSource Include="../../Assets/Scripts/Game/Simulation/HareLineage.cs" />
-    <SharedSource Include="../../Assets/Scripts/Game/Simulation/HareBurrows.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/RabbitLineage.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/RabbitBurrows.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/JourneyNodeKind.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/CellularSimData.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/CellularSimDataFingerprint.cs" />

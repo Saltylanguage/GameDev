@@ -1,4 +1,4 @@
-# Hare + Fox Iterative Design Treatment
+# Rabbit + Fox Iterative Design Treatment
 
 > Status: Experiment / vertical-slice design | Version: 0.2 | Scenario: Forest Edge
 
@@ -6,23 +6,23 @@
 
 **Continuation scope (2026-09-04):** the 20-second fixture below remains a
 bounded balance experiment. Target gameplay continues its evolved ecosystem
-across decision breaks; it does not refill resources or replace Hare/Fox
+across decision breaks; it does not refill resources or replace Rabbit/Fox
 populations. Existing single-window outcomes do not establish later-phase
 recovery, long-run stability or sequential upgrade balance. The
 [migration plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md) and
 [retest register](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) cover this gap.
 
-The hare is not a complete gameplay unit by itself. Grass supplies the baseline
+The rabbit is not a complete gameplay unit by itself. Grass supplies the baseline
 energy economy; the fox creates the readable threat that turns abundance into a
 decision. We should therefore balance this pair as a small interaction system,
 not as two independent species.
 
 The player should be able to understand the causal chain:
 
-> grass abundance -> hare growth -> fox opportunity -> hare movement/settlement choice -> population outcome
+> grass abundance -> rabbit growth -> fox opportunity -> rabbit movement/settlement choice -> population outcome
 
 The intended challenge is not making grass scarce. Grass should usually be
-plentiful. The challenge is maintaining a productive hare population while
+plentiful. The challenge is maintaining a productive rabbit population while
 preventing fox pressure from becoming either irrelevant or deterministic.
 
 ### First fixture values
@@ -30,31 +30,31 @@ preventing fox pressure from becoming either irrelevant or deterministic.
 - Grid: 32 x 20 cells
 - Run: 20 seconds at a 0.1 second step interval
 - Starting grass resource: 0.65 probability
-- Starting hare: 0.15 probability
+- Starting rabbit: 0.15 probability
 - Starting fox: 0.015 probability
-- Hare: 2.2 movement speed, 16 starting/forage threshold, vision 5
+- Rabbit: 2.2 movement speed, 16 starting/forage threshold, vision 5
 - Fox: 0.8 movement speed, 32 starting/forage threshold, vision 6
 
 This first fixture uses grass-resource cells and bare cells as the Forest Edge
 proxy. A richer authored forest-edge terrain map is intentionally deferred until
 the population interaction is readable; it should not be allowed to hide a
-bad hare/fox economy.
+bad rabbit/fox economy.
 
-## 1. Hare identity
+## 1. Rabbit identity
 
-**The hare is a mobile, fragile population that converts common grass into
+**The rabbit is a mobile, fragile population that converts common grass into
 growth, then survives by choosing where and when to expose itself.**
 
-The hare should support two primary strategies:
+The rabbit should support two primary strategies:
 
 - **Settlement:** build a stable population in a safe forest-edge pocket.
 - **Migration:** follow grass and avoid fox concentration by moving between patches.
 
-If the hare only wins by hiding in one safe corner, movement is decorative. If
+If the rabbit only wins by hiding in one safe corner, movement is decorative. If
 it only wins by constantly fleeing, settlement and reproduction are decorative.
 Both strategies need to be viable in the first scenario.
 
-## 2. Hare treatment
+## 2. Rabbit treatment
 
 ### Dependency map
 
@@ -69,16 +69,16 @@ Both strategies need to be viable in the first scenario.
 
 ### Minimal ruleset for the first experiment
 
-- Hare eats grass or approved plant resources.
-- Eating restores energy; it does not immediately reproduce the hare.
-- A hare may reproduce only when above its reserve threshold and a legal cell is available.
-- A hare that perceives a fox prioritizes escape over food.
-- A hare without a visible fox prioritizes food when hungry, then mate/settlement behavior.
+- Rabbit eats grass or approved plant resources.
+- Eating restores energy; it does not immediately reproduce the rabbit.
+- A rabbit may reproduce only when above its reserve threshold and a legal cell is available.
+- A rabbit that perceives a fox prioritizes escape over food.
+- A rabbit without a visible fox prioritizes food when hungry, then mate/settlement behavior.
 - Forest-edge terrain reduces exposure or improves escape reliability; open grass improves access to food.
-- A hare occupies the creature layer while a seed/fruit resource may remain beneath it.
-- Hares should prefer a destination that increases distance from visible foxes, not merely a random adjacent cell.
+- A rabbit occupies the creature layer while a seed/fruit resource may remain beneath it.
+- Rabbits should prefer a destination that increases distance from visible foxes, not merely a random adjacent cell.
 
-### Hare balance knobs
+### Rabbit balance knobs
 
 Keep the first pass small. Tune only these variables:
 
@@ -99,20 +99,20 @@ small ruleset produces readable outcomes.
 
 ### Fox identity
 
-**The fox is a patient predator that converts hare concentration and predictable
+**The fox is a patient predator that converts rabbit concentration and predictable
 routes into opportunity, but struggles to sustain itself when prey disperses.**
 
-This gives the fox a complementary weakness: the hare fears exposure, while the
+This gives the fox a complementary weakness: the rabbit fears exposure, while the
 fox fears an empty or widely dispersed hunting ground.
 
 ### Minimal fox contract
 
-- Fox seeks a visible hare before wandering toward food or mate behavior.
-- Fox consumes a hare through a discrete attack/feeding interaction.
+- Fox seeks a visible rabbit before wandering toward food or mate behavior.
+- Fox consumes a rabbit through a discrete attack/feeding interaction.
 - A successful hunt restores enough energy to extend the fox's active period, not enough to reproduce immediately every time.
-- Fox movement is slower or less flexible than the hare's on open ground.
+- Fox movement is slower or less flexible than the rabbit's on open ground.
 - Fox has better prey perception but less ability to exploit ordinary grass.
-- Fox reproduction requires sustained prey access, making fox population growth lag behind hare growth.
+- Fox reproduction requires sustained prey access, making fox population growth lag behind rabbit growth.
 - Foxes should not coordinate in the first experiment; two foxes may create pressure through numbers alone.
 
 ### Fox balance knobs
@@ -127,48 +127,48 @@ fox fears an empty or widely dispersed hunting ground.
 - prey priority and target selection
 
 The fox should be reliable enough that the player can plan around it, but not so
-efficient that every hare death is predetermined once a fox gets close.
+efficient that every rabbit death is predetermined once a fox gets close.
 
 ## 4. Coupled population model
 
 For the first balance pass, think in terms of three phases:
 
-1. **Hare establishment:** grass supports hare growth while foxes are few.
-2. **Predator opportunity:** hare density creates enough encounters for foxes to gain energy.
-3. **Counterplay window:** hares migrate, split into pockets, or use an upgrade to reduce encounter quality.
+1. **Rabbit establishment:** grass supports rabbit growth while foxes are few.
+2. **Predator opportunity:** rabbit density creates enough encounters for foxes to gain energy.
+3. **Counterplay window:** rabbits migrate, split into pockets, or use an upgrade to reduce encounter quality.
 
 The desired outcome is a repeating pressure cycle rather than a straight line:
 
-> hare growth -> fox growth -> hare dispersal/decline -> fox starvation/decline -> hare recovery
+> rabbit growth -> fox growth -> rabbit dispersal/decline -> fox starvation/decline -> rabbit recovery
 
 ### Initial target behavior
 
 These are test targets, not final balance numbers:
 
-- Grass should rarely be the direct cause of hare extinction.
-- Foxes should become relevant because of hare density, not because they spawn overpowered.
-- A successful hare run should survive at least one fox pressure wave.
-- A successful fox population should require continued hare access.
+- Grass should rarely be the direct cause of rabbit extinction.
+- Foxes should become relevant because of rabbit density, not because they spawn overpowered.
+- A successful rabbit run should survive at least one fox pressure wave.
+- A successful fox population should require continued rabbit access.
 - The player should have time to recognize pressure and respond before collapse.
 - The same seed should support different outcomes when the player chooses different upgrades.
 
 ## 5. Upgrade pairing
 
-Hare upgrades should create fox-facing decisions. Fox upgrades should create
-new hare counterplay rather than simply raising kill rate.
+Rabbit upgrades should create fox-facing decisions. Fox upgrades should create
+new rabbit counterplay rather than simply raising kill rate.
 
-### Hare: Trailblazer
+### Rabbit: Trailblazer
 
 - Effect direction: better movement through unfamiliar or costly terrain.
 - New decision: migrate early or spend the run building a local population.
 - Fox interaction: opens escape routes and makes dispersed settlement viable.
 - Tradeoff: lower reproduction efficiency or weaker local food conversion.
 
-### Hare: Warren
+### Rabbit: Warren
 
 - Effect direction: improved survival/reproduction in a chosen local pocket.
 - New decision: defend a home range or abandon it when fox pressure rises.
-- Fox interaction: gives the fox a meaningful target while giving the hare a reason to tolerate pressure.
+- Fox interaction: gives the fox a meaningful target while giving the rabbit a reason to tolerate pressure.
 - Tradeoff: reduced value outside the established area.
 - **1.0 identity decision (Josh, 2026-10-07):** Warren is the settled,
   stationary, territorial opposite of Trailblazer. Smaller litters and safer
@@ -195,15 +195,15 @@ new hare counterplay rather than simply raising kill rate.
 - **Shelter energy (Josh, 2026-10-08):** Rabbits continue to pay their base
   energy cost while inside a burrow and must emerge to forage. The intended
   base cost is species-specific, alongside separate movement, mating, and
-  crowding costs. Josh chose to preserve the current Hare effective rate of
+  crowding costs. Josh chose to preserve the current Rabbit effective rate of
   0.125 energy per tick, charged as 1 energy every 8 ticks. Burrow shelter is
   still a 1.0 design target, so this decision does not change the current
   species asset or introduce shelter behavior now.
 - **Movement energy (Josh, 2026-10-08):** A completed move should carry a flat,
   species-configurable energy charge independent of terrain. Terrain or another
-  feature may add a separate energy modifier later. The provisional Hare rate
+  feature may add a separate energy modifier later. The provisional Rabbit rate
   is 0.125 energy per completed move, accumulating as 1 energy after eight moves
-  by that Hare. The provisional Fox rate is 0.5 energy per completed move, or
+  by that Rabbit. The provisional Fox rate is 0.5 energy per completed move, or
   1 energy after two moves by that Fox. Other species' movement rates remain
   open. The current terrain movement cost only affects travel speed; these
   energy charges are not yet in the simulation. Josh chose a separate measured
@@ -220,7 +220,7 @@ new hare counterplay rather than simply raising kill rate.
 - Still to define: how a Fox can pressure a settled burrow. The provisional
   litter range and 48-tick interval remain open to balance tuning.
 
-### Hare: Gardeners
+### Rabbit: Gardeners
 
 - **S4 identity decision (Josh, 2026-10-10):** Gardeners maintain several
   nearby renewable food patches and move among them as those patches recover.
@@ -229,44 +229,44 @@ new hare counterplay rather than simply raising kill rate.
 - Effect direction: feeding efficiency and seed dispersal renew a local network
   of food patches.
 - New decision: invest in local food renewal or exploit abundance and move on.
-- Fox interaction: creates attractive high-value hare areas that the fox can contest.
+- Fox interaction: creates attractive high-value rabbit areas that the fox can contest.
 - **S4 immediate tradeoff (Josh, 2026-10-10):** Keep the current cost of one
   stored food reserve for each successful seed drop. Future food is gained by
-  spending food held now; concentrated Hare activity around those patches also
+  spending food held now; concentrated Rabbit activity around those patches also
   gives Foxes a place to hunt. The reserve cost is the first comparison input.
 
 ### Fox: Tracker
 
-- Effect direction: better pursuit of recently observed hare movement.
-- Hare response: migration must use terrain and route choice rather than simply running in a straight line.
+- Effect direction: better pursuit of recently observed rabbit movement.
+- Rabbit response: migration must use terrain and route choice rather than simply running in a straight line.
 - Tradeoff: weaker energy efficiency when no target is available.
 
 ### Fox: Ambusher
 
 - Effect direction: stronger attack near forest-edge transition cells.
-- Hare response: open-ground feeding becomes safer than forest-edge feeding in some situations.
+- Rabbit response: open-ground feeding becomes safer than forest-edge feeding in some situations.
 - Tradeoff: poor performance in open terrain.
 
 ### Fox: Opportunistic breeder
 
 - Effect direction: lower reproduction threshold after a successful hunt streak.
-- Hare response: breaking up fox access becomes more important than merely preserving total hare count.
+- Rabbit response: breaking up fox access becomes more important than merely preserving total rabbit count.
 - Tradeoff: foxes remain fragile if the streak is interrupted.
 
 ## 6. Interaction experiments
 
 ### Experiment A: Baseline pressure
 
-Use grass, hare, and fox with no upgrades. Compare several initial hare/fox
+Use grass, rabbit, and fox with no upgrades. Compare several initial rabbit/fox
 ratios while keeping grass plentiful.
 
 Measure:
 
 - time until first fox hunt
-- hare population peak and trough
+- rabbit population peak and trough
 - fox population peak and trough
 - number of recovery cycles
-- percentage of hare deaths caused by foxes versus energy failure
+- percentage of rabbit deaths caused by foxes versus energy failure
 
 ### Experiment B: Settlement versus migration
 
@@ -275,24 +275,24 @@ same Forest Edge layout with different routes and population histories.
 
 ### Experiment C: Fox target reliability
 
-Test whether foxes consistently find dense hare pockets without instantly
-tracking every hare across the map. The fox should create pressure through
+Test whether foxes consistently find dense rabbit pockets without instantly
+tracking every rabbit across the map. The fox should create pressure through
 opportunity, not omniscience.
 
 ### Experiment D: Recovery
 
-Remove or reduce the hare population after a fox wave. Verify that grass and
-the remaining hares can produce a comeback before the scenario timer ends.
+Remove or reduce the rabbit population after a fox wave. Verify that grass and
+the remaining rabbits can produce a comeback before the scenario timer ends.
 
 ## 7. Promotion gates
 
-Promote the hare/fox pair to broader roster work only when:
+Promote the rabbit/fox pair to broader roster work only when:
 
 - Players can explain why a fox attack succeeded.
 - Grass abundance is not the primary source of tension.
 - Settlement and migration are both viable.
 - Foxes can decline naturally when prey access is lost.
-- Hare and fox upgrades produce visibly different population histories.
+- Rabbit and fox upgrades produce visibly different population histories.
 - The pair remains readable with the existing terrain and occupancy layers.
 
 If these gates fail, revise the interaction before adding another predator,
@@ -300,14 +300,14 @@ defensive system, scent layer, or species-specific exception.
 
 ## Next treatment step
 
-Implement the minimal hare/fox rules as a coupled balance fixture, then run the
+Implement the minimal rabbit/fox rules as a coupled balance fixture, then run the
 same treatment against the actual Forest Edge scenario. The execution details
 are tracked in [`HARE_FOX_IMPLEMENTATION_PLAN.md`](HARE_FOX_IMPLEMENTATION_PLAN.md).
 
 ## Iteration 0.2 — Coupled playstyle pass
 
 This pass keeps the 0.1 ruleset as the baseline and sharpens what the player is
-actually choosing. The player does not command individual hares or foxes; the
+actually choosing. The player does not command individual rabbits or foxes; the
 player chooses which ecological pressure to improve at each reward break.
 
 ### Fun target
@@ -320,22 +320,22 @@ core loop should feel like:
 
 ### Locked identities for this iteration
 
-- **Hare:** a mobile, fragile population that can either establish a safe pocket
+- **Rabbit:** a mobile, fragile population that can either establish a safe pocket
   or keep moving between food patches.
-- **Fox:** a patient pressure engine that converts hare concentration into
+- **Fox:** a patient pressure engine that converts rabbit concentration into
   temporary hunting strength, then weakens when the prey frontier disappears.
 - **Grass:** a reliable baseline that keeps the conflict about exposure,
   settlement, and recovery rather than routine starvation.
 
 ### Interaction contract
 
-1. Hare growth must precede meaningful fox growth. Foxes should not dominate
+1. Rabbit growth must precede meaningful fox growth. Foxes should not dominate
    before the player has time to recognize the first population wave.
-2. Fox pressure must be spatially legible. A dense hare pocket, route, or edge
+2. Fox pressure must be spatially legible. A dense rabbit pocket, route, or edge
    transition should explain why encounters are increasing.
-3. Hare dispersal must reduce encounter quality, but should carry a cost in food
+3. Rabbit dispersal must reduce encounter quality, but should carry a cost in food
    access, reproduction, or recovery time.
-4. Foxes must lose momentum when hare access is interrupted. A successful hunt
+4. Foxes must lose momentum when rabbit access is interrupted. A successful hunt
    should extend the fox's active window, not guarantee indefinite growth.
 5. Recovery must remain possible after a pressure wave. The player should be
    able to identify a comeback route rather than watch an irreversible collapse.
@@ -344,10 +344,10 @@ core loop should feel like:
 
 | Hypothesis | Evidence required | Decision if false |
 |---|---|---|
-| Settlement and migration are both viable Hare builds | Compare final population, recovery cycles, and route snapshots for Warren vs Trailblazer | Adjust movement or local reproduction before adding mechanics |
+| Settlement and migration are both viable Rabbit builds | Compare final population, recovery cycles, and route snapshots for Warren vs Trailblazer | Adjust movement or local reproduction before adding mechanics |
 | Foxes create tension through opportunity rather than omniscience | First-hunt timing, target distance, and hunts per fox across fixed seeds | Reduce target persistence/perception before changing attack strength |
-| Gardeners creates a distinct risk/reward loop | Grass recovery, Hare density near cultivated patches, and fox encounter rate | Reduce the patch benefit or add a clearer exposure tradeoff |
-| One fox wave is recoverable | Minimum surviving Hare population and time to positive growth after the trough | Tune fox energy gain and Hare recovery before adding defenses |
+| Gardeners creates a distinct risk/reward loop | Grass recovery, Rabbit density near cultivated patches, and fox encounter rate | Reduce the patch benefit or add a clearer exposure tradeoff |
+| One fox wave is recoverable | Minimum surviving Rabbit population and time to positive growth after the trough | Tune fox energy gain and Rabbit recovery before adding defenses |
 
 ### Upgrade treatment for this pass
 
@@ -359,7 +359,7 @@ single upgrade while the interaction is still being learned.
   when the player must relocate.
 - **Gardeners:** improves grass persistence or recovery; creates a valuable,
   contestable location for both species.
-- **Tracker:** improves Fox pursuit of visible Hare movement; is inefficient
+- **Tracker:** improves Fox pursuit of visible Rabbit movement; is inefficient
   when prey is dispersed.
 - **Ambusher:** improves Fox pressure near edge transitions; is weaker in open
   ground.
@@ -372,9 +372,9 @@ the telemetry that will show whether it mattered.
 Do not expand the roster or add scent, pack coordination, shelters, or inherited
 traits until a fixed-seed comparison shows that:
 
-- the three Hare branches produce visibly different population histories;
+- the three Rabbit branches produce visibly different population histories;
 - Fox pressure is predictable without being deterministic;
-- at least one Hare recovery occurs after a Fox peak;
+- at least one Rabbit recovery occurs after a Fox peak;
 - players can explain both a successful hunt and a successful escape; and
 - the main tension comes from interacting populations and geography, not hidden
   tuning or random failure.

@@ -82,9 +82,9 @@ namespace SaltyGame
         }
 
         public static SpeciesPopulationSnapshot Create(Grid<SpeciesCell> cells, int tick)
-            => Create(cells, tick, hiddenHares: 0);
+            => Create(cells, tick, hiddenRabbits: 0);
 
-        internal static SpeciesPopulationSnapshot Create(Grid<SpeciesCell> cells, int tick, int hiddenHares)
+        internal static SpeciesPopulationSnapshot Create(Grid<SpeciesCell> cells, int tick, int hiddenRabbits)
         {
             if (cells == null)
             {
@@ -126,10 +126,10 @@ namespace SaltyGame
                 }
             }
 
-            if (hiddenHares > 0)
+            if (hiddenRabbits > 0)
             {
-                counts.TryGetValue(HareBurrows.Hare, out var visibleHares);
-                counts[HareBurrows.Hare] = visibleHares + hiddenHares;
+                counts.TryGetValue(RabbitBurrows.Rabbit, out var visibleRabbits);
+                counts[RabbitBurrows.Rabbit] = visibleRabbits + hiddenRabbits;
             }
             return new SpeciesPopulationSnapshot(tick, counts, empty);
         }
@@ -157,8 +157,8 @@ namespace SaltyGame
         bool phaseOpen;
         int phaseLengthTicks;
         int nextBoundaryTick;
-        HareLineage hareLineage;
-        HareBurrows hareBurrows;
+        RabbitLineage rabbitLineage;
+        RabbitBurrows rabbitBurrows;
 
         public SimulationRunState(
             Grid<SpeciesCell> cells,
@@ -233,31 +233,31 @@ namespace SaltyGame
         public SimulationRunStatus Status { get; private set; }
         public IReadOnlyList<SpeciesPopulationSnapshot> PopulationHistory { get; }
 
-        public bool IsHareDescendant(long hareId, long ancestorId) =>
-            hareLineage?.IsDescendant(hareId, ancestorId) ?? false;
+        public bool IsRabbitDescendant(long rabbitId, long ancestorId) =>
+            rabbitLineage?.IsDescendant(rabbitId, ancestorId) ?? false;
 
-        internal HareLineage GetHareJourneyLineage() => SupportsContinuation && PlayerSpeciesId.Value == "hare"
-            ? (hareLineage ??= new HareLineage())
+        internal RabbitLineage GetRabbitJourneyLineage() => SupportsContinuation && PlayerSpeciesId.Value == "rabbit"
+            ? (rabbitLineage ??= new RabbitLineage())
             : null;
 
-        public int HiddenHareCount => hareBurrows?.HiddenCount ?? 0;
+        public int HiddenRabbitCount => rabbitBurrows?.HiddenCount ?? 0;
 
-        internal int[] CopyHareBurrowCellIndices() => hareBurrows?.CopyCellIndices(Cells.Width) ?? Array.Empty<int>();
+        internal int[] CopyRabbitBurrowCellIndices() => rabbitBurrows?.CopyCellIndices(Cells.Width) ?? Array.Empty<int>();
 
-        internal bool HasStarterBurrowing => PlayerSpeciesId == HareBurrows.Hare
-            && ActiveGenomeSnapshot.TryGetSpeciesGenome(HareBurrows.Hare, out var genome)
+        internal bool HasStarterBurrowing => PlayerSpeciesId == RabbitBurrows.Rabbit
+            && ActiveGenomeSnapshot.TryGetSpeciesGenome(RabbitBurrows.Rabbit, out var genome)
             && genome.HasActiveNode(FieldDataPermanentProgressionDefinition.BornBurrowerNodeId);
 
-        public string GetHareBurrowStateFingerprint() => hareBurrows == null
-            ? null : HareBurrows.Fingerprint(Cells, hareLineage, hareBurrows);
+        public string GetRabbitBurrowStateFingerprint() => rabbitBurrows == null
+            ? null : RabbitBurrows.Fingerprint(Cells, rabbitLineage, rabbitBurrows);
 
         // Ancestry can affect hiding later, even before the player acquires Burrowing.
-        public string GetHareJourneyStateFingerprint() => hareBurrows != null || hareLineage?.ParentRecords.Count > 0
-            ? HareBurrows.Fingerprint(Cells, hareLineage, hareBurrows) : null;
+        public string GetRabbitJourneyStateFingerprint() => rabbitBurrows != null || rabbitLineage?.ParentRecords.Count > 0
+            ? RabbitBurrows.Fingerprint(Cells, rabbitLineage, rabbitBurrows) : null;
 
-        internal SpeciesPopulationSnapshot CapturePopulation() => SpeciesPopulationSnapshot.Create(Cells, Tick, HiddenHareCount);
+        internal SpeciesPopulationSnapshot CapturePopulation() => SpeciesPopulationSnapshot.Create(Cells, Tick, HiddenRabbitCount);
 
-        internal Grid<SpeciesCell> PrepareHareBurrows(IReadOnlyDictionary<SpeciesId, SpeciesRules> rules, HareLineage lineage)
+        internal Grid<SpeciesCell> PrepareRabbitBurrows(IReadOnlyDictionary<SpeciesId, SpeciesRules> rules, RabbitLineage lineage)
         {
             if (lineage == null) return Cells;
             var canDig = HasStarterBurrowing;
@@ -265,7 +265,7 @@ namespace SaltyGame
             var expansionRank = 0;
             foreach (var upgrade in UpgradeLoadout)
             {
-                if (upgrade.TargetSpecies != HareBurrows.Hare) continue;
+                if (upgrade.TargetSpecies != RabbitBurrows.Rabbit) continue;
                 switch (upgrade.Id)
                 {
                     case SpeciesUpgradeCatalog.BurrowingId: canDig = true; break;
@@ -273,8 +273,8 @@ namespace SaltyGame
                     case SpeciesUpgradeCatalog.ExpandedBurrowsId: expansionRank++; break;
                 }
             }
-            if (canDig) hareBurrows ??= new HareBurrows();
-            return hareBurrows?.PrepareStep(Cells, rules, lineage, Tick + 1, canDig, shared,
+            if (canDig) rabbitBurrows ??= new RabbitBurrows();
+            return rabbitBurrows?.PrepareStep(Cells, rules, lineage, Tick + 1, canDig, shared,
                 3 + Math.Min(expansionRank, SpeciesUpgradeCatalog.ExpandedBurrowsMaxLevel)) ?? Cells;
         }
         public IReadOnlyList<SpeciesUpgradeSnapshot> UpgradeLoadout { get; }
@@ -430,8 +430,8 @@ namespace SaltyGame
                 throw new InvalidOperationException("The played species population must carry into the next node.");
 
             Cells = nextCells;
-            hareLineage = null;
-            hareBurrows = null;
+            rabbitLineage = null;
+            rabbitBurrows = null;
             var species = new HashSet<SpeciesId>(before.Counts.Keys);
             species.UnionWith(after.Counts.Keys);
             var orderedSpecies = new List<SpeciesId>(species);
@@ -613,8 +613,8 @@ namespace SaltyGame
                 if (action.Amount > 0) boundaryPopulationAdded[action.Species] -= action.Amount;
             populationInterventions.Clear();
             Cells = initialCells.Copy();
-            hareLineage = null;
-            hareBurrows = null;
+            rabbitLineage = null;
+            rabbitBurrows = null;
             ElapsedSeconds = 0f;
             Tick = 0;
             PhaseIndex = 1;
@@ -756,8 +756,8 @@ namespace SaltyGame
                 boundaryPopulationAdded,
                 populationInterventions,
                 previousCells,
-                hareLineage,
-                hareBurrows);
+                rabbitLineage,
+                rabbitBurrows);
         }
 
         void ClosePhase(int endTickInclusive)
@@ -805,8 +805,8 @@ namespace SaltyGame
             }
 
             run.Cells = checkpoint.CopyCells();
-            run.hareLineage = checkpoint.CopyHareLineage();
-            run.hareBurrows = checkpoint.CopyHareBurrows();
+            run.rabbitLineage = checkpoint.CopyRabbitLineage();
+            run.rabbitBurrows = checkpoint.CopyRabbitBurrows();
             run.ElapsedSeconds = checkpoint.ElapsedSeconds;
             run.Tick = checkpoint.Tick;
             run.PhaseIndex = checkpoint.PhaseIndex;
@@ -926,8 +926,8 @@ namespace SaltyGame
         readonly IReadOnlyDictionary<SpeciesId, int> boundaryPopulationAdded;
         readonly IReadOnlyList<PopulationIntervention> populationInterventions;
         readonly Grid<SpeciesCell> previousCells;
-        readonly HareLineage hareLineage;
-        readonly HareBurrows hareBurrows;
+        readonly RabbitLineage rabbitLineage;
+        readonly RabbitBurrows rabbitBurrows;
 
         internal SimulationRunCheckpoint(
             Grid<SpeciesCell> cells,
@@ -950,8 +950,8 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, int> boundaryPopulationAdded,
             IReadOnlyList<PopulationIntervention> populationInterventions,
             Grid<SpeciesCell> previousCells,
-            HareLineage hareLineage,
-            HareBurrows hareBurrows)
+            RabbitLineage rabbitLineage,
+            RabbitBurrows rabbitBurrows)
         {
             this.cells = cells.Copy();
             PlayerSpeciesId = playerSpeciesId;
@@ -974,8 +974,8 @@ namespace SaltyGame
                 new Dictionary<SpeciesId, int>(boundaryPopulationAdded));
             this.populationInterventions = new List<PopulationIntervention>(populationInterventions).AsReadOnly();
             this.previousCells = previousCells == null ? null : previousCells.Copy();
-            this.hareLineage = hareLineage?.Copy();
-            this.hareBurrows = hareBurrows?.Copy();
+            this.rabbitLineage = rabbitLineage?.Copy();
+            this.rabbitBurrows = rabbitBurrows?.Copy();
         }
 
         public SpeciesId PlayerSpeciesId { get; }
@@ -1007,9 +1007,9 @@ namespace SaltyGame
             return previousCells?.Copy();
         }
 
-        internal HareLineage CopyHareLineage() => hareLineage?.Copy();
+        internal RabbitLineage CopyRabbitLineage() => rabbitLineage?.Copy();
 
-        internal HareBurrows CopyHareBurrows() => hareBurrows?.Copy();
+        internal RabbitBurrows CopyRabbitBurrows() => rabbitBurrows?.Copy();
 
         public SimulationRunState Restore()
         {
@@ -1078,7 +1078,7 @@ namespace SaltyGame
     {
         public static SimulationRunResult Create(SimulationRunState run, bool rewardsEligible = true)
         {
-            var playerPopulation = run.PlayerSpeciesId == HareBurrows.Hare ? run.HiddenHareCount : 0;
+            var playerPopulation = run.PlayerSpeciesId == RabbitBurrows.Rabbit ? run.HiddenRabbitCount : 0;
             for (var y = 0; y < run.Cells.Height; y++)
             {
                 for (var x = 0; x < run.Cells.Width; x++)

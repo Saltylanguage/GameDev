@@ -44,7 +44,7 @@ namespace SaltyGame.Tests
         }
 
         readonly List<GameObject> objects = new List<GameObject>();
-        readonly SpeciesId hare = new SpeciesId("hare");
+        readonly SpeciesId rabbit = new SpeciesId("rabbit");
         Storage storage;
         Helper_ProfileSession session;
         string profileId;
@@ -81,7 +81,44 @@ namespace SaltyGame.Tests
         bool Settle(string id, out FieldDataSettlementReceipt receipt, out string error,
             long leftover = 100, int level = 1, FieldDataJourneyFlowState state = FieldDataJourneyFlowState.Succeeded)
         {
-            return session.TrySettleFieldDataJourney(profileId, id, state, hare, leftover, level, out receipt, out error);
+            return session.TrySettleFieldDataJourney(profileId, id, state, rabbit, leftover, level, out receipt, out error);
+        }
+
+        [Test]
+        public void VersionNineRabbitRenamePreservesWalletGenomeAndSettlement()
+        {
+            StartNodes(30);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.True, error);
+            Assert.That(Settle("before-rename", out _, out error), Is.True, error);
+            var balance = session.Current.RabbitData;
+            var legacy = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            legacy["version"] = 9;
+            var profile = legacy["profiles"][0];
+            profile["unlockedSpeciesIds"][0] = "hare";
+            ((JArray)profile["unlockedGenomeSpeciesIds"]).First(id => (string)id == "rabbit").Replace("hare");
+            profile["speciesDataWallets"][0]["speciesId"] = "hare";
+            profile["settlementReceipts"][0]["speciesId"] = "hare";
+            var genome = profile["genomeProfiles"][0];
+            genome["speciesId"] = "hare";
+            genome["unlockedNodeIds"][0] = "hare.guarded-burrow";
+            genome["activeNodeIds"][0] = "hare.guarded-burrow";
+            var raw = legacy.ToString();
+            storage.SetString(Helper_ProfileSession.StoreKey, raw);
+            storage.Save();
+
+            session.Reload();
+            Assert.That(session.Current.HasLoadedProfile, Is.True, session.LoadWarning);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(balance));
+            Assert.That(session.Current.UnlockedSpeciesIds, Does.Contain(rabbit));
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(rabbit));
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var migrated), Is.True);
+            Assert.That(migrated.IsNodeActive("rabbit.guarded-burrow"), Is.True);
+            Assert.That(session.Current.SettlementReceipts.Single().SelectedSpeciesId, Is.EqualTo(rabbit));
+            Assert.That(Settle("before-rename", out _, out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(balance));
+            var saved = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            Assert.That((int)saved["version"], Is.EqualTo(10));
+            Assert.That((string)saved["migrationSourceJson"], Is.EqualTo(raw));
         }
 
         [Test]
@@ -139,21 +176,21 @@ namespace SaltyGame.Tests
         {
             StartNodes(100);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            foreach (var node in definition.HareMap.Nodes.Take(6))
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, node.Id, out var error), Is.True, error);
+            foreach (var node in definition.RabbitMap.Nodes.Take(6))
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
             for (var rank = 2; rank <= 5; rank++)
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.warren-network", out var error), Is.True, error);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.warren-network", out var error), Is.True, error);
             var balance = session.Current.RabbitData;
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
             json["version"] = 8;
             storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
             storage.Save();
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.PopulationReservesRank, Is.EqualTo(5));
             Assert.That(genome.CapacityUsed, Is.EqualTo(6));
             Assert.That(session.Current.RabbitData, Is.EqualTo(balance));
-            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(9));
+            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(10));
         }
 
         [TestCase(false)]
@@ -173,7 +210,7 @@ namespace SaltyGame.Tests
                 Assert.That(reboot.TryRetryPendingFieldDataSettlement(profileId, out _, out var retryError), Is.True, retryError);
             }
             Assert.That(reboot.TrySettleFieldDataJourney(profileId, "restart", FieldDataJourneyFlowState.Succeeded,
-                hare, 999, 3, out var receipt, out var error), Is.True, error);
+                rabbit, 999, 3, out var receipt, out var error), Is.True, error);
             Assert.That(receipt.LeftoverFieldData, Is.EqualTo(100));
             AssertPaid(reboot, 18, 40, 1);
         }
@@ -204,7 +241,7 @@ namespace SaltyGame.Tests
             Assert.That(session.SelectProfile(otherId), Is.True);
             Assert.That(session.Current.SettlementReceipts, Is.Empty);
             Assert.That(session.TrySettleFieldDataJourney(otherId, "shared-id", FieldDataJourneyFlowState.Succeeded,
-                hare, 0, 0, out _, out error), Is.True, error);
+                rabbit, 0, 0, out _, out error), Is.True, error);
             AssertPaid(session, 0, 10, 1);
             Assert.That(session.SelectProfile(profileId), Is.True);
             AssertPaid(session, 18, 40, 1);
@@ -250,8 +287,8 @@ namespace SaltyGame.Tests
             Assert.That(Settle("receipt", out var receipt, out var error), Is.True, error);
             var snapshot = session.Current;
             var copies = new[] { snapshot.WithLoaded(false), snapshot.WithCurrency(999), snapshot.WithTime(5, 10),
-                snapshot.WithUnlockedSpecies(new SpeciesId("fox")), snapshot.WithUnlockedGenome(hare),
-                snapshot.WithUnlockedFeature("test"), snapshot.WithGenomeProfile(new SpeciesGenomeProfile(hare)),
+                snapshot.WithUnlockedSpecies(new SpeciesId("fox")), snapshot.WithUnlockedGenome(rabbit),
+                snapshot.WithUnlockedFeature("test"), snapshot.WithGenomeProfile(new SpeciesGenomeProfile(rabbit)),
                 snapshot.WithGenomeEconomy(snapshot.RabbitData, snapshot.ResearchData, snapshot.CompletedRuns) };
             foreach (var copy in copies)
             {
@@ -276,7 +313,7 @@ namespace SaltyGame.Tests
             if (corruption == "duplicate") ((JArray)profile["settlementReceipts"]).Add(profile["settlementReceipts"][0].DeepClone());
             if (corruption == "arithmetic") profile["settlementReceipts"][0]["speciesDataAfter"] = 900;
             if (corruption == "version") profile["settlementReceipts"][0]["definitionVersion"] = "unknown-version";
-            if (corruption == "pending") profile["pendingSettlement"] = new JObject { ["journeyId"] = "safe", ["speciesId"] = "hare" };
+            if (corruption == "pending") profile["pendingSettlement"] = new JObject { ["journeyId"] = "safe", ["speciesId"] = "rabbit" };
             var original = json.ToString();
             storage.SetString(Helper_ProfileSession.StoreKey, original);
             storage.SetString(Helper_ProfileSession.RecoveryStoreKey, "existing recovery");
@@ -332,13 +369,13 @@ namespace SaltyGame.Tests
         [Test]
         public void VersionFourMigrationPreservesWalletsHistoryAndTheEarlierRawMigrationArchive()
         {
-            const string old = "{\"version\":4,\"profiles\":[{\"id\":\"old\",\"name\":\"Old\",\"researchData\":20,\"speciesDataWallets\":[{\"speciesId\":\"hare\",\"balance\":7}],\"completedRuns\":1,\"completedRunIds\":[\"legacy\"]}],\"lastLoadedProfileId\":\"old\",\"migrationSourceJson\":\"earlier raw save\"}";
+            const string old = "{\"version\":4,\"profiles\":[{\"id\":\"old\",\"name\":\"Old\",\"researchData\":20,\"speciesDataWallets\":[{\"speciesId\":\"rabbit\",\"balance\":7}],\"completedRuns\":1,\"completedRunIds\":[\"legacy\"]}],\"lastLoadedProfileId\":\"old\",\"migrationSourceJson\":\"earlier raw save\"}";
             storage.SetString(Helper_ProfileSession.StoreKey, old);
             session.Reload();
             AssertPaid(session, 7, 20, 0);
             Assert.That(session.Current.CompletedRuns, Is.EqualTo(1));
             Assert.That(session.Current.CompletedRunIds.Single(), Is.EqualTo("legacy"));
-            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(9));
+            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(10));
             Assert.That((string)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["migrationSourceJson"], Is.EqualTo("earlier raw save"));
         }
 
@@ -473,13 +510,13 @@ namespace SaltyGame.Tests
         {
             StartResearch(1000);
             Assert.That(session.TrySettleFieldDataJourney(profileId, "before-research", FieldDataJourneyFlowState.Succeeded,
-                hare, 1000, out var original, out var error), Is.True, error);
+                rabbit, 1000, out var original, out var error), Is.True, error);
             Assert.That(original.ConversionResearchLevel, Is.Zero);
             Assert.That(original.SpeciesDataDeposit, Is.EqualTo(100));
             Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out error), Is.True, error);
             storage.FailOnSave = storage.SaveCalls + 2;
             Assert.That(session.TrySettleFieldDataJourney(profileId, "pending-at-one", FieldDataJourneyFlowState.Succeeded,
-                hare, 1000, out _, out _), Is.False);
+                rabbit, 1000, out _, out _), Is.False);
             storage.FailOnSave = -1;
             Assert.That(session.TryPurchaseConversionResearch(profileId, 1, out error), Is.True, error);
             Assert.That(session.Current.PendingSettlement.ConversionResearchLevel, Is.EqualTo(1));
@@ -487,7 +524,7 @@ namespace SaltyGame.Tests
             Assert.That(pending.ConversionResearchLevel, Is.EqualTo(1));
             Assert.That(pending.SpeciesDataDeposit, Is.EqualTo(110));
             Assert.That(session.TrySettleFieldDataJourney(profileId, "after-research", FieldDataJourneyFlowState.Succeeded,
-                hare, 1000, out var after, out error), Is.True, error);
+                rabbit, 1000, out var after, out error), Is.True, error);
             Assert.That(after.ConversionResearchLevel, Is.EqualTo(2));
             Assert.That(after.SpeciesDataDeposit, Is.EqualTo(121));
             Assert.That(session.Current.RabbitData, Is.EqualTo(338));
@@ -498,7 +535,7 @@ namespace SaltyGame.Tests
             Assert.That(session.Current.SettlementReceipts[0].SpeciesDataDeposit, Is.EqualTo(100));
             Assert.That(session.Current.SettlementReceipts[1].SpeciesDataDeposit, Is.EqualTo(110));
             Assert.That(session.TrySettleFieldDataJourney(profileId, "before-research", FieldDataJourneyFlowState.Succeeded,
-                hare, 9999, out var prior, out error), Is.True, error);
+                rabbit, 9999, out var prior, out error), Is.True, error);
             Assert.That(prior.SpeciesDataDeposit, Is.EqualTo(100));
         }
 
@@ -527,11 +564,11 @@ namespace SaltyGame.Tests
             StartResearch(100);
             var saves = storage.SaveCalls;
             Assert.That(session.TrySettleFieldDataJourney(profileId, "spoofed", FieldDataJourneyFlowState.Succeeded,
-                hare, 100, 3, out _, out _), Is.False);
+                rabbit, 100, 3, out _, out _), Is.False);
             Assert.That(session.Current.PendingSettlement, Is.Null);
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
             Assert.That(session.TrySettleFieldDataJourney(profileId, "legitimate", FieldDataJourneyFlowState.Succeeded,
-                hare, 100, out var receipt, out var error), Is.True, error);
+                rabbit, 100, out var receipt, out var error), Is.True, error);
             Assert.That(receipt.ConversionResearchLevel, Is.Zero);
             Assert.That(receipt.SpeciesDataDeposit, Is.EqualTo(10));
         }
@@ -580,7 +617,7 @@ namespace SaltyGame.Tests
             Assert.That(session.Current.SettlementReceipts.Single().ConversionResearchLevel, Is.EqualTo(1));
             AssertPaid(session, 18, 40, 1);
             Assert.That(session.TrySettleFieldDataJourney(profileId, "old-receipt", FieldDataJourneyFlowState.Succeeded,
-                hare, 9999, out var prior, out error), Is.True, error);
+                rabbit, 9999, out var prior, out error), Is.True, error);
             Assert.That(prior.SpeciesDataDeposit, Is.EqualTo(11));
             AssertPaid(session, 18, 40, 1);
         }
@@ -614,13 +651,13 @@ namespace SaltyGame.Tests
             Assert.That(reopened.Current.ResearchData, Is.EqualTo(50));
         }
 
-        void StartLicense(long hareData, long foxData = 400, bool includeHareWallet = true)
+        void StartLicense(long rabbitData, long foxData = 400, bool includeRabbitWallet = true)
         {
             StartResearch(30, 1);
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
             var wallets = (JArray)json["profiles"][0]["speciesDataWallets"];
             wallets.Clear();
-            if (includeHareWallet) wallets.Add(new JObject { ["speciesId"] = "hare", ["balance"] = hareData });
+            if (includeRabbitWallet) wallets.Add(new JObject { ["speciesId"] = "rabbit", ["balance"] = rabbitData });
             wallets.Add(new JObject { ["speciesId"] = "fox", ["balance"] = foxData });
             storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
             storage.Save();
@@ -633,14 +670,14 @@ namespace SaltyGame.Tests
         [TestCase(10L, true, 0L)]
         [TestCase(11L, true, 1L)]
         [TestCase(long.MaxValue, true, long.MaxValue - 10)]
-        public void HareLicenseChargesExactlyTenOnceAndGrantsAccessWithoutNodeEffects(long before, bool succeeds, long after)
+        public void RabbitLicenseChargesExactlyTenOnceAndGrantsAccessWithoutNodeEffects(long before, bool succeeds, long after)
         {
             StartLicense(before);
             var saves = storage.SaveCalls;
             var fingerprint = session.Current.CreateGenomeSnapshot().Fingerprint;
             Assert.That(session.Current.GeneLabUnlocked, Is.False);
-            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.EqualTo(succeeds), error);
-            Assert.That(session.Current.UnlockedGenomeSpeciesIds.Contains(hare), Is.EqualTo(succeeds));
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out var error), Is.EqualTo(succeeds), error);
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds.Contains(rabbit), Is.EqualTo(succeeds));
             Assert.That(session.Current.UnlockedGenomeSpeciesIds.Contains(new SpeciesId("fox")), Is.True);
             Assert.That(session.Current.RabbitData, Is.EqualTo(after));
             Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(400));
@@ -653,13 +690,13 @@ namespace SaltyGame.Tests
             if (succeeds)
             {
                 var saved = JObject.Parse(storage.Writes.Last())["profiles"][0];
-                Assert.That(saved["unlockedGenomeSpeciesIds"].Values<string>(), Does.Contain("hare"));
+                Assert.That(saved["unlockedGenomeSpeciesIds"].Values<string>(), Does.Contain("rabbit"));
                 Assert.That((long)saved["speciesDataWallets"][0]["balance"], Is.EqualTo(after));
                 saves = storage.SaveCalls;
-                Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+                Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out _), Is.False);
                 Assert.That(storage.SaveCalls, Is.EqualTo(saves));
                 var reopened = NewSession(storage.Restart());
-                Assert.That(reopened.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+                Assert.That(reopened.Current.UnlockedGenomeSpeciesIds, Does.Contain(rabbit));
                 Assert.That(reopened.Current.RabbitData, Is.EqualTo(after));
                 Assert.That(reopened.Current.GenomeProfiles, Is.Empty);
             }
@@ -667,15 +704,15 @@ namespace SaltyGame.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareLicenseCannotBeFundedByOtherSpeciesOrResearchData(bool includeHareWallet)
+        public void RabbitLicenseCannotBeFundedByOtherSpeciesOrResearchData(bool includeRabbitWallet)
         {
-            StartLicense(0, long.MaxValue, includeHareWallet);
+            StartLicense(0, long.MaxValue, includeRabbitWallet);
             session.AddResearchData(long.MaxValue - session.Current.ResearchData);
             var original = storage.GetString(Helper_ProfileSession.StoreKey);
             var saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.False);
-            StringAssert.Contains("Hare Data", error);
-            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Has.No.Member(hare));
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out var error), Is.False);
+            StringAssert.Contains("Rabbit Data", error);
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Has.No.Member(rabbit));
             Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(long.MaxValue));
             Assert.That(session.Current.ResearchData, Is.EqualTo(long.MaxValue));
             Assert.That(storage.GetString(Helper_ProfileSession.StoreKey), Is.EqualTo(original));
@@ -684,84 +721,84 @@ namespace SaltyGame.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareLicenseFailurePublishesNoUnlockAndRetryChargesOnce(bool persistThenThrow)
+        public void RabbitLicenseFailurePublishesNoUnlockAndRetryChargesOnce(bool persistThenThrow)
         {
             StartLicense(10);
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persistThenThrow;
             var notified = false;
             session.SnapshotChanged += _ => notified = true;
-            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out var error), Is.False);
             StringAssert.Contains("could not be saved", error);
             Assert.That(notified, Is.False);
-            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Has.No.Member(hare));
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Has.No.Member(rabbit));
             Assert.That(session.Current.RabbitData, Is.EqualTo(10));
             storage.FailOnSave = -1;
-            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out error), Is.True, error);
-            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out error), Is.True, error);
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(rabbit));
             Assert.That(session.Current.RabbitData, Is.Zero);
         }
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareLicenseRestartAfterUncertainSaveCannotPayTwice(bool persisted)
+        public void RabbitLicenseRestartAfterUncertainSaveCannotPayTwice(bool persisted)
         {
             StartLicense(10);
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persisted;
-            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out _), Is.False);
             var rebootStorage = storage.Restart();
             var reboot = NewSession(rebootStorage);
-            Assert.That(reboot.TryPurchaseHareGenomeLicense(profileId, out _), Is.EqualTo(!persisted));
-            Assert.That(reboot.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+            Assert.That(reboot.TryPurchaseRabbitGenomeLicense(profileId, out _), Is.EqualTo(!persisted));
+            Assert.That(reboot.Current.UnlockedGenomeSpeciesIds, Does.Contain(rabbit));
             Assert.That(reboot.Current.RabbitData, Is.Zero);
             var saves = rebootStorage.SaveCalls;
-            Assert.That(reboot.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+            Assert.That(reboot.TryPurchaseRabbitGenomeLicense(profileId, out _), Is.False);
             Assert.That(rebootStorage.SaveCalls, Is.EqualTo(saves));
         }
 
         [Test]
-        public void HareLicenseRequiresItsLoadedProfileAndRejectsReentry()
+        public void RabbitLicenseRequiresItsLoadedProfileAndRejectsReentry()
         {
             StartLicense(10);
             var originalId = profileId;
             var otherId = session.CreateProfile("Other license owner").ProfileId;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeLicense(originalId, out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(originalId, out _), Is.False);
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
             session.SelectProfile(originalId);
             var reentered = true;
-            session.SnapshotChanged += snapshot => reentered = session.TryPurchaseHareGenomeLicense(originalId, out _);
-            Assert.That(session.TryPurchaseHareGenomeLicense(originalId, out var error), Is.True, error);
+            session.SnapshotChanged += snapshot => reentered = session.TryPurchaseRabbitGenomeLicense(originalId, out _);
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(originalId, out var error), Is.True, error);
             Assert.That(reentered, Is.False);
             session.SelectProfile(otherId);
-            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Has.No.Member(hare));
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Has.No.Member(rabbit));
             Assert.That(session.Current.RabbitData, Is.Zero);
         }
 
         [Test]
-        public void HareLicenseRecognizesLegacyOwnershipWithoutChargingAgain()
+        public void RabbitLicenseRecognizesLegacyOwnershipWithoutChargingAgain()
         {
             StartLicense(10);
-            session.UnlockGenome(hare);
+            session.UnlockGenome(rabbit);
             var saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out _), Is.False);
             Assert.That(session.Current.RabbitData, Is.EqualTo(10));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
         }
 
         [Test]
-        public void HareLicensePreservesExistingGenomesResearchReceiptsAndPendingSuccess()
+        public void RabbitLicensePreservesExistingGenomesResearchReceiptsAndPendingSuccess()
         {
             StartLicense(20);
-            Assert.That(session.TrySetGenomeConfiguration(hare, new[] { "hare.guarded-burrow" },
-                new[] { "hare.guarded-burrow" }, out var error), Is.True, error);
+            Assert.That(session.TrySetGenomeConfiguration(rabbit, new[] { "rabbit.guarded-burrow" },
+                new[] { "rabbit.guarded-burrow" }, out var error), Is.True, error);
             Assert.That(Settle("history-before-license", out var history, out error), Is.True, error);
             storage.FailOnSave = storage.SaveCalls + 2;
             Assert.That(Settle("pending-before-license", out _, out _), Is.False);
             storage.FailOnSave = -1;
             var before = session.Current.CreateGenomeSnapshot().Fingerprint;
-            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out error), Is.True, error);
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out error), Is.True, error);
             Assert.That(session.Current.RabbitData, Is.EqualTo(21));
             Assert.That(session.Current.ResearchData, Is.EqualTo(40));
             Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
@@ -769,7 +806,7 @@ namespace SaltyGame.Tests
             Assert.That(session.Current.PendingSettlement.JourneyId, Is.EqualTo("pending-before-license"));
             Assert.That(session.Current.CreateGenomeSnapshot().Fingerprint, Is.EqualTo(before));
             session.Reload();
-            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(rabbit));
             Assert.That(session.Current.CreateGenomeSnapshot().Fingerprint, Is.EqualTo(before));
             Assert.That(session.TryRetryPendingFieldDataSettlement(profileId, out _, out error), Is.True, error);
             Assert.That(session.Current.RabbitData, Is.EqualTo(32));
@@ -778,25 +815,25 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void HareLicenseCanUseDataFromTheFirstSuccessfulJourneyWithoutTheLegacyThreeRunGate()
+        public void RabbitLicenseCanUseDataFromTheFirstSuccessfulJourneyWithoutTheLegacyThreeRunGate()
         {
             profileId = session.CreateProfile("Fresh first journey").ProfileId;
             Assert.That(session.Current.RabbitData, Is.Zero);
             Assert.That(session.Current.ResearchData, Is.Zero);
             Assert.That(session.Current.ConversionResearchLevel, Is.Zero);
             Assert.That(session.TrySettleFieldDataJourney(profileId, "first-success", FieldDataJourneyFlowState.Succeeded,
-                hare, 100, out _, out var error), Is.True, error);
+                rabbit, 100, out _, out var error), Is.True, error);
             Assert.That(session.Current.CompletedRuns, Is.EqualTo(1));
             Assert.That(session.Current.GeneLabUnlocked, Is.False);
             Assert.That(session.Current.RabbitData, Is.EqualTo(10));
-            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out error), Is.True, error);
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out error), Is.True, error);
             Assert.That(session.Current.RabbitData, Is.Zero);
             Assert.That(session.Current.ResearchData, Is.EqualTo(10));
             Assert.That(session.Current.GenomeProfiles, Is.Empty);
         }
 
         [Test]
-        public void HareLicenseProcessReloadCheckpoint()
+        public void RabbitLicenseProcessReloadCheckpoint()
         {
             var phase = Environment.GetEnvironmentVariable("FD2_LICENSE_RELOAD_PHASE");
             var path = Environment.GetEnvironmentVariable("FD2_LICENSE_RELOAD_PATH");
@@ -806,54 +843,54 @@ namespace SaltyGame.Tests
                 storage.Save();
                 session.Reload();
                 profileId = session.Current.ProfileId;
-                Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+                Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(rabbit));
                 Assert.That(session.Current.RabbitData, Is.Zero);
                 var saves = storage.SaveCalls;
-                Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+                Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out _), Is.False);
                 Assert.That(storage.SaveCalls, Is.EqualTo(saves));
                 Assert.That(session.Current.GenomeProfiles, Is.Empty);
                 return;
             }
             StartLicense(10);
-            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.True, error);
+            Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out var error), Is.True, error);
             if (phase == "write") File.WriteAllText(path, storage.Durable[Helper_ProfileSession.StoreKey]);
             var reopened = NewSession(storage.Restart());
-            Assert.That(reopened.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+            Assert.That(reopened.Current.UnlockedGenomeSpeciesIds, Does.Contain(rabbit));
             Assert.That(reopened.Current.RabbitData, Is.Zero);
         }
 
         void StartNodes(long balance = 40)
         {
             StartLicense(balance);
-            session.UnlockGenome(hare);
+            session.UnlockGenome(rabbit);
         }
 
         [Test]
-        public void FoundingHaresIsPurchasedOnceAndLaunchEffectFollowsEquipmentAcrossReloadAndReset()
+        public void FoundingRabbitsIsPurchasedOnceAndLaunchEffectFollowsEquipmentAcrossReloadAndReset()
         {
             StartNodes(20);
-            const string id = "hare.founding-hares";
+            const string id = "rabbit.founding-rabbits";
             var lab = new FieldDataGenomeLab(session);
             Assert.That(lab.CanBuyNode(id), Is.True);
             var before = session.Current.RabbitData;
             Assert.That(lab.BuyNode(id), Is.True, lab.Status);
             Assert.That(session.Current.RabbitData, Is.EqualTo(before - 5));
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out _), Is.False);
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.IsNodeUnlocked(id), Is.True);
             Assert.That(genome.IsNodeActive(id), Is.True);
             Assert.That(genome.CapacityUsed, Is.EqualTo(1));
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             var frozen = definition.FreezeOwnedLoadout(genome);
-            Assert.That(frozen.GetSpeciesGenome(hare).GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.EqualTo(5));
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, genome.ResetGeneration, out var error), Is.True, error);
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out genome), Is.True);
+            Assert.That(frozen.GetSpeciesGenome(rabbit).GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.EqualTo(5));
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, genome.ResetGeneration, out var error), Is.True, error);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out genome), Is.True);
             Assert.That(genome.IsNodeUnlocked(id), Is.True);
             Assert.That(genome.IsNodeActive(id), Is.False);
-            Assert.That(definition.FreezeOwnedLoadout(genome).GetSpeciesGenome(hare)
+            Assert.That(definition.FreezeOwnedLoadout(genome).GetSpeciesGenome(rabbit)
                 .GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.Zero);
-            Assert.That(frozen.GetSpeciesGenome(hare).GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.EqualTo(5));
+            Assert.That(frozen.GetSpeciesGenome(rabbit).GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.EqualTo(5));
         }
 
         [Test]
@@ -861,50 +898,50 @@ namespace SaltyGame.Tests
         {
             StartNodes(20);
             var lab = new FieldDataGenomeLab(session);
-            const string id = "hare.seed-dispersal";
+            const string id = "rabbit.seed-dispersal";
             Assert.That(lab.NodeOffer(id), Does.Contain("(TEST)"));
-            var empty = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, hare);
+            var empty = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, rabbit);
             Assert.That(empty(SpeciesUpgradeCatalog.SeedDispersalId), Is.False);
             Assert.That(lab.BuyNode(id), Is.True, lab.Status);
             Assert.That(session.Current.RabbitData, Is.EqualTo(15));
             Assert.That(lab.BuyNode(id), Is.False);
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.UnlockedNodeIds, Does.Contain(id));
             Assert.That(genome.UnlockedNodeIds, Does.Not.Contain("fertile-droppings"));
             var natural = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
             var frozen = FieldDataPermanentProgressionDefinition.CreateStarter().FreezeOwnedLoadout(genome);
-            Assert.That(frozen.GetSpeciesGenome(hare).ApplyToNaturalRules(natural), Is.SameAs(natural));
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, genome.ResetGeneration, out var error), Is.True, error);
-            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, hare);
+            Assert.That(frozen.GetSpeciesGenome(rabbit).ApplyToNaturalRules(natural), Is.SameAs(natural));
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, genome.ResetGeneration, out var error), Is.True, error);
+            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, rabbit);
             Assert.That(eligible(SpeciesUpgradeCatalog.SeedDispersalId), Is.True);
-            var progression = new SpeciesProgression(new SpeciesDefinition(hare, natural), eligible);
+            var progression = new SpeciesProgression(new SpeciesDefinition(rabbit, natural), eligible);
             Assert.That(progression.GetUpgradeLevel(SpeciesUpgradeCatalog.SeedDispersalId), Is.Zero);
-            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.SeedDispersalId).CreateSnapshot(hare)), Is.True);
+            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.SeedDispersalId).CreateSnapshot(rabbit)), Is.True);
         }
 
         [Test]
         public void CrowdingResearchUnlocksTemporaryChoiceWithoutGrantingPermanentReduction()
         {
             StartNodes(20);
-            const string id = "hare.crowding-tolerance";
+            const string id = "rabbit.crowding-tolerance";
             var lab = new FieldDataGenomeLab(session);
             Assert.That(lab.NodeOffer(id), Does.Contain("(TEST)"));
             Assert.That(lab.BuyNode(id), Is.True, lab.Status);
             Assert.That(session.Current.RabbitData, Is.EqualTo(15));
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.UnlockedNodeIds, Does.Contain(id));
             Assert.That(genome.UnlockedNodeIds, Does.Not.Contain("high-crowding"));
             var natural = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
             var frozen = FieldDataPermanentProgressionDefinition.CreateStarter().FreezeOwnedLoadout(genome);
-            Assert.That(frozen.GetSpeciesGenome(hare).ApplyToNaturalRules(natural), Is.SameAs(natural));
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, genome.ResetGeneration, out var error), Is.True, error);
-            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, hare);
+            Assert.That(frozen.GetSpeciesGenome(rabbit).ApplyToNaturalRules(natural), Is.SameAs(natural));
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, genome.ResetGeneration, out var error), Is.True, error);
+            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, rabbit);
             Assert.That(eligible(SpeciesUpgradeCatalog.CrowdingToleranceId), Is.True);
-            var progression = new SpeciesProgression(new SpeciesDefinition(hare, natural), eligible);
+            var progression = new SpeciesProgression(new SpeciesDefinition(rabbit, natural), eligible);
             Assert.That(progression.GetUpgradeLevel(SpeciesUpgradeCatalog.CrowdingToleranceId), Is.Zero);
-            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.CrowdingToleranceId).CreateSnapshot(hare)), Is.True);
+            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.CrowdingToleranceId).CreateSnapshot(rabbit)), Is.True);
             Assert.That(progression.CurrentRules.CrowdingEnergyReduction, Is.GreaterThan(natural.CrowdingEnergyReduction));
         }
 
@@ -912,10 +949,10 @@ namespace SaltyGame.Tests
         public void EscapeAndLitterResearchUnlockSeparateJourneyMutationsWithoutPermanentStats()
         {
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            Assert.That(definition.HareMap.TryGetNode(GenomeContract.FastGestationNodeId, out _), Is.False);
+            Assert.That(definition.RabbitMap.TryGetNode(GenomeContract.FastGestationNodeId, out _), Is.False);
             var natural = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
             var fresh = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(
-                new ProfileSessionSnapshot(true, "fresh-research", "Fresh"), hare);
+                new ProfileSessionSnapshot(true, "fresh-research", "Fresh"), rabbit);
             Assert.That(fresh(SpeciesUpgradeCatalog.ThreatExposureId), Is.False);
             Assert.That(fresh(SpeciesUpgradeCatalog.LargerMinimumLitterId), Is.False);
             Assert.That(fresh(SpeciesUpgradeCatalog.LargerMaximumLitterId), Is.False);
@@ -925,28 +962,28 @@ namespace SaltyGame.Tests
                 var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(
                     new ProfileSessionSnapshot(true, nodeId, nodeId, new[]
                     {
-                        new SpeciesGenomeProfile(hare, new[] { nodeId }, Array.Empty<string>()),
-                    }), hare);
+                        new SpeciesGenomeProfile(rabbit, new[] { nodeId }, Array.Empty<string>()),
+                    }), rabbit);
                 Assert.That(research(unlocked), Is.True, nodeId);
                 foreach (var id in locked)
                     Assert.That(research(id), Is.False, nodeId + " must not unlock " + id);
-                var equipped = definition.FreezeOwnedLoadout(new SpeciesGenomeProfile(hare, new[] { nodeId }, new[] { nodeId }));
-                Assert.That(equipped.GetSpeciesGenome(hare).ApplyToNaturalRules(natural), Is.SameAs(natural));
+                var equipped = definition.FreezeOwnedLoadout(new SpeciesGenomeProfile(rabbit, new[] { nodeId }, new[] { nodeId }));
+                Assert.That(equipped.GetSpeciesGenome(rabbit).ApplyToNaturalRules(natural), Is.SameAs(natural));
             }
 
-            AssertIsolated("hare.escape-instinct", SpeciesUpgradeCatalog.ThreatExposureId,
+            AssertIsolated("rabbit.escape-instinct", SpeciesUpgradeCatalog.ThreatExposureId,
                 SpeciesUpgradeCatalog.LargerMinimumLitterId, SpeciesUpgradeCatalog.LargerMaximumLitterId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId);
-            AssertIsolated("hare.increased-minimum-litter", SpeciesUpgradeCatalog.LargerMinimumLitterId,
+            AssertIsolated("rabbit.increased-minimum-litter", SpeciesUpgradeCatalog.LargerMinimumLitterId,
                 SpeciesUpgradeCatalog.LargerMaximumLitterId, SpeciesUpgradeCatalog.ThreatExposureId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId);
-            AssertIsolated("hare.larger-litters", SpeciesUpgradeCatalog.LargerMaximumLitterId,
+            AssertIsolated("rabbit.larger-litters", SpeciesUpgradeCatalog.LargerMaximumLitterId,
                 SpeciesUpgradeCatalog.LargerMinimumLitterId, SpeciesUpgradeCatalog.ThreatExposureId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId);
 
             StartNodes(40);
             var lab = new FieldDataGenomeLab(session);
-            foreach (var id in new[] { "hare.escape-instinct", "hare.increased-minimum-litter", "hare.larger-litters" })
+            foreach (var id in new[] { "rabbit.escape-instinct", "rabbit.increased-minimum-litter", "rabbit.larger-litters" })
             {
                 Assert.That(lab.NodeOffer(id), Does.Contain("(TEST)"));
                 Assert.That(lab.BuyNode(id), Is.True, lab.Status);
@@ -954,16 +991,16 @@ namespace SaltyGame.Tests
             }
             Assert.That(session.Current.RabbitData, Is.EqualTo(25));
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
-            Assert.That(genome.UnlockedNodeIds, Does.Contain("hare.escape-instinct"));
-            Assert.That(genome.UnlockedNodeIds, Does.Contain("hare.increased-minimum-litter"));
-            Assert.That(genome.UnlockedNodeIds, Does.Contain("hare.larger-litters"));
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, genome.ResetGeneration, out var error), Is.True, error);
-            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, hare);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
+            Assert.That(genome.UnlockedNodeIds, Does.Contain("rabbit.escape-instinct"));
+            Assert.That(genome.UnlockedNodeIds, Does.Contain("rabbit.increased-minimum-litter"));
+            Assert.That(genome.UnlockedNodeIds, Does.Contain("rabbit.larger-litters"));
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, genome.ResetGeneration, out var error), Is.True, error);
+            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, rabbit);
             Assert.That(eligible(SpeciesUpgradeCatalog.ReproductiveDriveId), Is.False);
-            var progression = new SpeciesProgression(new SpeciesDefinition(hare, natural), eligible);
-            var minimum = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMinimumLitterId).CreateSnapshot(hare);
-            var maximum = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMaximumLitterId).CreateSnapshot(hare);
+            var progression = new SpeciesProgression(new SpeciesDefinition(rabbit, natural), eligible);
+            var minimum = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMinimumLitterId).CreateSnapshot(rabbit);
+            var maximum = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMaximumLitterId).CreateSnapshot(rabbit);
             Assert.That(progression.TryApplyFieldDataReward(minimum), Is.True);
             Assert.That(progression.CurrentRules.LitterMinimum, Is.EqualTo(natural.LitterMinimum + 1));
             Assert.That(progression.CurrentRules.LitterMaximum, Is.EqualTo(natural.LitterMaximum));
@@ -972,7 +1009,7 @@ namespace SaltyGame.Tests
             Assert.That(progression.CurrentRules.LitterMaximum, Is.EqualTo(natural.LitterMaximum + 1));
             Assert.That(progression.CurrentRules.LitterMinimum, Is.EqualTo(natural.LitterMinimum + 1));
             Assert.That(progression.TryApplyFieldDataReward(minimum), Is.True);
-            var escape = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId).CreateSnapshot(hare);
+            var escape = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId).CreateSnapshot(rabbit);
             Assert.That(escape.DisplayName, Is.EqualTo("ESCAPE INSTINCT"));
             Assert.That(progression.TryApplyFieldDataReward(escape), Is.True);
             Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(SpeciesUpgradeCatalog.ThreatExposureAvoidanceChanceBonus));
@@ -985,9 +1022,9 @@ namespace SaltyGame.Tests
         {
             StartNodes(100);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            foreach (var node in definition.HareMap.Nodes.Take(8))
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, node.Id, out var error), Is.True, error);
-            const string id = "hare.reproductive-drive";
+            foreach (var node in definition.RabbitMap.Nodes.Take(8))
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
+            const string id = "rabbit.reproductive-drive";
             var lab = new FieldDataGenomeLab(session);
             Assert.That(lab.CapacityUsed, Is.EqualTo(8));
             Assert.That(lab.CanBuyNode(id), Is.True);
@@ -1002,17 +1039,17 @@ namespace SaltyGame.Tests
             Assert.That(lab.Status, Does.Contain("not equipped"));
             Assert.That(session.Current.RabbitData, Is.EqualTo(balance - 5));
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.IsNodeUnlocked(id), Is.True);
             Assert.That(genome.IsNodeActive(id), Is.False);
             Assert.That(genome.CapacityUsed, Is.EqualTo(8));
-            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, hare);
+            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, rabbit);
             Assert.That(eligible(SpeciesUpgradeCatalog.ReproductiveDriveId), Is.True);
             var natural = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
             var frozen = definition.FreezeOwnedLoadout(genome);
-            Assert.That(frozen.GetSpeciesGenome(hare).ApplyToNaturalRules(natural).ReproductionChance, Is.EqualTo(natural.ReproductionChance));
-            var progression = new SpeciesProgression(new SpeciesDefinition(hare, natural), eligible);
-            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId).CreateSnapshot(hare)), Is.True);
+            Assert.That(frozen.GetSpeciesGenome(rabbit).ApplyToNaturalRules(natural).ReproductionChance, Is.EqualTo(natural.ReproductionChance));
+            var progression = new SpeciesProgression(new SpeciesDefinition(rabbit, natural), eligible);
+            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId).CreateSnapshot(rabbit)), Is.True);
             Assert.That(progression.CurrentRules.ReproductionChance, Is.GreaterThan(natural.ReproductionChance));
         }
 
@@ -1021,31 +1058,31 @@ namespace SaltyGame.Tests
         {
             StartNodes(100);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            foreach (var node in definition.HareMap.Nodes.Take(6))
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, node.Id, out var error), Is.True, error);
+            foreach (var node in definition.RabbitMap.Nodes.Take(6))
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
             for (var rank = 2; rank <= 5; rank++)
             {
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.warren-network", out var error), Is.True, error);
-                Assert.That(session.Current.TryGetGenomeProfile(hare, out var current), Is.True);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.warren-network", out var error), Is.True, error);
+                Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var current), Is.True);
                 Assert.That(current.PopulationReservesRank, Is.EqualTo(rank));
-                Assert.That(definition.FreezeOwnedLoadout(current).GetSpeciesGenome(hare).PopulationReservesRank, Is.EqualTo(rank));
+                Assert.That(definition.FreezeOwnedLoadout(current).GetSpeciesGenome(rabbit).PopulationReservesRank, Is.EqualTo(rank));
                 Assert.That(current.ActiveNodeIds.Count, Is.EqualTo(6));
             }
             Assert.That(session.Current.RabbitData, Is.Zero);
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.warren-network", out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.warren-network", out _), Is.False);
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var reloaded), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var reloaded), Is.True);
             Assert.That(reloaded.PopulationReservesRank, Is.EqualTo(5));
             session.AddResearchData(20);
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, reloaded.ResetGeneration, out var resetError), Is.True, resetError);
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var reset), Is.True);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, reloaded.ResetGeneration, out var resetError), Is.True, resetError);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var reset), Is.True);
             Assert.That(reset.PopulationReservesRank, Is.EqualTo(5));
             Assert.That(reset.ActiveNodeIds, Is.Empty);
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, reset.ResetGeneration,
-                new[] { "hare.warren-network" }, out var arrangeError), Is.True, arrangeError);
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var equipped), Is.True);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, reset.ResetGeneration,
+                new[] { "rabbit.warren-network" }, out var arrangeError), Is.True, arrangeError);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var equipped), Is.True);
             Assert.That(equipped.CapacityUsed, Is.EqualTo(1));
-            Assert.That(definition.FreezeOwnedLoadout(equipped).GetSpeciesGenome(hare).PopulationReservesRank, Is.EqualTo(5));
+            Assert.That(definition.FreezeOwnedLoadout(equipped).GetSpeciesGenome(rabbit).PopulationReservesRank, Is.EqualTo(5));
         }
 
         [TestCase(false)]
@@ -1054,19 +1091,19 @@ namespace SaltyGame.Tests
         {
             StartNodes(100);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            foreach (var node in definition.HareMap.Nodes.Take(6))
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, node.Id, out var error), Is.True, error);
+            foreach (var node in definition.RabbitMap.Nodes.Take(6))
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
             var lab = new FieldDataGenomeLab(session);
-            Assert.That(lab.NodeOffer("hare.warren-network"), Does.Contain("10 HARE DATA"));
+            Assert.That(lab.NodeOffer("rabbit.warren-network"), Does.Contain("10 RABBIT DATA"));
             var before = session.Current;
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persistThenThrow;
-            Assert.That(lab.BuyNode("hare.warren-network"), Is.False);
+            Assert.That(lab.BuyNode("rabbit.warren-network"), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             storage.FailOnSave = 0;
-            Assert.That(lab.BuyNode("hare.warren-network"), Is.True, lab.Status);
-            Assert.That(lab.NodeOffer("hare.warren-network"), Does.Contain("15 HARE DATA"));
-            Assert.That(lab.NodeReason("hare.warren-network"), Does.Contain("20 purchased Hares"));
+            Assert.That(lab.BuyNode("rabbit.warren-network"), Is.True, lab.Status);
+            Assert.That(lab.NodeOffer("rabbit.warren-network"), Does.Contain("15 RABBIT DATA"));
+            Assert.That(lab.NodeReason("rabbit.warren-network"), Does.Contain("20 purchased Rabbits"));
             Assert.That(lab.CapacityUsed, Is.EqualTo(6));
         }
 
@@ -1079,22 +1116,22 @@ namespace SaltyGame.Tests
             json["version"] = 7;
             json["profiles"][0]["genomeProfiles"] = new JArray(new JObject
             {
-                ["speciesId"] = "hare", ["unlockedNodeIds"] = new JArray(ids),
+                ["speciesId"] = "rabbit", ["unlockedNodeIds"] = new JArray(ids),
                 ["activeNodeIds"] = new JArray(ids), ["allocations"] = new JArray(),
                 ["resetGeneration"] = 0
             });
             storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
             storage.Save();
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.CapacityUsed, Is.EqualTo(9));
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(ids));
             Assert.That(new FieldDataGenomeLab(session).CapacityUsed, Is.EqualTo(9));
             var emptyCatalog = new GenomeCatalogSnapshot(new SpeciesGenomeMapSnapshot[0]);
             Assert.Throws<InvalidOperationException>(() => session.Current.CreateLaunchGenomeSnapshot(emptyCatalog));
-            Assert.That(session.TrySetGenomeConfiguration(hare, ids, ids, out _), Is.False);
-            Assert.That(session.TrySetGenomeConfiguration(hare, ids, ids.Take(8), out var error), Is.True, error);
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out genome), Is.True);
+            Assert.That(session.TrySetGenomeConfiguration(rabbit, ids, ids, out _), Is.False);
+            Assert.That(session.TrySetGenomeConfiguration(rabbit, ids, ids.Take(8), out var error), Is.True, error);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out genome), Is.True);
             Assert.That(genome.UnlockedNodeIds, Is.EqualTo(ids));
             Assert.That(genome.CapacityUsed, Is.EqualTo(8));
         }
@@ -1108,7 +1145,7 @@ namespace SaltyGame.Tests
             json["version"] = 7;
             json["profiles"][0]["genomeProfiles"] = new JArray(new JObject
             {
-                ["speciesId"] = "hare", ["unlockedNodeIds"] = new JArray(),
+                ["speciesId"] = "rabbit", ["unlockedNodeIds"] = new JArray(),
                 ["activeNodeIds"] = new JArray("custom.unknown"),
                 ["allocations"] = new JArray(new JObject
                 {
@@ -1120,14 +1157,14 @@ namespace SaltyGame.Tests
             storage.Save();
             session.Reload();
             Assert.That(session.Current.RabbitData, Is.EqualTo(before));
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.CapacityUsed, Is.EqualTo(1));
             Assert.That(genome.TryGetAllocation("custom.unknown", out var allocation), Is.True);
             Assert.That(allocation.CapacityPoints, Is.EqualTo(3));
             Assert.That(allocation.RabbitDataSpent, Is.EqualTo(17));
             Assert.That(genome.CreateSnapshot().GetAllocationCapacityPoints("custom.unknown"), Is.EqualTo(3));
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out genome), Is.True);
             Assert.That(genome.TryGetAllocation("custom.unknown", out allocation), Is.True);
             Assert.That(allocation.CapacityPoints, Is.EqualTo(3));
             Assert.That(allocation.RabbitDataSpent, Is.EqualTo(17));
@@ -1144,7 +1181,7 @@ namespace SaltyGame.Tests
             json["version"] = 7;
             json["profiles"][0]["genomeProfiles"] = new JArray(new JObject
             {
-                ["speciesId"] = "hare", ["unlockedNodeIds"] = new JArray(),
+                ["speciesId"] = "rabbit", ["unlockedNodeIds"] = new JArray(),
                 ["activeNodeIds"] = new JArray(GenomeContract.FastGestationNodeId),
                 ["allocations"] = new JArray(new JObject
                 {
@@ -1157,13 +1194,13 @@ namespace SaltyGame.Tests
             storage.Save();
             session.Reload();
             Assert.That(session.Current.RabbitData, Is.EqualTo(before));
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.CapacityUsed, Is.EqualTo(1));
             Assert.That(genome.TryGetAllocation(GenomeContract.FastGestationNodeId, out var allocation), Is.True);
             Assert.That(allocation.RabbitDataSpent, Is.EqualTo(spent));
             Assert.That(allocation.Rank, Is.EqualTo(expectedRank));
             session.Reload();
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out genome), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out genome), Is.True);
             Assert.That(genome.TryGetAllocation(GenomeContract.FastGestationNodeId, out allocation), Is.True);
             Assert.That(allocation.Rank, Is.EqualTo(expectedRank));
         }
@@ -1173,8 +1210,8 @@ namespace SaltyGame.Tests
         {
             StartNodes(100);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            foreach (var node in definition.HareMap.Nodes.Take(6))
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, node.Id, out var error), Is.True, error);
+            foreach (var node in definition.RabbitMap.Nodes.Take(6))
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
             var before = session.Current.RabbitData;
             var old = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
             old["version"] = 7;
@@ -1183,10 +1220,10 @@ namespace SaltyGame.Tests
             storage.Save();
             session.Reload();
             Assert.That(session.Current.RabbitData, Is.EqualTo(before));
-            Assert.That(session.Current.TryGetGenomeProfile(hare, out var migrated), Is.True);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var migrated), Is.True);
             Assert.That(migrated.PopulationReservesRank, Is.EqualTo(1));
-            Assert.That(migrated.IsNodeActive("hare.warren-network"), Is.True);
-            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(9));
+            Assert.That(migrated.IsNodeActive("rabbit.warren-network"), Is.True);
+            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(10));
         }
 
         [TestCase(0L, false)]
@@ -1194,12 +1231,12 @@ namespace SaltyGame.Tests
         [TestCase(5L, true)]
         [TestCase(6L, true)]
         [TestCase(long.MaxValue, true)]
-        public void HareNodePurchaseChargesFiveAndPersistsPermanentOwnershipWithActivation(long balance, bool succeeds)
+        public void RabbitNodePurchaseChargesFiveAndPersistsPermanentOwnershipWithActivation(long balance, bool succeeds)
         {
             StartNodes(balance);
             var saves = storage.SaveCalls;
             var before = session.Current;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.EqualTo(succeeds), error);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.EqualTo(succeeds), error);
             if (!succeeds)
             {
                 Assert.That(session.Current, Is.SameAs(before));
@@ -1208,40 +1245,40 @@ namespace SaltyGame.Tests
             }
             Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
             var paid = JObject.Parse(storage.Writes.Last())["profiles"][0];
-            Assert.That((long)paid["speciesDataWallets"].Single(wallet => (string)wallet["speciesId"] == "hare")["balance"], Is.EqualTo(balance - 5));
-            Assert.That(paid["genomeProfiles"][0]["unlockedNodeIds"].Values<string>(), Is.EqualTo(new[] { "hare.guarded-burrow" }));
-            Assert.That(paid["genomeProfiles"][0]["activeNodeIds"].Values<string>(), Is.EqualTo(new[] { "hare.guarded-burrow" }));
+            Assert.That((long)paid["speciesDataWallets"].Single(wallet => (string)wallet["speciesId"] == "rabbit")["balance"], Is.EqualTo(balance - 5));
+            Assert.That(paid["genomeProfiles"][0]["unlockedNodeIds"].Values<string>(), Is.EqualTo(new[] { "rabbit.guarded-burrow" }));
+            Assert.That(paid["genomeProfiles"][0]["activeNodeIds"].Values<string>(), Is.EqualTo(new[] { "rabbit.guarded-burrow" }));
             Assert.That(paid["genomeProfiles"][0]["allocations"], Is.Empty);
             var reopened = NewSession(storage.Restart());
             Assert.That(reopened.Current.RabbitData, Is.EqualTo(balance - 5));
-            Assert.That(reopened.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
-            Assert.That(genome.IsNodeUnlocked("hare.guarded-burrow"), Is.True);
-            Assert.That(genome.IsNodeActive("hare.guarded-burrow"), Is.True);
+            Assert.That(reopened.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
+            Assert.That(genome.IsNodeUnlocked("rabbit.guarded-burrow"), Is.True);
+            Assert.That(genome.IsNodeActive("rabbit.guarded-burrow"), Is.True);
             Assert.That(genome.Allocations, Is.Empty);
             Assert.That(reopened.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(400));
             Assert.That(reopened.Current.ResearchData, Is.EqualTo(30));
             Assert.That(reopened.Current.ConversionResearchLevel, Is.EqualTo(1));
         }
 
-        [TestCase("hare.guarded-burrow", null, 0f)]
-        [TestCase("hare.keen-hearing", null, 0f)]
-        [TestCase("hare.swift-digging", null, 0f)]
-        [TestCase("hare.safe-foraging", null, 0f)]
-        [TestCase("hare.warren-network", null, 0f)]
-        public void HareNodePurchaseUsesOwnedInactivePrerequisitesAndExactCatalogEffects(string id, string attribute, float amount)
+        [TestCase("rabbit.guarded-burrow", null, 0f)]
+        [TestCase("rabbit.keen-hearing", null, 0f)]
+        [TestCase("rabbit.swift-digging", null, 0f)]
+        [TestCase("rabbit.safe-foraging", null, 0f)]
+        [TestCase("rabbit.warren-network", null, 0f)]
+        public void RabbitNodePurchaseUsesOwnedInactivePrerequisitesAndExactCatalogEffects(string id, string attribute, float amount)
         {
             StartNodes(5);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            var owned = definition.HareMap.Nodes.Take(6).Select(node => node.Id).Where(nodeId => nodeId != id).ToArray();
-            Assert.That(session.TrySetGenomeConfiguration(hare, owned, Array.Empty<string>(), out var error), Is.True, error);
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out error), Is.True, error);
+            var owned = definition.RabbitMap.Nodes.Take(6).Select(node => node.Id).Where(nodeId => nodeId != id).ToArray();
+            Assert.That(session.TrySetGenomeConfiguration(rabbit, owned, Array.Empty<string>(), out var error), Is.True, error);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out error), Is.True, error);
             session.Reload();
-            session.Current.TryGetGenomeProfile(hare, out var genome);
+            session.Current.TryGetGenomeProfile(rabbit, out var genome);
             Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { id }));
-            var frozen = definition.FreezeOwnedLoadout(genome).GetSpeciesGenome(hare);
+            var frozen = definition.FreezeOwnedLoadout(genome).GetSpeciesGenome(rabbit);
             Assert.That(frozen.CatalogFingerprint, Is.EqualTo(definition.Catalog.Fingerprint));
-            Assert.That(frozen.ResolvedNodes.Single().Fingerprint, Is.EqualTo(definition.HareMap.GetNode(id).Fingerprint));
+            Assert.That(frozen.ResolvedNodes.Single().Fingerprint, Is.EqualTo(definition.RabbitMap.GetNode(id).Fingerprint));
             if (attribute == null) Assert.That(frozen.ResolvedNodes.Single().Modifiers, Is.Empty);
             else
             {
@@ -1254,29 +1291,29 @@ namespace SaltyGame.Tests
         [TestCase("")]
         [TestCase(" ")]
         [TestCase("fox.guarded-burrow")]
-        [TestCase("hare.unknown")]
-        public void HareNodePurchaseRejectsUnknownAndOtherSpeciesIdsWithoutWriting(string id)
+        [TestCase("rabbit.unknown")]
+        public void RabbitNodePurchaseRejectsUnknownAndOtherSpeciesIdsWithoutWriting(string id)
         {
             StartNodes();
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out var error), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out var error), Is.False);
             Assert.That(error, Is.Not.Empty);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
         }
 
-        [TestCase("hare.keen-hearing", "")]
-        [TestCase("hare.safe-foraging", "hare.guarded-burrow,hare.keen-hearing")]
-        [TestCase("hare.warren-network", "hare.guarded-burrow,hare.safe-foraging")]
-        public void HareNodePurchaseRequiresAllOwnedAncestors(string id, string ownedIds)
+        [TestCase("rabbit.keen-hearing", "")]
+        [TestCase("rabbit.safe-foraging", "rabbit.guarded-burrow,rabbit.keen-hearing")]
+        [TestCase("rabbit.warren-network", "rabbit.guarded-burrow,rabbit.safe-foraging")]
+        public void RabbitNodePurchaseRequiresAllOwnedAncestors(string id, string ownedIds)
         {
             StartNodes();
-            Assert.That(session.TrySetGenomeConfiguration(hare, ownedIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
+            Assert.That(session.TrySetGenomeConfiguration(rabbit, ownedIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
                 Array.Empty<string>(), out var error), Is.True, error);
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out error), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out error), Is.False);
             StringAssert.Contains("prerequisite", error);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
@@ -1284,39 +1321,39 @@ namespace SaltyGame.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareNodePurchaseNeverSpendsOtherWalletsOrResearchData(bool includeEmptyHareWallet)
+        public void RabbitNodePurchaseNeverSpendsOtherWalletsOrResearchData(bool includeEmptyRabbitWallet)
         {
-            StartLicense(0, long.MaxValue, includeEmptyHareWallet);
-            session.UnlockGenome(hare);
+            StartLicense(0, long.MaxValue, includeEmptyRabbitWallet);
+            session.UnlockGenome(rabbit);
             session.AddResearchData(long.MaxValue - session.Current.ResearchData);
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
         }
 
         [Test]
-        public void HareNodePurchaseNeedsLicenseAndMatchingLoadedProfileAndRejectsNotificationReentry()
+        public void RabbitNodePurchaseNeedsLicenseAndMatchingLoadedProfileAndRejectsNotificationReentry()
         {
             StartLicense(40);
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
-            session.UnlockGenome(hare);
+            session.UnlockGenome(rabbit);
             saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeNode("other-profile", "hare.guarded-burrow", out _), Is.False);
-            Assert.That(NewSession(new Storage()).TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode("other-profile", "rabbit.guarded-burrow", out _), Is.False);
+            Assert.That(NewSession(new Storage()).TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out _), Is.False);
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
             var notifications = 0;
             session.SnapshotChanged += snapshot =>
             {
                 notifications++;
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.keen-hearing", out _), Is.False);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.keen-hearing", out _), Is.False);
             };
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.True, error);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.True, error);
             Assert.That(notifications, Is.EqualTo(1));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
             Assert.That(session.Current.RabbitData, Is.EqualTo(35));
@@ -1324,41 +1361,41 @@ namespace SaltyGame.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareNodePurchaseRejectsOwnedDuplicatesWhetherActiveOrInactive(bool deactivate)
+        public void RabbitNodePurchaseRejectsOwnedDuplicatesWhetherActiveOrInactive(bool deactivate)
         {
             StartNodes();
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.True, error);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.True, error);
             if (deactivate)
-                Assert.That(session.TrySetGenomeConfiguration(hare, new[] { "hare.guarded-burrow" }, Array.Empty<string>(), out error), Is.True, error);
+                Assert.That(session.TrySetGenomeConfiguration(rabbit, new[] { "rabbit.guarded-burrow" }, Array.Empty<string>(), out error), Is.True, error);
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
         }
 
         [Test]
-        public void HareNodePurchaseFitsAllSixOnePointNodes()
+        public void RabbitNodePurchaseFitsAllSixOnePointNodes()
         {
             StartNodes();
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            var ids = definition.HareMap.Nodes.Take(6).Select(node => node.Id).ToArray();
+            var ids = definition.RabbitMap.Nodes.Take(6).Select(node => node.Id).ToArray();
             foreach (var id in ids.Take(4))
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out var error), Is.True, error);
-            session.Current.TryGetGenomeProfile(hare, out var genome);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out var error), Is.True, error);
+            session.Current.TryGetGenomeProfile(rabbit, out var genome);
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(ids.Take(4)));
             Assert.That(genome.UnlockedNodeIds, Is.EqualTo(ids.Take(4)));
-            Assert.That(genome.ActiveNodeIds.Sum(id => definition.HareMap.GetNode(id).CapacityPoints), Is.EqualTo(4));
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, ids[4], out var reason), Is.True, reason);
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, ids[5], out reason), Is.True, reason);
-            session.Current.TryGetGenomeProfile(hare, out genome);
+            Assert.That(genome.ActiveNodeIds.Sum(id => definition.RabbitMap.GetNode(id).CapacityPoints), Is.EqualTo(4));
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, ids[4], out var reason), Is.True, reason);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, ids[5], out reason), Is.True, reason);
+            session.Current.TryGetGenomeProfile(rabbit, out genome);
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(ids));
             Assert.That(session.Current.RabbitData, Is.EqualTo(10));
         }
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareNodeSaveFailurePublishesNoPurchaseAndRetryChargesOnce(bool persistThenThrow)
+        public void RabbitNodeSaveFailurePublishesNoPurchaseAndRetryChargesOnce(bool persistThenThrow)
         {
             StartNodes(5);
             var before = session.Current;
@@ -1366,35 +1403,35 @@ namespace SaltyGame.Tests
             session.SnapshotChanged += snapshot => notifications++;
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persistThenThrow;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.False);
             StringAssert.Contains("saved", error);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(notifications, Is.Zero);
             storage.FailOnSave = -1;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out error), Is.True, error);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out error), Is.True, error);
             Assert.That(session.Current.RabbitData, Is.Zero);
             Assert.That(notifications, Is.EqualTo(1));
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out _), Is.False);
         }
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareNodeRestartAfterUncertainSaveChargesOnlyOnce(bool persisted)
+        public void RabbitNodeRestartAfterUncertainSaveChargesOnlyOnce(bool persisted)
         {
             StartNodes(5);
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persisted;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out _), Is.False);
             var reboot = NewSession(storage.Restart());
-            Assert.That(reboot.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.EqualTo(!persisted), error);
+            Assert.That(reboot.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.EqualTo(!persisted), error);
             Assert.That(reboot.Current.RabbitData, Is.Zero);
-            reboot.Current.TryGetGenomeProfile(hare, out var genome);
-            Assert.That(genome.IsNodeUnlocked("hare.guarded-burrow"), Is.True);
-            Assert.That(genome.IsNodeActive("hare.guarded-burrow"), Is.True);
+            reboot.Current.TryGetGenomeProfile(rabbit, out var genome);
+            Assert.That(genome.IsNodeUnlocked("rabbit.guarded-burrow"), Is.True);
+            Assert.That(genome.IsNodeActive("rabbit.guarded-burrow"), Is.True);
         }
 
         [Test]
-        public void HareNodePurchasePreservesOtherGenomesResearchHistoryAndPendingSuccess()
+        public void RabbitNodePurchasePreservesOtherGenomesResearchHistoryAndPendingSuccess()
         {
             StartNodes();
             var fox = new SpeciesId("fox");
@@ -1404,7 +1441,7 @@ namespace SaltyGame.Tests
             Assert.That(Settle("node-pending", out _, out _), Is.False);
             storage.FailOnSave = -1;
             var before = session.Current;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out error), Is.True, error);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out error), Is.True, error);
             Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData - 5));
             Assert.That(session.Current.ResearchData, Is.EqualTo(before.ResearchData));
             Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(before.ConversionResearchLevel));
@@ -1422,14 +1459,14 @@ namespace SaltyGame.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareNodePurchasePreservesAndRejectsIncompatibleLegacyActiveState(bool refundableAllocation)
+        public void RabbitNodePurchasePreservesAndRejectsIncompatibleLegacyActiveState(bool refundableAllocation)
         {
             StartNodes();
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
-            var id = refundableAllocation ? "hare.guarded-burrow" : "hare.unknown-legacy";
+            var id = refundableAllocation ? "rabbit.guarded-burrow" : "rabbit.unknown-legacy";
             json["profiles"][0]["genomeProfiles"] = new JArray(new JObject
             {
-                ["speciesId"] = "hare",
+                ["speciesId"] = "rabbit",
                 ["resetGeneration"] = 0,
                 ["unlockedNodeIds"] = refundableAllocation ? new JArray() : new JArray(id),
                 ["activeNodeIds"] = new JArray(id),
@@ -1443,14 +1480,14 @@ namespace SaltyGame.Tests
             session.Reload();
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.False);
             Assert.That(error, Is.Not.Empty);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
         }
 
         [Test]
-        public void HareNodeProcessReloadCheckpoint()
+        public void RabbitNodeProcessReloadCheckpoint()
         {
             var phase = Environment.GetEnvironmentVariable("FD2_NODE_RELOAD_PHASE");
             var path = Environment.GetEnvironmentVariable("FD2_NODE_RELOAD_PATH");
@@ -1464,25 +1501,25 @@ namespace SaltyGame.Tests
             else
             {
                 StartNodes(10);
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.True, error);
-                Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.keen-hearing", out error), Is.True, error);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.True, error);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.keen-hearing", out error), Is.True, error);
                 if (phase == "write") File.WriteAllText(path, storage.Durable[Helper_ProfileSession.StoreKey]);
             }
             var reopened = NewSession(storage.Restart());
             Assert.That(reopened.Current.RabbitData, Is.Zero);
-            reopened.Current.TryGetGenomeProfile(hare, out var genome);
-            Assert.That(genome.UnlockedNodeIds, Is.EqualTo(new[] { "hare.guarded-burrow", "hare.keen-hearing" }));
+            reopened.Current.TryGetGenomeProfile(rabbit, out var genome);
+            Assert.That(genome.UnlockedNodeIds, Is.EqualTo(new[] { "rabbit.guarded-burrow", "rabbit.keen-hearing" }));
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(genome.UnlockedNodeIds));
             var writes = storage.SaveCalls;
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.keen-hearing", out _), Is.False);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.keen-hearing", out _), Is.False);
             Assert.That(storage.SaveCalls, Is.EqualTo(writes));
         }
 
         void StartLoadout(long researchData = 60)
         {
             StartNodes(40);
-            var ids = FieldDataPermanentProgressionDefinition.CreateStarter().HareMap.Nodes.Take(6).Select(node => node.Id).ToArray();
-            Assert.That(session.TrySetGenomeConfiguration(hare, ids, ids.Take(4), out var error), Is.True, error);
+            var ids = FieldDataPermanentProgressionDefinition.CreateStarter().RabbitMap.Nodes.Take(6).Select(node => node.Id).ToArray();
+            Assert.That(session.TrySetGenomeConfiguration(rabbit, ids, ids.Take(4), out var error), Is.True, error);
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
             json["profiles"][0]["researchData"] = researchData;
             storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
@@ -1495,12 +1532,12 @@ namespace SaltyGame.Tests
         [TestCase(20L, true)]
         [TestCase(21L, true)]
         [TestCase(long.MaxValue, true)]
-        public void HareResetChargesExactlyTwentyOnceAndNeverRefundsSpeciesData(long researchData, bool succeeds)
+        public void RabbitResetChargesExactlyTwentyOnceAndNeverRefundsSpeciesData(long researchData, bool succeeds)
         {
             StartLoadout(researchData);
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.EqualTo(succeeds), error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.EqualTo(succeeds), error);
             if (!succeeds)
             {
                 Assert.That(session.Current, Is.SameAs(before));
@@ -1512,39 +1549,39 @@ namespace SaltyGame.Tests
             Assert.That(session.Current.RabbitData, Is.EqualTo(40));
             Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(400));
             Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
-            session.Current.TryGetGenomeProfile(hare, out var genome);
+            session.Current.TryGetGenomeProfile(rabbit, out var genome);
             Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
             Assert.That(genome.ActiveNodeIds, Is.Empty);
             Assert.That(genome.ResetGeneration, Is.EqualTo(1));
             var reopened = NewSession(storage.Restart());
             Assert.That(reopened.Current.ResearchData, Is.EqualTo(researchData - 20));
-            Assert.That(reopened.Current.TryGetGenomeProfile(hare, out genome), Is.True);
+            Assert.That(reopened.Current.TryGetGenomeProfile(rabbit, out genome), Is.True);
             Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
             Assert.That(genome.ActiveNodeIds, Is.Empty);
             Assert.That(genome.ResetGeneration, Is.EqualTo(1));
-            Assert.That(reopened.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(reopened.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
         }
 
         [Test]
-        public void HareResetRejectsEmptyLoadoutsWithoutACharge()
+        public void RabbitResetRejectsEmptyLoadoutsWithoutACharge()
         {
             StartNodes();
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
-            Assert.That(session.TrySetGenomeConfiguration(hare, new[] { "hare.guarded-burrow" }, Array.Empty<string>(), out var error), Is.True, error);
+            Assert.That(session.TrySetGenomeConfiguration(rabbit, new[] { "rabbit.guarded-burrow" }, Array.Empty<string>(), out var error), Is.True, error);
             before = session.Current;
             saves = storage.SaveCalls;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
         }
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareResetSaveFailurePublishesNoFeeOrClearAndRetryChargesOnce(bool persistThenThrow)
+        public void RabbitResetSaveFailurePublishesNoFeeOrClearAndRetryChargesOnce(bool persistThenThrow)
         {
             StartLoadout();
             var before = session.Current;
@@ -1552,47 +1589,47 @@ namespace SaltyGame.Tests
             session.SnapshotChanged += snapshot => notifications++;
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persistThenThrow;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.False);
             StringAssert.Contains("saved", error);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(notifications, Is.Zero);
             storage.FailOnSave = -1;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out error), Is.True, error);
             Assert.That(session.Current.ResearchData, Is.EqualTo(40));
             Assert.That(notifications, Is.EqualTo(1));
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
         }
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareResetRestartAfterUncertainSaveDeductsOnlyOnce(bool persisted)
+        public void RabbitResetRestartAfterUncertainSaveDeductsOnlyOnce(bool persisted)
         {
             StartLoadout();
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persisted;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             var reopened = NewSession(storage.Restart());
-            Assert.That(reopened.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.EqualTo(!persisted), error);
+            Assert.That(reopened.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.EqualTo(!persisted), error);
             Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
-            reopened.Current.TryGetGenomeProfile(hare, out var genome);
+            reopened.Current.TryGetGenomeProfile(rabbit, out var genome);
             Assert.That(genome.ActiveNodeIds, Is.Empty);
             Assert.That(genome.ResetGeneration, Is.EqualTo(1));
         }
 
         [Test]
-        public void HareResetRequiresItsProfileLicenseSupportedSpeciesAndOriginalGeneration()
+        public void RabbitResetRequiresItsProfileLicenseSupportedSpeciesAndOriginalGeneration()
         {
             StartLoadout();
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryResetGenomeLoadout("other", hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout("other", rabbit, 0, out _), Is.False);
             Assert.That(session.TryResetGenomeLoadout(profileId, new SpeciesId("fox"), 0, out _), Is.False);
             Assert.That(session.TryResetGenomeLoadout(profileId, default, 0, out _), Is.False);
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, -1, out _), Is.False);
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, -1, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 1, out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
-            Assert.That(NewSession(new Storage()).TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(NewSession(new Storage()).TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
             json["profiles"][0]["unlockedGenomeSpeciesIds"] = new JArray("fox");
             storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
@@ -1600,13 +1637,13 @@ namespace SaltyGame.Tests
             session.Reload();
             before = session.Current;
             saves = storage.SaveCalls;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
         }
 
         [Test]
-        public void HareResetRetainsOtherSpeciesAndFrozenSettlementState()
+        public void RabbitResetRetainsOtherSpeciesAndFrozenSettlementState()
         {
             StartLoadout();
             var fox = new SpeciesId("fox");
@@ -1616,7 +1653,7 @@ namespace SaltyGame.Tests
             Assert.That(Settle("pending-reset", out _, out _), Is.False);
             storage.FailOnSave = -1;
             var before = session.Current;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out error), Is.True, error);
             Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData));
             Assert.That(session.Current.CompletedRuns, Is.EqualTo(before.CompletedRuns));
             Assert.That(session.Current.SettlementReceipts.Single(), Is.SameAs(history));
@@ -1625,38 +1662,38 @@ namespace SaltyGame.Tests
             session.Current.TryGetGenomeProfile(fox, out var genome);
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "fox.legacy" }));
             Assert.That(session.TryRetryPendingFieldDataSettlement(profileId, out _, out error), Is.True, error);
-            session.Current.TryGetGenomeProfile(hare, out genome);
+            session.Current.TryGetGenomeProfile(rabbit, out genome);
             Assert.That(genome.ResetGeneration, Is.EqualTo(1));
             Assert.That(genome.ActiveNodeIds, Is.Empty);
         }
 
         [Test]
-        public void HareResetGenerationSurvivesLegacyCopiesAndRejectsLateDuplicateAfterReactivation()
+        public void RabbitResetGenerationSurvivesLegacyCopiesAndRejectsLateDuplicateAfterReactivation()
         {
             StartLoadout();
             var reentered = false;
             session.SnapshotChanged += snapshot =>
             {
                 reentered = true;
-                Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+                Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             };
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.True, error);
             Assert.That(reentered, Is.True);
-            Assert.That(session.TrySetGenomeConfiguration(hare, new[] { "hare.guarded-burrow" }, new[] { "hare.guarded-burrow" }, out error), Is.True, error);
+            Assert.That(session.TrySetGenomeConfiguration(rabbit, new[] { "rabbit.guarded-burrow" }, new[] { "rabbit.guarded-burrow" }, out error), Is.True, error);
             session.AddRabbitData(1);
             session.Reload();
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
-            session.Current.TryGetGenomeProfile(hare, out var genome);
+            session.Current.TryGetGenomeProfile(rabbit, out var genome);
             Assert.That(genome.ResetGeneration, Is.EqualTo(1));
             Assert.That(genome.WithActiveNodeIds(genome.ActiveNodeIds).ResetGeneration, Is.EqualTo(1));
         }
 
         [Test]
-        public void HareResetVersionSixMigrationKeepsAllPurchasedStateAndStartsResetGenerationAtZero()
+        public void RabbitResetVersionSixMigrationKeepsAllPurchasedStateAndStartsResetGenerationAtZero()
         {
             StartLoadout();
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
@@ -1666,17 +1703,17 @@ namespace SaltyGame.Tests
             storage.SetString(Helper_ProfileSession.StoreKey, raw);
             storage.Save();
             session.Reload();
-            session.Current.TryGetGenomeProfile(hare, out var genome);
+            session.Current.TryGetGenomeProfile(rabbit, out var genome);
             Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
             Assert.That(genome.ActiveNodeIds.Count, Is.EqualTo(4));
             Assert.That(genome.ResetGeneration, Is.Zero);
             Assert.That(session.Current.RabbitData, Is.EqualTo(40));
             Assert.That(session.Current.ResearchData, Is.EqualTo(60));
             Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
-            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(9));
+            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(10));
             Assert.That(storage.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.Not.Empty);
             session.Reload();
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.True, error);
             Assert.That(session.Current.ResearchData, Is.EqualTo(40));
         }
 
@@ -1686,7 +1723,7 @@ namespace SaltyGame.Tests
         [TestCase("missing", true)]
         [TestCase("null", true)]
         [TestCase("negative", true)]
-        public void HareResetCorruptGenerationIsPreservedRatherThanLosingDuplicateProtection(string corruption, bool recoveryOccupied)
+        public void RabbitResetCorruptGenerationIsPreservedRatherThanLosingDuplicateProtection(string corruption, bool recoveryOccupied)
         {
             StartLoadout();
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
@@ -1706,7 +1743,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void HareResetRejectsAnExhaustedGenerationWithoutCharging()
+        public void RabbitResetRejectsAnExhaustedGenerationWithoutCharging()
         {
             StartLoadout();
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
@@ -1716,48 +1753,48 @@ namespace SaltyGame.Tests
             session.Reload();
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, long.MaxValue, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, long.MaxValue, out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
         }
 
         [Test]
-        public void HareArrangementRequiresPaidClearForEachReplacementAndNeverRepurchasesOwnedNodes()
+        public void RabbitArrangementRequiresPaidClearForEachReplacementAndNeverRepurchasesOwnedNodes()
         {
             StartLoadout();
-            var active = new[] { "hare.warren-network", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" };
+            var active = new[] { "rabbit.warren-network", "rabbit.keen-hearing", "rabbit.swift-digging", "rabbit.safe-foraging" };
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 0, active, out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 0, active, out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, Array.Empty<string>(), out error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, Array.Empty<string>(), out error), Is.True, error);
             saves = storage.SaveCalls;
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active, out error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, active, out error), Is.True, error);
             Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
             Assert.That(session.Current.ResearchData, Is.EqualTo(40));
             Assert.That(session.Current.RabbitData, Is.EqualTo(40));
-            session.Current.TryGetGenomeProfile(hare, out var genome);
+            session.Current.TryGetGenomeProfile(rabbit, out var genome);
             Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(active));
             Assert.That(genome.Allocations, Is.Empty);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             var frozen = definition.FreezeOwnedLoadout(genome);
-            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
-            Assert.That(frozen.GetSpeciesGenome(hare).ActiveNodeIds, Has.No.Member("hare.guarded-burrow"));
+            Assert.That(frozen.GetPopulationPoolCapacity(rabbit), Is.EqualTo(50));
+            Assert.That(frozen.GetSpeciesGenome(rabbit).ActiveNodeIds, Has.No.Member("rabbit.guarded-burrow"));
             saves = storage.SaveCalls;
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active, out error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, active, out error), Is.True, error);
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active.Take(3), out _), Is.False);
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active.Reverse(), out _), Is.False);
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, active.Take(3), out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, active.Reverse(), out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 1, out error), Is.True, error);
             Assert.That(session.Current.ResearchData, Is.EqualTo(20));
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active, out _), Is.False);
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, active.Take(2), out error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, active, out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 2, active.Take(2), out error), Is.True, error);
             session.Reload();
-            session.Current.TryGetGenomeProfile(hare, out genome);
+            session.Current.TryGetGenomeProfile(rabbit, out genome);
             Assert.That(genome.ResetGeneration, Is.EqualTo(2));
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(active.Take(2)));
             Assert.That(session.Current.RabbitData, Is.EqualTo(40));
@@ -1768,15 +1805,15 @@ namespace SaltyGame.Tests
         [TestCase("duplicate")]
         [TestCase("locked")]
         [TestCase("missing-ancestor")]
-        public void HareArrangementRejectsInvalidSelectionsAtomically(string invalid)
+        public void RabbitArrangementRejectsInvalidSelectionsAtomically(string invalid)
         {
             StartLoadout();
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
-            var all = FieldDataPermanentProgressionDefinition.CreateStarter().HareMap.Nodes.Select(node => node.Id).ToArray();
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.True, error);
+            var all = FieldDataPermanentProgressionDefinition.CreateStarter().RabbitMap.Nodes.Select(node => node.Id).ToArray();
             if (invalid == "locked" || invalid == "missing-ancestor")
             {
                 var owned = invalid == "locked" ? all.Take(1) : all.Skip(1);
-                Assert.That(session.TrySetGenomeConfiguration(hare, owned, Array.Empty<string>(), out error), Is.True, error);
+                Assert.That(session.TrySetGenomeConfiguration(rabbit, owned, Array.Empty<string>(), out error), Is.True, error);
             }
             var selection = invalid == "null" ? null
                 : invalid == "unknown" ? new[] { "fox.unknown" }
@@ -1785,7 +1822,7 @@ namespace SaltyGame.Tests
                 : invalid == "missing-ancestor" ? new[] { all[4] } : all;
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, selection, out error), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, selection, out error), Is.False);
             Assert.That(error, Is.Not.Empty);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
@@ -1793,50 +1830,50 @@ namespace SaltyGame.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void HareArrangementFailureKeepsThePaidResetAndFreeRetryDoesNotChargeAgain(bool persistThenThrow)
+        public void RabbitArrangementFailureKeepsThePaidResetAndFreeRetryDoesNotChargeAgain(bool persistThenThrow)
         {
             StartLoadout();
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.True, error);
             var before = session.Current;
-            var selected = new[] { "hare.warren-network" };
+            var selected = new[] { "rabbit.warren-network" };
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persistThenThrow;
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, selected, out error), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, selected, out error), Is.False);
             StringAssert.Contains("saved", error);
             Assert.That(session.Current, Is.SameAs(before));
             var reopened = NewSession(storage.Restart());
-            Assert.That(reopened.TryArrangeGenomeLoadout(profileId, hare, 1, selected, out error), Is.True, error);
+            Assert.That(reopened.TryArrangeGenomeLoadout(profileId, rabbit, 1, selected, out error), Is.True, error);
             Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
             Assert.That(reopened.Current.RabbitData, Is.EqualTo(40));
-            reopened.Current.TryGetGenomeProfile(hare, out var genome);
+            reopened.Current.TryGetGenomeProfile(rabbit, out var genome);
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(selected));
             Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
         }
 
         [Test]
-        public void HareArrangementRejectsOtherProfilesSpeciesStaleRequestsAndReentry()
+        public void RabbitArrangementRejectsOtherProfilesSpeciesStaleRequestsAndReentry()
         {
             StartLoadout();
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
-            var selected = new[] { "hare.warren-network" };
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.True, error);
+            var selected = new[] { "rabbit.warren-network" };
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryArrangeGenomeLoadout("other", hare, 1, selected, out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout("other", rabbit, 1, selected, out _), Is.False);
             Assert.That(session.TryArrangeGenomeLoadout(profileId, new SpeciesId("fox"), 1, selected, out _), Is.False);
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 0, selected, out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 0, selected, out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
             session.SnapshotChanged += snapshot =>
             {
-                Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, selected, out _), Is.False);
-                Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.False);
+                Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, selected, out _), Is.False);
+                Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 1, out _), Is.False);
             };
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, selected, out error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, selected, out error), Is.True, error);
             Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
         }
 
         [Test]
-        public void HareResetAndArrangementProcessReloadCheckpoint()
+        public void RabbitResetAndArrangementProcessReloadCheckpoint()
         {
             var phase = Environment.GetEnvironmentVariable("FD2_LOADOUT_RELOAD_PHASE");
             var path = Environment.GetEnvironmentVariable("FD2_LOADOUT_RELOAD_PATH");
@@ -1850,30 +1887,30 @@ namespace SaltyGame.Tests
             else
             {
                 StartLoadout();
-                Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+                Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.True, error);
                 if (phase == "write") File.WriteAllText(path, storage.Durable[Helper_ProfileSession.StoreKey]);
             }
             var saves = storage.SaveCalls;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, new[] { "hare.warren-network" }, out var arrangeError), Is.True, arrangeError);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, new[] { "rabbit.warren-network" }, out var arrangeError), Is.True, arrangeError);
             var reopened = NewSession(storage.Restart());
             Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
             Assert.That(reopened.Current.RabbitData, Is.EqualTo(40));
-            reopened.Current.TryGetGenomeProfile(hare, out var genome);
+            reopened.Current.TryGetGenomeProfile(rabbit, out var genome);
             Assert.That(genome.ResetGeneration, Is.EqualTo(1));
-            Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "hare.warren-network" }));
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "rabbit.warren-network" }));
             Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
         }
 
         [Test]
-        public void HareResetAndArrangementDoNotReinterpretRefundablePocAllocations()
+        public void RabbitResetAndArrangementDoNotReinterpretRefundablePocAllocations()
         {
             StartLoadout();
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
             json["profiles"][0]["genomeProfiles"][0]["allocations"] = new JArray(new JObject
             {
-                ["nodeId"] = "hare.guarded-burrow", ["rabbitDataSpent"] = 1, ["capacityPoints"] = 2, ["rank"] = 1,
+                ["nodeId"] = "rabbit.guarded-burrow", ["rabbitDataSpent"] = 1, ["capacityPoints"] = 2, ["rank"] = 1,
             });
             storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
             storage.Save();
@@ -1881,8 +1918,8 @@ namespace SaltyGame.Tests
             Assert.That(session.Current.HasLoadedProfile, Is.True);
             var before = session.Current;
             var saves = storage.SaveCalls;
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 0, new[] { "hare.guarded-burrow" }, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 0, new[] { "rabbit.guarded-burrow" }, out _), Is.False);
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
         }
@@ -1890,10 +1927,10 @@ namespace SaltyGame.Tests
         [TestCase("allocation")]
         [TestCase("duplicate-species")]
         [TestCase("missing-species")]
-        public void HareResetVersionSevenNeverDropsCorruptGenomeRecordsAndTheirResetIdentity(string invalid)
+        public void RabbitResetVersionSevenNeverDropsCorruptGenomeRecordsAndTheirResetIdentity(string invalid)
         {
             StartLoadout();
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out var error), Is.True, error);
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
             var genomes = (JArray)json["profiles"][0]["genomeProfiles"];
             if (invalid == "allocation") genomes[0]["allocations"] = new JArray(JValue.CreateNull());
@@ -1916,23 +1953,23 @@ namespace SaltyGame.Tests
         public void PermanentResultsDisplayTheSavedReceiptAndNeverPayAgainOnReentry(int leftover, int deposited)
         {
             var results = new FieldDataPermanentResults(session);
-            Assert.That(results.ShowSuccess("display-success", hare, leftover), Is.True, results.Error);
+            Assert.That(results.ShowSuccess("display-success", rabbit, leftover), Is.True, results.Error);
             Assert.That(results.IsPending, Is.False);
             Assert.That(results.CanLeave, Is.True);
             Assert.That(results.Title, Does.Contain("saved"));
             Assert.That(results.Receipt, Is.SameAs(session.Current.SettlementReceipts.Single()));
             Assert.That(results.Details, Does.Contain($"Unspent Field Data: {leftover}"));
-            Assert.That(results.Details, Does.Contain("10 FD = 1 Hare Data"));
+            Assert.That(results.Details, Does.Contain("10 FD = 1 Rabbit Data"));
             Assert.That(results.Details, Does.Contain("level 1 (x11/10)"));
-            Assert.That(results.Details, Does.Contain($"Hare Data: +{deposited} (7 -> {7 + deposited})"));
+            Assert.That(results.Details, Does.Contain($"Rabbit Data: +{deposited} (7 -> {7 + deposited})"));
             Assert.That(results.Details, Does.Contain("Research Data: +10 (30 -> 40)"));
             var saves = storage.SaveCalls;
-            Assert.That(results.ShowSuccess("display-success", hare, 9999), Is.True);
+            Assert.That(results.ShowSuccess("display-success", rabbit, 9999), Is.True);
             Assert.That(results.Retry(), Is.True);
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
             var reopened = NewSession(storage.Restart());
             var recovered = new FieldDataPermanentResults(reopened);
-            Assert.That(recovered.ShowSuccess("display-success", hare, 9999), Is.True, recovered.Error);
+            Assert.That(recovered.ShowSuccess("display-success", rabbit, 9999), Is.True, recovered.Error);
             Assert.That(recovered.Receipt.LeftoverFieldData, Is.EqualTo(leftover));
             Assert.That(reopened.Current.RabbitData, Is.EqualTo(7 + deposited));
             Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
@@ -1947,7 +1984,7 @@ namespace SaltyGame.Tests
             var results = new FieldDataPermanentResults(session);
             storage.FailOnSave = storage.SaveCalls + failingWrite;
             storage.PersistThenThrow = persisted;
-            Assert.That(results.ShowSuccess("display-pending", hare, 100), Is.False);
+            Assert.That(results.ShowSuccess("display-pending", rabbit, 100), Is.False);
             Assert.That(results.IsPending, Is.True);
             Assert.That(results.CanLeave, Is.False);
             Assert.That(results.Receipt, Is.Null);
@@ -1973,7 +2010,7 @@ namespace SaltyGame.Tests
             var results = new FieldDataPermanentResults(session);
             storage.FailOnSave = storage.SaveCalls + 2;
             storage.PersistThenThrow = persisted;
-            Assert.That(results.ShowSuccess("display-reboot", hare, 100), Is.False);
+            Assert.That(results.ShowSuccess("display-reboot", rabbit, 100), Is.False);
             var restartedStorage = storage.Restart();
             var reopened = NewSession(restartedStorage);
             var recovered = new FieldDataPermanentResults(reopened);
@@ -1984,7 +2021,7 @@ namespace SaltyGame.Tests
                 Assert.That(recovered.Error, Does.Contain("recovered"));
                 Assert.That(recovered.Retry(), Is.True, recovered.Error);
             }
-            else Assert.That(recovered.ShowSuccess("display-reboot", hare, 100), Is.True, recovered.Error);
+            else Assert.That(recovered.ShowSuccess("display-reboot", rabbit, 100), Is.True, recovered.Error);
             Assert.That(reopened.Current.RabbitData, Is.EqualTo(18));
             Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
             Assert.That(reopened.Current.CompletedRuns, Is.EqualTo(1));
@@ -2000,14 +2037,14 @@ namespace SaltyGame.Tests
             var before = session.Current;
             var saves = storage.SaveCalls;
             var results = new FieldDataPermanentResults(session);
-            results.ShowFailure("display-failure", hare, 125);
+            results.ShowFailure("display-failure", rabbit, 125);
             Assert.That(results.IsSuccess, Is.False);
             Assert.That(results.IsPending, Is.False);
             Assert.That(results.CanLeave, Is.True);
             Assert.That(results.Receipt, Is.Null);
             Assert.That(results.Title, Does.Contain("failed"));
             Assert.That(results.Summary, Does.Contain("125 Field Data forfeited").And.Contain("No permanent data awarded"));
-            Assert.That(results.Details, Does.Contain("Hare Data retained: 40").And.Contain("Research Data retained: 60"));
+            Assert.That(results.Details, Does.Contain("Rabbit Data retained: 40").And.Contain("Research Data retained: 60"));
             Assert.That(session.Current, Is.SameAs(before));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves));
             Assert.That(results.Retry(), Is.False);
@@ -2020,12 +2057,12 @@ namespace SaltyGame.Tests
             var results = new FieldDataPermanentResults(session);
             var original = profileId;
             var other = session.CreateProfile("Other results owner").ProfileId;
-            Assert.That(results.ShowSuccess("display-owner", hare, 100), Is.False);
+            Assert.That(results.ShowSuccess("display-owner", rabbit, 100), Is.False);
             Assert.That(results.CanLeave, Is.False);
             Assert.That(session.Current.RabbitData, Is.Zero);
             Assert.That(session.Current.ResearchData, Is.Zero);
             Assert.That(session.SelectProfile(original), Is.True);
-            Assert.That(results.ShowSuccess("wrong-journey", hare, 9999), Is.False);
+            Assert.That(results.ShowSuccess("wrong-journey", rabbit, 9999), Is.False);
             Assert.That(results.Retry(), Is.True, results.Error);
             Assert.That(results.Receipt.JourneyId, Is.EqualTo("display-owner"));
             Assert.That(results.Receipt.ConversionResearchLevel, Is.EqualTo(1));
@@ -2040,10 +2077,10 @@ namespace SaltyGame.Tests
             var lab = new FieldDataGenomeLab(session);
             Assert.That(session.Current.CompletedRuns, Is.Zero);
             Assert.That(lab.CanLicense, Is.False);
-            Assert.That(lab.LicenseReason, Does.Contain("Needs 10 Hare Data"));
+            Assert.That(lab.LicenseReason, Does.Contain("Needs 10 Rabbit Data"));
             session.AddRabbitData(13);
             lab.Bind(session.Current);
-            Assert.That(lab.LicenseReason, Is.EqualTo("Hare Data: 20 -> 10."));
+            Assert.That(lab.LicenseReason, Is.EqualTo("Rabbit Data: 20 -> 10."));
             Assert.That(lab.License(), Is.True, lab.Status);
             Assert.That(lab.License(), Is.False);
             Assert.That(session.Current.RabbitData, Is.EqualTo(10));
@@ -2065,7 +2102,7 @@ namespace SaltyGame.Tests
             StartLoadout();
             var lab = new FieldDataGenomeLab(session);
             Assert.That(lab.CapacityText, Is.EqualTo("4 / 8"));
-            const string tail = "hare.warren-network";
+            const string tail = "rabbit.warren-network";
             Assert.That(lab.IsOwned(tail), Is.True);
             Assert.That(lab.NodeState(tail), Is.EqualTo("OWNED · UNEQUIPPED"));
             Assert.That(lab.CanBuyNode(tail), Is.True);
@@ -2076,7 +2113,7 @@ namespace SaltyGame.Tests
             Assert.That(lab.CapacityText, Is.EqualTo("1 / 8"));
             Assert.That(lab.NodeState(tail), Is.EqualTo("OWNED · EQUIPPED"));
             var saved = session.Current;
-            Assert.That(lab.Toggle("hare.guarded-burrow"), Is.False);
+            Assert.That(lab.Toggle("rabbit.guarded-burrow"), Is.False);
             Assert.That(lab.Apply(), Is.False);
             Assert.That(session.Current, Is.SameAs(saved));
             Assert.That(session.Current.RabbitData, Is.EqualTo(40));
@@ -2120,7 +2157,7 @@ namespace SaltyGame.Tests
             session.AddResearchData(1);
             lab.Bind(session.Current);
             Assert.That(lab.SelectedCapacity, Is.EqualTo(6));
-            Assert.That(lab.Toggle("hare.guarded-burrow"), Is.True);
+            Assert.That(lab.Toggle("rabbit.guarded-burrow"), Is.True);
             Assert.That(lab.Apply(), Is.True, lab.Status);
             Assert.That(lab.CapacityText, Is.EqualTo("5 / 8"));
         }
@@ -2138,17 +2175,17 @@ namespace SaltyGame.Tests
             {
                 profileId = session.CreateProfile("Fresh UI owner").ProfileId;
                 session.AddRabbitData(20);
-                if (action == "node") Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.True);
+                if (action == "node") Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out _), Is.True);
                 lab = new FieldDataGenomeLab(session);
             }
             if (action == "apply")
             {
                 Assert.That(lab.Reset(), Is.True);
-                Assert.That(lab.Toggle("hare.warren-network"), Is.True);
+                Assert.That(lab.Toggle("rabbit.warren-network"), Is.True);
             }
             var before = session.Current;
             System.Func<bool> attempt = action == "license" ? lab.License : action == "research" ? lab.Research
-                : action == "node" ? () => lab.BuyNode("hare.guarded-burrow") : action == "reset" ? lab.Reset : lab.Apply;
+                : action == "node" ? () => lab.BuyNode("rabbit.guarded-burrow") : action == "reset" ? lab.Reset : lab.Apply;
             storage.FailOnSave = storage.SaveCalls + 1;
             Assert.That(attempt(), Is.False);
             Assert.That(lab.Status, Does.Contain("storage failure"));
@@ -2166,7 +2203,7 @@ namespace SaltyGame.Tests
             StartLoadout();
             var lab = new FieldDataGenomeLab(session);
             Assert.That(lab.Reset(), Is.True);
-            Assert.That(lab.Toggle("hare.warren-network"), Is.True);
+            Assert.That(lab.Toggle("rabbit.warren-network"), Is.True);
             session.CreateProfile("Other UI owner");
             session.AddResearchData(100);
             var before = session.Current;
@@ -2185,9 +2222,9 @@ namespace SaltyGame.Tests
             StartLoadout();
             var lab = new FieldDataGenomeLab(session);
             Assert.That(lab.Reset(), Is.True);
-            Assert.That(lab.Toggle("hare.warren-network"), Is.True);
-            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, new[] { "hare.guarded-burrow" }, out _), Is.True);
-            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.True);
+            Assert.That(lab.Toggle("rabbit.warren-network"), Is.True);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, new[] { "rabbit.guarded-burrow" }, out _), Is.True);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 1, out _), Is.True);
             var before = session.Current;
             Assert.That(lab.Apply(), Is.False);
             Assert.That(session.Current, Is.SameAs(before));

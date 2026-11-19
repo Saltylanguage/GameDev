@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   definitionId: field-data-starter-v1
   scenarioId: ForestEdge
-  selectedSpeciesId: hare
+  selectedSpeciesId: rabbit
   route:
   - id: simulation-1
     kind: 0
@@ -38,12 +38,12 @@ MonoBehaviour:
     kind: 0
     nextNodeId:
   populationControls:
-  - id: add-hares
-    speciesId: hare
+  - id: add-rabbits
+    speciesId: rabbit
     amount: 1
     cost: 10
-  - id: remove-hares
-    speciesId: hare
+  - id: remove-rabbits
+    speciesId: rabbit
     amount: -1
     cost: 10
   - id: add-foxes
@@ -63,8 +63,8 @@ MonoBehaviour:
     amount: -5
     cost: 10
   incomeOffers:
-  - id: income-plus-one-per-hare
-    displayName: +1 FD per Hare
+  - id: income-plus-one-per-rabbit
+    displayName: +1 FD per Rabbit
     operation: 0
     value: "1"
     sources: 4
@@ -92,86 +92,86 @@ MonoBehaviour:
     firstShopVisit: 2
     shopCost: 40
   signedSpeciesOffers:
-  - id: hare-long-stride-plus
+  - id: rabbit-long-stride-plus
     familyId: long-stride
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: movement.speed
     signedAmount: 1.5
     cost: 30
     firstShopVisit: 1
-  - id: hare-long-stride-minus
+  - id: rabbit-long-stride-minus
     familyId: long-stride
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: movement.speed
     signedAmount: -1.5
     cost: 30
     firstShopVisit: 1
-  - id: hare-sharper-instinct-plus
+  - id: rabbit-sharper-instinct-plus
     familyId: sharper-instinct
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: avoidance.pre-contact-chance
     signedAmount: 0.24
     cost: 30
     firstShopVisit: 1
-  - id: hare-sharper-instinct-minus
+  - id: rabbit-sharper-instinct-minus
     familyId: sharper-instinct
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: avoidance.pre-contact-chance
     signedAmount: -0.24
     cost: 30
     firstShopVisit: 1
-  - id: hare-reinforced-hide-plus
+  - id: rabbit-reinforced-hide-plus
     familyId: reinforced-hide
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: combat.block
     signedAmount: 6
     cost: 30
     firstShopVisit: 1
-  - id: hare-reinforced-hide-minus
+  - id: rabbit-reinforced-hide-minus
     familyId: reinforced-hide
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: combat.block
     signedAmount: -6
     cost: 30
     firstShopVisit: 1
-  - id: hare-warren-comfort-plus
+  - id: rabbit-warren-comfort-plus
     familyId: warren-comfort
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: crowding.energy-reduction
     signedAmount: 0.3
     cost: 30
     firstShopVisit: 1
-  - id: hare-warren-comfort-minus
+  - id: rabbit-warren-comfort-minus
     familyId: warren-comfort
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: crowding.energy-reduction
     signedAmount: -0.3
     cost: 30
     firstShopVisit: 1
-  - id: hare-deep-digestion-plus
+  - id: rabbit-deep-digestion-plus
     familyId: deep-digestion
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: digestion.energy-bonus
     signedAmount: 0.3
     cost: 30
     firstShopVisit: 1
-  - id: hare-deep-digestion-minus
+  - id: rabbit-deep-digestion-minus
     familyId: deep-digestion
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: digestion.energy-bonus
     signedAmount: -0.3
     cost: 30
     firstShopVisit: 1
-  - id: hare-abundant-seedfall-plus
+  - id: rabbit-abundant-seedfall-plus
     familyId: abundant-seedfall
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: resource.seed-drop-chance
     signedAmount: 0.03
     cost: 30
     firstShopVisit: 1
-  - id: hare-abundant-seedfall-minus
+  - id: rabbit-abundant-seedfall-minus
     familyId: abundant-seedfall
-    targetSpeciesId: hare
+    targetSpeciesId: rabbit
     attributeId: resource.seed-drop-chance
     signedAmount: -0.03
     cost: 30

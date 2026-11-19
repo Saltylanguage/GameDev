@@ -24,7 +24,7 @@ namespace SaltyGame
     {
         public const int ContinuousExpeditionPhaseCount = 6;
         public const int JourneyPrototypeCycleCount = 2;
-        public const int HareCost = SpeciesProgression.HarePurchaseCost;
+        public const int RabbitCost = SpeciesProgression.RabbitPurchaseCost;
 
         public static event Action<SpeciesSimulationPreview, SimulationRunState> RunCompleted;
 
@@ -46,10 +46,10 @@ namespace SaltyGame
 
         readonly Dictionary<string, JourneyPopulationEncounter> journeyEncounters =
             new Dictionary<string, JourneyPopulationEncounter>(StringComparer.Ordinal);
-        static readonly string[] PopulationControlNames = { "+1 HARE", "-1 HARE", "+1 FOX", "-1 FOX", "+5 PLANTS", "-5 PLANTS" };
+        static readonly string[] PopulationControlNames = { "+1 RABBIT", "-1 RABBIT", "+1 FOX", "-1 FOX", "+5 PLANTS", "-5 PLANTS" };
         static readonly string[] PopulationControlHints = {
-            "More Hares increase food demand.", "Reduce food demand; keep at least one Hare.",
-            "More hunting pressure can restrain Hares.", "Less hunting pressure may increase food demand.",
+            "More Rabbits increase food demand.", "Reduce food demand; keep at least one Rabbit.",
+            "More hunting pressure can restrain Rabbits.", "Less hunting pressure may increase food demand.",
             "Restore food on bare ground.", "Reduce the available food supply." };
         public int PopulationControlCount => PopulationControlNames.Length;
         public string PopulationActionMessage { get; private set; } = string.Empty;
@@ -61,12 +61,12 @@ namespace SaltyGame
                 var food = new FoodPressureSnapshot(Run, SpeciesIds.Plant);
                 var count = SpeciesPopulationSnapshot.Create(Run.Cells, Run.Tick).GetCount(playerSpecies);
                 return $"{food.Status}  |  {food.Plants} Plants ({food.Change:+0;-0;0} this round)\n"
-                    + $"{count} Hares / {Run.PopulationPoolCapacity} refill limit  |  {food.StarvationDeaths} starvation deaths this journey\n"
-                    + "More Hares increase food demand. Births may exceed the refill limit.";
+                    + $"{count} Rabbits / {Run.PopulationPoolCapacity} refill limit  |  {food.StarvationDeaths} starvation deaths this journey\n"
+                    + "More Rabbits increase food demand. Births may exceed the refill limit.";
             }
         }
 
-        SpeciesId PopulationControlSpecies(int index) => index < 2 ? new SpeciesId("hare")
+        SpeciesId PopulationControlSpecies(int index) => index < 2 ? new SpeciesId("rabbit")
             : index < 4 ? new SpeciesId("fox") : SpeciesIds.Plant;
         int PopulationControlAmount(int index) => (index % 2 == 0 ? 1 : -1) * (index >= 4 ? 5 : 1);
         bool CanChangePopulation(SpeciesId species, int amount, out int actual, out string reason)
@@ -88,8 +88,8 @@ namespace SaltyGame
         {
             reason = "Available at a round decision before continuing.";
             if (index < 0 || index >= PopulationControlCount || !IsPopulationControlWindowOpen) return false;
-            if (progression == null || progression.Currency < HareCost)
-            { reason = $"Need {HareCost - (progression?.Currency ?? 0)} more Field Data."; return false; }
+            if (progression == null || progression.Currency < RabbitCost)
+            { reason = $"Need {RabbitCost - (progression?.Currency ?? 0)} more Field Data."; return false; }
             return CanChangePopulation(PopulationControlSpecies(index), PopulationControlAmount(index), out _, out reason);
         }
 
@@ -122,15 +122,15 @@ namespace SaltyGame
         {
             if (index < 0 || index >= PopulationControlCount) return string.Empty;
             var available = CanUsePopulationControl(index, out var reason);
-            return $"{PopulationControlNames[index]}  |  {HareCost} DATA\n" + (available ? PopulationControlHints[index] : reason);
+            return $"{PopulationControlNames[index]}  |  {RabbitCost} DATA\n" + (available ? PopulationControlHints[index] : reason);
         }
         public bool UsePopulationControl(int index)
         {
             if (!CanUsePopulationControl(index, out _)
                 || !ChangePopulation(PopulationControlSpecies(index), PopulationControlAmount(index),
                     "field-data-control", out var actual)) return false;
-            if (!progression.TrySpend(HareCost)) throw new InvalidOperationException("Validated population control could not be charged.");
-            PopulationActionMessage = $"{actual:+0;-0} {PopulationControlSpecies(index).Value}. Spent {HareCost} Field Data.";
+            if (!progression.TrySpend(RabbitCost)) throw new InvalidOperationException("Validated population control could not be charged.");
+            PopulationActionMessage = $"{actual:+0;-0} {PopulationControlSpecies(index).Value}. Spent {RabbitCost} Field Data.";
             return true;
         }
 
@@ -185,6 +185,7 @@ namespace SaltyGame
                 MaximumEnergy = rules.MaximumEnergy;
                 MaximumEnergyText = rules.MaximumEnergy.ToString(CultureInfo.InvariantCulture);
                 MaximumHealth = rules.MaximumHealth;
+                MaximumPopulation = rules.MaximumPopulation;
                 LitterMinimum = rules.LitterMinimum;
                 LitterMinimumText = rules.LitterMinimum.ToString(CultureInfo.InvariantCulture);
                 LitterMaximum = rules.LitterMaximum;
@@ -253,6 +254,7 @@ namespace SaltyGame
             public int MaximumEnergy;
             public string MaximumEnergyText;
             public int MaximumHealth;
+            public int MaximumPopulation;
             public int LitterMinimum;
             public string LitterMinimumText;
             public int LitterMaximum;
@@ -365,7 +367,7 @@ namespace SaltyGame
         [SerializeField] bool bevExperimentalFeaturesEnabled = true;
         [SerializeField, Min(0)] int foxAttackCooldownTicks;
         [SerializeField] bool coupledSpeciesResponsesEnabled;
-        [SerializeField, Tooltip("Experimental: allow Foxes to acquire ordinary Hare movement scent. Hare movement markers and dropping scent remain available either way.")]
+        [SerializeField, Tooltip("Experimental: allow Foxes to acquire ordinary Rabbit movement scent. Rabbit movement markers and dropping scent remain available either way.")]
         bool foxOrdinaryMovementScentEnabled;
 
         static readonly SpeciesUpgrade[] LegacyRewardOptions =
@@ -1590,6 +1592,23 @@ namespace SaltyGame
                 return false;
             }
 
+            if (hasStartingPopulationValues || startingPopulationOverrideEnabled)
+            {
+                var plantPopulation = hasStartingPopulationValues
+                    ? parsedPlantStartingPopulation : plantStartingPopulation;
+                var rabbitPopulation = hasStartingPopulationValues
+                    ? parsedHerbivoreStartingPopulation : herbivoreStartingPopulation;
+                var foxPopulation = hasStartingPopulationValues
+                    ? parsedCarnivoreStartingPopulation : carnivoreStartingPopulation;
+                if (!TryValidateSpeciesPopulation(SpeciesIds.Plant, plantPopulation, out validationMessage)
+                    || !TryValidateSpeciesPopulation(SpeciesIds.Herbivore, rabbitPopulation, out validationMessage)
+                    || !TryValidateSpeciesPopulation(SpeciesIds.Carnivore, foxPopulation, out validationMessage))
+                {
+                    settingsMessage = validationMessage;
+                    return false;
+                }
+            }
+
             width = nextWidth;
             height = nextHeight;
             seed = parsedSeed;
@@ -1738,7 +1757,7 @@ namespace SaltyGame
             lastExperimentalUpgradeId = null;
             experimentalOfferRotation = 0;
             rewardOptions = LegacyRewardOptions;
-            settingsMessage = $"Bev features enabled: opposed-roll combat, species stat lines, shared Hare skills, fox cooldown {foxAttackCooldownTicks} ticks, coupled responses {(coupledSpeciesResponsesEnabled ? "on" : "off")}.";
+            settingsMessage = $"Bev features enabled: opposed-roll combat, species stat lines, shared Rabbit skills, fox cooldown {foxAttackCooldownTicks} ticks, coupled responses {(coupledSpeciesResponsesEnabled ? "on" : "off")}.";
             // StartSimulation prepares the pending run after all setup fields are applied.
             validationMessage = settingsMessage;
             return true;
@@ -1988,8 +2007,8 @@ namespace SaltyGame
                 && progression.CanPurchase(rewardOptions[rewardIndex]);
         }
 
-        public bool CanBuyHare => playerSpecies.Value == "hare" && CanUsePopulationControl(0, out _);
-        public bool BuyHare() => CanBuyHare && UsePopulationControl(0);
+        public bool CanBuyRabbit => playerSpecies.Value == "rabbit" && CanUsePopulationControl(0, out _);
+        public bool BuyRabbit() => CanBuyRabbit && UsePopulationControl(0);
 
         public bool PurchaseReward(int rewardIndex)
         {
@@ -2425,7 +2444,7 @@ namespace SaltyGame
             if (journeyPendingNode == null || !journeyEncounters.TryGetValue(journeyPendingNode.NodeId, out var option)) return false;
             if (option.Kind == JourneyNodeKind.Refresh)
             {
-                if (index == 0) { species = playerSpecies; amount = option.Hares; }
+                if (index == 0) { species = playerSpecies; amount = option.Rabbits; }
                 else if (index == 1) amount = option.Plants;
             }
             else if (index == 0) amount = option.EventAmount(Run.Seed);
@@ -2472,8 +2491,8 @@ namespace SaltyGame
                     TryGetEncounterEffect(index, out var species, out var amount);
                     var available = CanChangePopulation(species, amount, out var actual, out var reason);
                     return index == 0
-                        ? $"RESTORE UP TO {encounter.Hares} HARES\n" + (available ? $"Adds {actual} now, within your pool. More Hares need more food." : reason)
-                        : $"PLANT {encounter.Plants} PLANTS\n" + (available ? "Restore food on bare ground. Hares can exhaust it again." : reason);
+                        ? $"RESTORE UP TO {encounter.Rabbits} RABBITS\n" + (available ? $"Adds {actual} now, within your pool. More Rabbits need more food." : reason)
+                        : $"PLANT {encounter.Plants} PLANTS\n" + (available ? "Restore food on bare ground. Rabbits can exhaust it again." : reason);
                 }
                 return index == 1 ? "LEAVE THE CACHE\nKeep the ecosystem as it is."
                     : $"OPEN THE SEED CACHE\n{encounter.GainPercent}%: +{encounter.Gain} Plants; {100-encounter.GainPercent}%: -{encounter.Loss} Plants."
@@ -2820,6 +2839,22 @@ namespace SaltyGame
             {
                 ruleDrafts[SpeciesIds.Carnivore] = saved.carnivore;
             }
+
+            if (SelectedScenario != null)
+            {
+                var authoredRules = SelectedScenario.CreateRuntimeData().SpeciesRules;
+                foreach (var entry in ruleDrafts)
+                {
+                    if (authoredRules.TryGetValue(entry.Key, out var authoredRule))
+                    {
+                        entry.Value.MaximumPopulation = authoredRule.MaximumPopulation;
+                    }
+                }
+            }
+
+            plantStartingPopulation = ClampStartingPopulation(SpeciesIds.Plant, plantStartingPopulation);
+            herbivoreStartingPopulation = ClampStartingPopulation(SpeciesIds.Herbivore, herbivoreStartingPopulation);
+            carnivoreStartingPopulation = ClampStartingPopulation(SpeciesIds.Carnivore, carnivoreStartingPopulation);
         }
 
         SpeciesRuleDraft GetRuleDraftOrDefault(SpeciesId species)
@@ -2835,8 +2870,8 @@ namespace SaltyGame
         void ResetExpeditionProgression(SpeciesRules playerRules)
         {
             progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, playerRules),
-                playerSpecies.Value == "hare" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile,
-                introductoryHareMutations: ShouldUseJourneyPrototype());
+                playerSpecies.Value == "rabbit" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile,
+                introductoryRabbitMutations: ShouldUseJourneyPrototype());
             coupledResponseProgression = null;
             appliedRunUpgrades.Clear();
         }
@@ -3071,7 +3106,7 @@ namespace SaltyGame
                         experimentalOfferRotation,
                         Run?.Seed ?? seed,
                         canOffer,
-                        introductoryHareMutations: ShouldUseJourneyPrototype())
+                        introductoryRabbitMutations: ShouldUseJourneyPrototype())
                     : SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                         lastExperimentalUpgradeId,
                         experimentalOfferRotation,
@@ -3114,7 +3149,7 @@ namespace SaltyGame
                 case SpeciesUpgradeCatalog.FasterMovementId:
                     return "Move faster to escape predators and reach fresh food.";
                 case SpeciesUpgradeCatalog.ToughHideId:
-                    return "Gain 2 health. A healthy Hare can survive a basic Fox hit. Survivors still need food.";
+                    return "Gain 2 health. A healthy Rabbit can survive a basic Fox hit. Survivors still need food.";
                 case SpeciesUpgradeCatalog.EfficientDigestionId:
                     return "Gain more energy from food.";
                 case SpeciesUpgradeCatalog.SeedDispersalId:
@@ -3124,7 +3159,7 @@ namespace SaltyGame
                 case SpeciesUpgradeCatalog.ReproductiveDriveId:
                     return "Add 10 percentage points to eligible reproduction attempts. More young need more food.";
                 case SpeciesUpgradeCatalog.ThreatExposureId:
-                    return "Avoid some Fox attacks before combat (+8 percentage points per rank). A caught Hare is still vulnerable.";
+                    return "Avoid some Fox attacks before combat (+8 percentage points per rank). A caught Rabbit is still vulnerable.";
                 case SpeciesUpgradeCatalog.QuickEscapeId:
                     return "Move 0.5 faster while Threatened; ordinary movement stays the same.";
                 case SpeciesUpgradeCatalog.LargerMinimumLitterId:
@@ -3136,7 +3171,7 @@ namespace SaltyGame
                 case SpeciesUpgradeCatalog.KeenSensesId:
                     return "Detect predators from farther away.";
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(upgradeId), upgradeId, "Unknown Hare Mutation.");
+                    throw new ArgumentOutOfRangeException(nameof(upgradeId), upgradeId, "Unknown Rabbit Mutation.");
             }
         }
 
@@ -3389,7 +3424,8 @@ namespace SaltyGame
                     matingEnergyCostFraction: draft.MatingEnergyCostFraction,
                     distributeMatingEnergyToOffspring: draft.DistributeMatingEnergyToOffspring,
                     crowdingEnergyReduction: draft.CrowdingEnergyReduction,
-                    gestationTicks: draft.GestationTicks);
+                    gestationTicks: draft.GestationTicks,
+                    maximumPopulation: draft.MaximumPopulation);
             }
 
             return result;
@@ -3596,6 +3632,27 @@ namespace SaltyGame
             {
                 populations[species.Value] = population;
             }
+        }
+
+        bool TryValidateSpeciesPopulation(SpeciesId species, int population, out string error)
+        {
+            error = null;
+            if (!ruleDrafts.TryGetValue(species, out var draft)
+                || draft.MaximumPopulation <= 0
+                || population <= draft.MaximumPopulation)
+            {
+                return true;
+            }
+
+            error = $"{species.Value} starting population cannot exceed its species maximum of {draft.MaximumPopulation}.";
+            return false;
+        }
+
+        int ClampStartingPopulation(SpeciesId species, int population)
+        {
+            return ruleDrafts.TryGetValue(species, out var draft) && draft.MaximumPopulation > 0
+                ? Math.Min(population, draft.MaximumPopulation)
+                : population;
         }
 
         static SpeciesId? ResolveSpeciesId(

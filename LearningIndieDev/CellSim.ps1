@@ -77,11 +77,11 @@ CellSim Test [-Mode EditMode|PlayMode|All] [-Execution Auto|Live|Clean] [-TestFi
 CellSim Visuals [-Execution Auto|Live|Clean] [-TestFilter SaltyGame.PlayModeTests.SomeTest]
 CellSim Visuals [-ReplayReportPath artifacts/.../report.json] -ReplaySeed 10100
 CellSim Run [-Execution Auto|Live|Clean] [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-RunTicks 600] [-RunDurationSeconds 60] [-StepIntervalSeconds 0.1] [-ScenarioPath Assets/...]
-             [-StartingPopulations 'plant=400,hare=25,fox=15']
+             [-StartingPopulations 'plant=400,rabbit=25,fox=15']
              [-NodeStartingPopulations 'fox=4;fox=16'] for explicit multi-node phase schedules
-             [-PlayerSpeciesId hare] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide]
-             [-RabbitGenomeNodeIds 'fertile-droppings,poc.hare.efficient-digestion'] [-RabbitGenomeCatalogPath Assets/.../RabbitSelectionPOC.asset]
-             [-SpeciesStats 'hare:energy.forage-threshold=25'] [-FoxIntroductionTicks '75,150,225,300,375,450,525,600']
+             [-PlayerSpeciesId rabbit] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide]
+             [-RabbitGenomeNodeIds 'fertile-droppings,poc.rabbit.efficient-digestion'] [-RabbitGenomeCatalogPath Assets/.../RabbitSelectionPOC.asset]
+             [-SpeciesStats 'rabbit:energy.forage-threshold=25'] [-FoxIntroductionTicks '75,150,225,300,375,450,525,600']
              [-ExperimentalFeatures bev-experimental] [-CombatMode opposed-roll]
              [-PreContactAvoidanceChance 0.10]
              [-PhaseLengthTicks <ticks>] [-PhaseUpgradeSchedule none;tough-hide;tough-hide,efficient-digestion]

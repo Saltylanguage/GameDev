@@ -253,7 +253,7 @@ namespace SaltyGame
         string experimentalUpgradeCountText;
         string currencyText;
         string phaseCurrencyText;
-        string harePurchaseText;
+        string rabbitPurchaseText;
         string phaseRewardText;
         string phaseDecisionTitleText;
         string fieldDataBreakdownText;
@@ -313,7 +313,7 @@ namespace SaltyGame
         bool canPurchaseRewardOption1;
         bool canPurchaseRewardOption2;
         bool canPurchaseRewardOption3;
-        bool canBuyHare;
+        bool canBuyRabbit;
         bool canPlayNextSimulation;
         string rewardOption1Text;
         string rewardOption2Text;
@@ -370,10 +370,10 @@ namespace SaltyGame
         string eventReactionMessageText;
         float eventReactionRemainingSeconds;
         int eventReactionPriority;
-        int pendingHareCombatDeaths;
-        int pendingHareStarvationDeaths;
-        int pendingHareOtherDeaths;
-        int pendingHareBirths;
+        int pendingRabbitCombatDeaths;
+        int pendingRabbitStarvationDeaths;
+        int pendingRabbitOtherDeaths;
+        int pendingRabbitBirths;
         int pendingFoxBirths;
         SimulationTimelineItem[] phaseTimelineItems = Array.Empty<SimulationTimelineItem>();
         int phaseTimelineCachedCount = -1;
@@ -397,7 +397,7 @@ namespace SaltyGame
         Visibility journeyNewRunVisibility;
         Visibility journeyMapCloseVisibility;
         Visibility journeyResultsVisibility;
-        Visibility harePurchaseVisibility;
+        Visibility rabbitPurchaseVisibility;
         Visibility rewardsVisibility;
         Visibility resultsVisibility;
         Visibility experimentalHerbivoreStatLineSummaryVisibility;
@@ -428,13 +428,13 @@ namespace SaltyGame
         public DelegateCommand PurchaseRewardOption1Command { get; private set; }
         public DelegateCommand PurchaseRewardOption2Command { get; private set; }
         public DelegateCommand PurchaseRewardOption3Command { get; private set; }
-        public DelegateCommand BuyHareCommand { get; private set; }
+        public DelegateCommand BuyRabbitCommand { get; private set; }
         public JourneyRewardChoiceItem[] PopulationControlItems { get; private set; } = Array.Empty<JourneyRewardChoiceItem>();
         public string FoodSupplyText
         {
             get
             {
-                if (preview?.Run == null || preview.PlayerSpecies.Value != "hare") return PlantPopulationText;
+                if (preview?.Run == null || preview.PlayerSpecies.Value != "rabbit") return PlantPopulationText;
                 var food = new FoodPressureSnapshot(preview.Run, SpeciesIds.Plant);
                 return food.Plants == 0 ? "PLANTS: 0 / EMPTY"
                     : $"PLANTS: {food.Plants} ({food.Change:+0;-0;0})";
@@ -445,8 +445,8 @@ namespace SaltyGame
 
         public DelegateCommand ContinueWithoutUpgradeCommand { get; private set; }
         public DelegateCommand ContinueJourneyCommand { get; private set; }
-        public DelegateCommand AddHaresCommand { get; private set; }
-        public DelegateCommand RemoveHaresCommand { get; private set; }
+        public DelegateCommand AddRabbitsCommand { get; private set; }
+        public DelegateCommand RemoveRabbitsCommand { get; private set; }
         public DelegateCommand AddFoxesCommand { get; private set; }
         public DelegateCommand RemoveFoxesCommand { get; private set; }
         public DelegateCommand AddPlantsCommand { get; private set; }
@@ -487,8 +487,8 @@ namespace SaltyGame
         public string RunDetailsText => runDetailsText;
         public string ObjectiveText => preview?.Run?.Status == SimulationRunStatus.AwaitingDecision
             ? "NEXT: Choose a Mutation or Skip to continue."
-            : preview?.PlayerSpecies.Value == "hare"
-                ? "GOAL: Keep Hares alive. Watch Foxes and food; choose a Mutation at the round break."
+            : preview?.PlayerSpecies.Value == "rabbit"
+                ? "GOAL: Keep Rabbits alive. Watch Foxes and food; choose a Mutation at the round break."
                 : "GOAL: Keep your species alive through this round. Pause to inspect the board.";
         public string ExperimentalHerbivoreStatLineSummary => experimentalHerbivoreStatLineSummary;
         public string StatLineContextText => statLineContextText;
@@ -496,7 +496,7 @@ namespace SaltyGame
         public string ExperimentalUpgradeCountText => experimentalUpgradeCountText;
         public string CurrencyText => currencyText;
         public string PhaseCurrencyText => phaseCurrencyText;
-        public string HarePurchaseText => harePurchaseText;
+        public string RabbitPurchaseText => rabbitPurchaseText;
         public string PhaseRewardText => phaseRewardText;
         public Visibility PhaseRewardVisibility => string.IsNullOrWhiteSpace(phaseRewardText) ? Visibility.Collapsed : Visibility.Visible;
         public string PhaseDecisionTitleText => phaseDecisionTitleText;
@@ -541,9 +541,9 @@ namespace SaltyGame
         public bool CanRandomIncomeReorder => canRandomIncomeReorder;
         public bool CanStartChosenIncomeReorder => canStartChosenIncomeReorder;
         public bool CanConfirmChosenIncomeReorder => canConfirmChosenIncomeReorder;
-        public string AddHaresText => preview?.FieldDataSession == null ? "ADD 1 HARE · 10 FD"
-            : $"ADD 1 HARE · 10 FD · {preview.FieldDataSession.HarePurchasesRemaining} LEFT";
-        public string RemoveHaresText => "REMOVE 1 HARE · 10 FD";
+        public string AddRabbitsText => preview?.FieldDataSession == null ? "ADD 1 RABBIT · 10 FD"
+            : $"ADD 1 RABBIT · 10 FD · {preview.FieldDataSession.RabbitPurchasesRemaining} LEFT";
+        public string RemoveRabbitsText => "REMOVE 1 RABBIT · 10 FD";
         public string AddFoxesText => "ADD 1 FOX · 10 FD";
         public string RemoveFoxesText => "REMOVE 1 FOX · 10 FD";
         public string AddPlantsText => "ADD 5 PLANTS · 10 FD";
@@ -698,8 +698,8 @@ namespace SaltyGame
             }
         }
         public string CoupledSpeciesResponsesToggleText => coupledSpeciesResponsesEnabled
-            ? "COUPLED HARE/FOX RESPONSES: ON (EXPERIMENTAL)"
-            : "COUPLED HARE/FOX RESPONSES: OFF (EXPERIMENTAL)";
+            ? "COUPLED RABBIT/FOX RESPONSES: ON (EXPERIMENTAL)"
+            : "COUPLED RABBIT/FOX RESPONSES: OFF (EXPERIMENTAL)";
         public bool RandomizeSeedOnStart
         {
             get => randomizeSeedOnStart;
@@ -789,9 +789,9 @@ namespace SaltyGame
         public bool CanPurchaseRewardOption1 => canPurchaseRewardOption1;
         public bool CanPurchaseRewardOption2 => canPurchaseRewardOption2;
         public bool CanPurchaseRewardOption3 => canPurchaseRewardOption3;
-        public bool CanBuyHare => canBuyHare;
-        public bool CanAddHares => CanBuyFieldDataControl(FieldDataPopulationInterventionKind.AddHare);
-        public bool CanRemoveHares => CanBuyFieldDataControl(FieldDataPopulationInterventionKind.RemoveHare);
+        public bool CanBuyRabbit => canBuyRabbit;
+        public bool CanAddRabbits => CanBuyFieldDataControl(FieldDataPopulationInterventionKind.AddRabbit);
+        public bool CanRemoveRabbits => CanBuyFieldDataControl(FieldDataPopulationInterventionKind.RemoveRabbit);
         public bool CanAddFoxes => CanBuyFieldDataControl(FieldDataPopulationInterventionKind.AddFox);
         public bool CanRemoveFoxes => CanBuyFieldDataControl(FieldDataPopulationInterventionKind.RemoveFox);
         public bool CanAddPlants => CanBuyFieldDataControl(FieldDataPopulationInterventionKind.AddPlants);
@@ -893,7 +893,7 @@ namespace SaltyGame
         public Visibility JourneyMapCloseVisibility => journeyMapCloseVisibility;
 
         public Visibility JourneyResultsVisibility => journeyResultsVisibility;
-        public Visibility HarePurchaseVisibility => harePurchaseVisibility;
+        public Visibility RabbitPurchaseVisibility => rabbitPurchaseVisibility;
         public Visibility RewardsVisibility => rewardsVisibility;
         public Visibility ResultsVisibility => resultsVisibility;
         public Visibility ExperimentalHerbivoreStatLineSummaryVisibility => experimentalHerbivoreStatLineSummaryVisibility;
@@ -1326,9 +1326,9 @@ namespace SaltyGame
             {
                 ChooseRewardOption(2);
             });
-            BuyHareCommand = new DelegateCommand(() =>
+            BuyRabbitCommand = new DelegateCommand(() =>
             {
-                if (preview?.BuyHare() == true)
+                if (preview?.BuyRabbit() == true)
                 {
                     Refresh(true);
                 }
@@ -1378,8 +1378,8 @@ namespace SaltyGame
                 }
                 Refresh(true);
             });
-            AddHaresCommand = new DelegateCommand(() => BuyFieldDataPopulationControl(FieldDataPopulationInterventionKind.AddHare));
-            RemoveHaresCommand = new DelegateCommand(() => BuyFieldDataPopulationControl(FieldDataPopulationInterventionKind.RemoveHare));
+            AddRabbitsCommand = new DelegateCommand(() => BuyFieldDataPopulationControl(FieldDataPopulationInterventionKind.AddRabbit));
+            RemoveRabbitsCommand = new DelegateCommand(() => BuyFieldDataPopulationControl(FieldDataPopulationInterventionKind.RemoveRabbit));
             AddFoxesCommand = new DelegateCommand(() => BuyFieldDataPopulationControl(FieldDataPopulationInterventionKind.AddFox));
             RemoveFoxesCommand = new DelegateCommand(() => BuyFieldDataPopulationControl(FieldDataPopulationInterventionKind.RemoveFox));
             AddPlantsCommand = new DelegateCommand(() => BuyFieldDataPopulationControl(FieldDataPopulationInterventionKind.AddPlants));
@@ -1564,37 +1564,37 @@ namespace SaltyGame
                 return false;
             }
 
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var fox = new SpeciesId("fox");
             var deaths = run.Metrics.DeathEvents;
             for (var index = deaths.Count - 1; index >= 0 && deaths[index].Tick > previousTick; index--)
             {
                 var death = deaths[index];
-                if (!death.IsCreature || death.Species != hare)
+                if (!death.IsCreature || death.Species != rabbit)
                 {
                     continue;
                 }
 
                 if (death.Cause == SpeciesDeathCause.Combat)
                 {
-                    pendingHareCombatDeaths++;
+                    pendingRabbitCombatDeaths++;
                 }
                 else if (death.Cause == SpeciesDeathCause.Starvation)
                 {
-                    pendingHareStarvationDeaths++;
+                    pendingRabbitStarvationDeaths++;
                 }
                 else
                 {
-                    pendingHareOtherDeaths++;
+                    pendingRabbitOtherDeaths++;
                 }
             }
 
             var births = run.Metrics.BirthEvents;
             for (var index = births.Count - 1; index >= 0 && births[index].Tick > previousTick; index--)
             {
-                if (births[index].Species == hare)
+                if (births[index].Species == rabbit)
                 {
-                    pendingHareBirths++;
+                    pendingRabbitBirths++;
                 }
                 else if (births[index].Species == fox)
                 {
@@ -1602,19 +1602,19 @@ namespace SaltyGame
                 }
             }
 
-            if (PresentPendingHareLoss(run, hare))
+            if (PresentPendingRabbitLoss(run, rabbit))
             {
                 return false;
             }
 
-            if (pendingHareBirths + pendingFoxBirths > 0)
+            if (pendingRabbitBirths + pendingFoxBirths > 0)
             {
-                var title = pendingHareBirths + pendingFoxBirths == 1
+                var title = pendingRabbitBirths + pendingFoxBirths == 1
                     ? "NEW LITTLE LIFE!" : "NEW ARRIVALS";
                 var presented = PresentEventReaction(title,
                     string.Format(CultureInfo.InvariantCulture,
-                        "Recent births: {0} Hare and {1} Fox.", pendingHareBirths, pendingFoxBirths),
-                    pendingHareBirths == 0, BirthReactionPriority);
+                        "Recent births: {0} Rabbit and {1} Fox.", pendingRabbitBirths, pendingFoxBirths),
+                    pendingRabbitBirths == 0, BirthReactionPriority);
                 if (presented)
                 {
                     ClearPendingActivity();
@@ -1629,21 +1629,21 @@ namespace SaltyGame
             return false;
         }
 
-        bool PresentPendingHareLoss(SimulationRunState run, SpeciesId hare)
+        bool PresentPendingRabbitLoss(SimulationRunState run, SpeciesId rabbit)
         {
-            if (pendingHareCombatDeaths + pendingHareStarvationDeaths + pendingHareOtherDeaths == 0)
+            if (pendingRabbitCombatDeaths + pendingRabbitStarvationDeaths + pendingRabbitOtherDeaths == 0)
             {
                 return false;
             }
 
             var latestPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1];
-            var title = latestPopulation.Tick == run.Tick && latestPopulation.GetCount(hare) == 0
-                ? "HARES GONE" : "HARES LOST";
+            var title = latestPopulation.Tick == run.Tick && latestPopulation.GetCount(rabbit) == 0
+                ? "RABBITS GONE" : "RABBITS LOST";
             if (PresentEventReaction(title,
                 string.Format(CultureInfo.InvariantCulture,
-                    "Recent Hare losses: {0} in combat, {1} starved, {2} other. Also {3} Hare and {4} Fox births.",
-                    pendingHareCombatDeaths, pendingHareStarvationDeaths, pendingHareOtherDeaths,
-                    pendingHareBirths, pendingFoxBirths),
+                    "Recent Rabbit losses: {0} in combat, {1} starved, {2} other. Also {3} Rabbit and {4} Fox births.",
+                    pendingRabbitCombatDeaths, pendingRabbitStarvationDeaths, pendingRabbitOtherDeaths,
+                    pendingRabbitBirths, pendingFoxBirths),
                 false, LossReactionPriority))
             {
                 ClearPendingActivity();
@@ -1659,10 +1659,10 @@ namespace SaltyGame
 
         void ClearPendingActivity()
         {
-            pendingHareCombatDeaths = 0;
-            pendingHareStarvationDeaths = 0;
-            pendingHareOtherDeaths = 0;
-            pendingHareBirths = 0;
+            pendingRabbitCombatDeaths = 0;
+            pendingRabbitStarvationDeaths = 0;
+            pendingRabbitOtherDeaths = 0;
+            pendingRabbitBirths = 0;
             pendingFoxBirths = 0;
         }
 
@@ -1706,10 +1706,10 @@ namespace SaltyGame
         void UpdateEventReactionLifetime()
         {
             if (preview?.State == SpeciesPreviewState.Paused && preview.Run != null
-                && pendingHareCombatDeaths + pendingHareStarvationDeaths + pendingHareOtherDeaths > 0)
+                && pendingRabbitCombatDeaths + pendingRabbitStarvationDeaths + pendingRabbitOtherDeaths > 0)
             {
                 ClearEventReaction();
-                PresentPendingHareLoss(preview.Run, new SpeciesId("hare"));
+                PresentPendingRabbitLoss(preview.Run, new SpeciesId("rabbit"));
                 return;
             }
 
@@ -1854,15 +1854,15 @@ namespace SaltyGame
                     ? $"{fieldDataSession.AvailableFieldData} FD"
                     : $"{preview.Progression?.Currency ?? 0} FIELD DATA",
                 nameof(PhaseCurrencyText));
-            Set(ref harePurchaseText,
+            Set(ref rabbitPurchaseText,
                 run != null && run.PopulationPoolSpace == 0
                     ? $"POPULATION POOL FULL  ·  {run.PopulationPoolCapacity} MAX"
-                    : preview.Progression?.Currency < SpeciesSimulationPreview.HareCost
-                    ? $"BUY 1 HARE  ·  {SpeciesSimulationPreview.HareCost} DATA  ·  NEED {SpeciesSimulationPreview.HareCost - preview.Progression.Currency} MORE"
-                    : !preview.CanBuyHare
-                        ? "NO ROOM FOR HARE"
-                        : $"BUY 1 HARE  ·  {SpeciesSimulationPreview.HareCost} DATA",
-                nameof(HarePurchaseText));
+                    : preview.Progression?.Currency < SpeciesSimulationPreview.RabbitCost
+                    ? $"BUY 1 RABBIT  ·  {SpeciesSimulationPreview.RabbitCost} DATA  ·  NEED {SpeciesSimulationPreview.RabbitCost - preview.Progression.Currency} MORE"
+                    : !preview.CanBuyRabbit
+                        ? "NO ROOM FOR RABBIT"
+                        : $"BUY 1 RABBIT  ·  {SpeciesSimulationPreview.RabbitCost} DATA",
+                nameof(RabbitPurchaseText));
             var controls = new List<JourneyRewardChoiceItem>();
             for (var index = 0; index < preview.PopulationControlCount; index++)
             {
@@ -2003,10 +2003,10 @@ namespace SaltyGame
             Set(ref canPurchaseRewardOption3, fieldDataChoices != null
                 ? !fieldDataChoices.Resolved && fieldDataChoices.Choices.Count > 2
                 : preview.CanPurchaseReward(2), nameof(CanPurchaseRewardOption3));
-            Set(ref canBuyHare, preview.CanBuyHare, nameof(CanBuyHare));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddHares)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AddHaresText)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanRemoveHares)));
+            Set(ref canBuyRabbit, preview.CanBuyRabbit, nameof(CanBuyRabbit));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddRabbits)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AddRabbitsText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanRemoveRabbits)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddFoxes)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanRemoveFoxes)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddPlants)));
@@ -2067,11 +2067,11 @@ namespace SaltyGame
                 journeyMapPreviewOpen && state != SpeciesPreviewState.JourneyNodeReward && !FieldDataNodeEntryPending
                     ? Visibility.Visible : Visibility.Collapsed,
                 nameof(JourneyMapCloseVisibility));
-            Set(ref harePurchaseVisibility,
+            Set(ref rabbitPurchaseVisibility,
                 preview.IsPopulationControlWindowOpen
-                    && preview.PlayerSpecies.Value == "hare"
+                    && preview.PlayerSpecies.Value == "rabbit"
                     ? Visibility.Visible : Visibility.Collapsed,
-                nameof(HarePurchaseVisibility));
+                nameof(RabbitPurchaseVisibility));
             Set(ref rewardsVisibility, state == SpeciesPreviewState.Rewards ? Visibility.Visible : Visibility.Collapsed, nameof(RewardsVisibility));
             Set(ref resultsVisibility,
                 state == SpeciesPreviewState.Results || preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision
@@ -2172,8 +2172,8 @@ namespace SaltyGame
         {
             var session = preview?.FieldDataSession;
             if (session == null || !session.CanUsePopulationControls || session.AvailableFieldData < 10) return false;
-            if (kind == FieldDataPopulationInterventionKind.AddHare && session.HarePurchasesRemaining == 0) return false;
-            return (int)kind >= (int)FieldDataPopulationInterventionKind.AddHare
+            if (kind == FieldDataPopulationInterventionKind.AddRabbit && session.RabbitPurchasesRemaining == 0) return false;
+            return (int)kind >= (int)FieldDataPopulationInterventionKind.AddRabbit
                 && (int)kind <= (int)FieldDataPopulationInterventionKind.RemovePlants;
         }
 
@@ -2222,10 +2222,10 @@ namespace SaltyGame
                 builder.Append("Selected population income: ").Append(payout.Income.SelectedPopulation).Append(" FD base\n");
                 foreach (var step in payout.Income.Steps)
                 {
-                    builder.Append(" → ").Append(step.Operation == FieldDataIncomeOperation.AddPerHare ? "+" : "×")
+                    builder.Append(" → ").Append(step.Operation == FieldDataIncomeOperation.AddPerRabbit ? "+" : "×")
                         .Append(step.ModifierValue.ToString(CultureInfo.InvariantCulture));
-                    if (step.Operation == FieldDataIncomeOperation.AddPerHare)
-                        builder.Append(" FD/Hare × ").Append(step.HarePopulation).Append(" Hares");
+                    if (step.Operation == FieldDataIncomeOperation.AddPerRabbit)
+                        builder.Append(" FD/Rabbit × ").Append(step.RabbitPopulation).Append(" Rabbits");
                     builder.Append(" = ").Append(step.OutputAmount.ToString(CultureInfo.InvariantCulture));
                 }
                 builder.Append(" → ").Append(payout.Amount).Append(" FD awarded\n");
@@ -2327,8 +2327,8 @@ namespace SaltyGame
             foreach (var modifier in session.CurrentIncomeExecutionOrder)
             {
                 if (modifier.InstanceId != instanceId) continue;
-                return modifier.Operation == FieldDataIncomeOperation.AddPerHare
-                    ? "+1 FD/Hare"
+                return modifier.Operation == FieldDataIncomeOperation.AddPerRabbit
+                    ? "+1 FD/Rabbit"
                     : "×" + modifier.Value.ToString(CultureInfo.InvariantCulture) + " payout";
             }
             return instanceId;
@@ -2350,8 +2350,8 @@ namespace SaltyGame
                 foreach (var modifier in session.CurrentIncomeExecutionOrder)
                 {
                     if (!string.Equals(modifier.InstanceId, id, StringComparison.Ordinal)) continue;
-                    label = modifier.Operation == FieldDataIncomeOperation.AddPerHare
-                        ? "+1/ Hare"
+                    label = modifier.Operation == FieldDataIncomeOperation.AddPerRabbit
+                        ? "+1/ Rabbit"
                         : "×" + modifier.Value.ToString(CultureInfo.InvariantCulture);
                     break;
                 }
@@ -2861,7 +2861,7 @@ namespace SaltyGame
 
             Set(ref journeyMapSummary,
                 state == SpeciesPreviewState.Ready
-                    ? "FOREST EDGE / HARE is the current route. Foxes hunt your Hares: keep them alive through six rounds, choosing a Mutation at each round break. If Hares reach zero, the journey ends and unspent Field Data is lost. Select a trailhead to begin."
+                    ? "FOREST EDGE / RABBIT is the current route. Foxes hunt your Rabbits: keep them alive through six rounds, choosing a Mutation at each round break. If Rabbits reach zero, the journey ends and unspent Field Data is lost. Select a trailhead to begin."
                     : state == SpeciesPreviewState.JourneyDecision
                         ? preview.ChosenJourneyNode != null
                             ? preview.PhaseRewardMessage + " Choose a connected simulation to continue."

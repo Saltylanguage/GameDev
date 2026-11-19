@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeId: trailblazer-long-stride
   displayName: 'Trailblazer: Long Stride'
   description: Move farther each tick, but require more nearby partners to reproduce.
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   cost: 5
   modifiers:
   - attributeId: movement.speed

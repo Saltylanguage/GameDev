@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Noesis;
 using UnityEngine;
@@ -26,6 +28,8 @@ namespace SaltyGame
         [SerializeField] SpriteAtlas terrainAtlas;
         [SerializeField] Sprite foxSprite;
         [SerializeField] Sprite rabbitSprite;
+        [SerializeField] SpeciesUpgradeAsset[] plannerTestMutations = Array.Empty<SpeciesUpgradeAsset>();
+        [SerializeField] GenomeUpgradeAsset[] plannerTestGenomeNodes = Array.Empty<GenomeUpgradeAsset>();
 
         SpeciesSimulationBoard simulationBoard;
         bool simulationCompositionReady;
@@ -34,6 +38,7 @@ namespace SaltyGame
         int trackedProfileTick;
         int lastReactionTick = -1;
         SimulationRunState lastReactionRun;
+        string configuredPlannerSignature;
 
         void Start()
         {
@@ -118,21 +123,17 @@ namespace SaltyGame
             if (hasProfileRoute)
             {
                 var profile = profileSession.Current;
-                if (!TryCaptureProfileGenome(out var genome))
-                {
-                    return false;
-                }
-                var launch = new SimulationLaunchRequest(
-                    profile.ProfileId,
-                    VM_ExpeditionSetup.DefaultScenarioId,
-                    VM_ExpeditionSetup.DefaultPlayerSpeciesId,
-                    VM_ExpeditionSetup.DefaultSeed,
-                    activeGenomeSnapshot: genome);
-                if (!simulationPreview.TryApplyLaunchRequest(launch, out var validationMessage))
+                if (!TryCreatePlannerLaunchRequest(out var launch, out var signature, out var validationMessage))
                 {
                     Debug.LogError($"Desktop Simulation launch was rejected: {validationMessage}", this);
                     return false;
                 }
+                if (!simulationPreview.TryApplyLaunchRequest(launch, out validationMessage))
+                {
+                    Debug.LogError($"Desktop Simulation launch was rejected: {validationMessage}", this);
+                    return false;
+                }
+                configuredPlannerSignature = signature;
                 simulationPreview.BindMutationResearch(profile);
                 simulationPreview.BindGenomeLaunchSource(() =>
                 {
@@ -179,7 +180,26 @@ namespace SaltyGame
                 simulationPreview.PlayNextSimulation(startImmediately: false);
             }
 
-            if (profileLaunchActive && profileSession != null && simulationPreview.SettingsEditable)
+            if (!TryCreatePlannerLaunchRequest(out var launch, out var signature, out var launchMessage))
+            {
+                Debug.LogError($"Desktop Simulation launch was rejected: {launchMessage}", this);
+                return;
+            }
+
+            var plannerOptionsInjected = viewModel.UseTestMutation || viewModel.UseTestGenome;
+            if (!string.Equals(signature, configuredPlannerSignature, StringComparison.Ordinal)
+                || (preparingNextJourney && plannerOptionsInjected))
+            {
+                if (!simulationPreview.TryApplyLaunchRequest(launch, out launchMessage))
+                {
+                    Debug.LogError($"Desktop Simulation launch was rejected: {launchMessage}", this);
+                    return;
+                }
+                configuredPlannerSignature = signature;
+            }
+
+            if (profileLaunchActive && profileSession != null && simulationPreview.SettingsEditable
+                && !viewModel.UseTestGenome && !viewModel.UseTestMutation)
             {
                 if (!TryCaptureProfileGenome(out var genome))
                 {
@@ -226,7 +246,7 @@ namespace SaltyGame
             ApplyBoardSnapshot();
             SimulationSoundPalette.StartBed(gameObject);
 
-            // The journey map is the entry point for Forest Edge/Hare. Other
+            // The journey map is the entry point for Forest Edge/Rabbit. Other
             // scenarios keep the prepared live-board launch behavior.
             if (preparingNextJourney)
             {
@@ -254,6 +274,131 @@ namespace SaltyGame
                 }
                 ApplyBoardSnapshot();
             }
+        }
+
+        bool TryCreatePlannerLaunchRequest(
+            out SimulationLaunchRequest launch,
+            out string signature,
+            out string validationMessage)
+        {
+            launch = null;
+            signature = string.Empty;
+            validationMessage = string.Empty;
+            if (viewModel == null || simulationPreview == null)
+            {
+                validationMessage = "The Expedition Planner is not connected to Simulation.";
+                return false;
+            }
+
+            var profile = profileSession?.Current;
+            var profileId = profile != null && profile.HasLoadedProfile
+                ? profile.ProfileId
+                : "desktop-sandbox";
+            var genome = GenomeSimulationSnapshot.Empty;
+            if (profile != null && profile.HasLoadedProfile)
+            {
+                if (!TryCaptureProfileGenome(out genome))
+                {
+                    validationMessage = "The loaded profile's active Genome could not be captured.";
+                    return false;
+                }
+            }
+
+            var speciesId = viewModel.PlannerPlayerSpeciesId;
+            if (viewModel.UseTestGenome)
+            {
+                if (!TryCreateTestGenomeSnapshot(speciesId, genome, out var testGenome, out validationMessage))
+                {
+                    return false;
+                }
+                genome = testGenome;
+            }
+
+            var mutations = new List<SpeciesUpgradeSnapshot>();
+            if (viewModel.UseTestMutation)
+            {
+                if (!TryFindSpeciesAsset(plannerTestMutations, speciesId, out var mutation)
+                    || !mutation.TryCreateSnapshot(out var mutationSnapshot, out validationMessage))
+                {
+                    if (string.IsNullOrWhiteSpace(validationMessage))
+                        validationMessage = $"No test Mutation is configured for '{speciesId}'.";
+                    return false;
+                }
+                mutations.Add(mutationSnapshot);
+            }
+
+            launch = new SimulationLaunchRequest(
+                profileId,
+                viewModel.PlannerScenarioId,
+                speciesId,
+                VM_ExpeditionSetup.DefaultSeed,
+                orderedUpgradeSnapshots: mutations,
+                activeGenomeSnapshot: genome);
+            signature = $"{profileId}|{viewModel.PlannerScenarioId}|{speciesId}|{genome.Fingerprint}|{string.Join(",", launch.OrderedUpgradeIds)}";
+            return true;
+        }
+
+        bool TryCreateTestGenomeSnapshot(
+            string speciesId,
+            GenomeSimulationSnapshot baseSnapshot,
+            out GenomeSimulationSnapshot snapshot,
+            out string validationMessage)
+        {
+            snapshot = null;
+            validationMessage = string.Empty;
+            if (!TryFindSpeciesAsset(plannerTestGenomeNodes, speciesId, out var genomeAsset)
+                || !genomeAsset.TryCreateSnapshot(out var node, out validationMessage))
+            {
+                if (string.IsNullOrWhiteSpace(validationMessage))
+                    validationMessage = $"No test Genome node is configured for '{speciesId}'.";
+                return false;
+            }
+
+            var species = new SpeciesId(speciesId);
+            var map = viewModel.GenomeCatalog.GetSpeciesMap(species);
+            var catalogNode = map?.GetNode(node.Id);
+            if (catalogNode == null)
+            {
+                validationMessage = $"The test Genome node '{node.Id}' is missing from the active Genome catalog.";
+                return false;
+            }
+
+            var speciesSnapshots = new List<SpeciesGenomeSnapshot>();
+            if (baseSnapshot != null)
+            {
+                foreach (var existing in baseSnapshot.SpeciesGenomes.Values)
+                {
+                    if (existing.SpeciesId != species)
+                        speciesSnapshots.Add(existing);
+                }
+            }
+            speciesSnapshots.Add(new SpeciesGenomeSnapshot(
+                species,
+                new[] { catalogNode.Id },
+                new[] { catalogNode },
+                viewModel.GenomeCatalog.Fingerprint));
+            snapshot = new GenomeSimulationSnapshot(speciesSnapshots);
+            return true;
+        }
+
+        static bool TryFindSpeciesAsset<TAsset>(TAsset[] assets, string speciesId, out TAsset match)
+            where TAsset : UnityEngine.Object
+        {
+            foreach (var asset in assets ?? Array.Empty<TAsset>())
+            {
+                if (asset == null) continue;
+                var targetSpeciesId = asset is SpeciesUpgradeAsset mutation
+                    ? mutation.TargetSpeciesId
+                    : asset is GenomeUpgradeAsset genome ? genome.TargetSpeciesId : string.Empty;
+                if (string.Equals(targetSpeciesId, speciesId, StringComparison.Ordinal))
+                {
+                    match = asset;
+                    return true;
+                }
+            }
+
+            match = null;
+            return false;
         }
 
         void CloseSimulation()

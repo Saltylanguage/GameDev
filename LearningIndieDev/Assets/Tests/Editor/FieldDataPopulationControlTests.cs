@@ -8,7 +8,7 @@ namespace SaltyGame.EditorTests
 {
     public sealed class FieldDataPopulationControlTests
     {
-        static readonly SpeciesId Hare = new SpeciesId("hare");
+        static readonly SpeciesId Rabbit = new SpeciesId("rabbit");
         static readonly SpeciesId Fox = new SpeciesId("fox");
         static readonly SpeciesId Plant = new SpeciesId("plant");
         const string DefinitionPath = "Assets/Data/TestData/FieldDataStarterDefinition.asset";
@@ -24,18 +24,18 @@ namespace SaltyGame.EditorTests
         public void FrozenPopulationReservesRankControlsJourneyAllowance(int rank, bool equipped, int expected)
         {
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            var owned = rank == 0 ? new string[0] : definition.HareMap.Nodes.Select(node => node.Id).ToArray();
-            var active = equipped ? new[] { "hare.warren-network" } : new string[0];
-            var profile = new SpeciesGenomeProfile(Hare, owned, active, populationReservesRank: rank);
+            var owned = rank == 0 ? new string[0] : definition.RabbitMap.Nodes.Select(node => node.Id).ToArray();
+            var active = equipped ? new[] { "rabbit.warren-network" } : new string[0];
+            var profile = new SpeciesGenomeProfile(Rabbit, owned, active, populationReservesRank: rank);
             var snapshot = definition.FreezeOwnedLoadout(profile);
-            var (_, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4, activeGenome: snapshot);
+            var (_, manager, _, session) = CreateSessionParts(rabbitCount: 20, plantCount: 4, activeGenome: snapshot);
             using (session)
             {
-                Assert.That(session.HarePurchaseAllowance, Is.EqualTo(expected));
+                Assert.That(session.RabbitPurchaseAllowance, Is.EqualTo(expected));
                 Assert.That(session.Begin(), Is.True);
                 manager.Advance(10.1f);
                 var restored = session.Run.CreateCheckpoint().Restore();
-                Assert.That(restored.ActiveGenomeSnapshot.GetSpeciesGenome(Hare).PopulationReservesRank,
+                Assert.That(restored.ActiveGenomeSnapshot.GetSpeciesGenome(Rabbit).PopulationReservesRank,
                     Is.EqualTo(equipped ? rank : 0));
             }
         }
@@ -44,17 +44,17 @@ namespace SaltyGame.EditorTests
         [TestCase(true)]
         public void RoundOffersRequireResearchAndEmptyResearchCanSkip(bool researched)
         {
-            var (_, manager, progression, session) = CreateSessionParts(hareCount: 20, plantCount: 4,
+            var (_, manager, progression, session) = CreateSessionParts(rabbitCount: 20, plantCount: 4,
                 mutationResearch: id => researched && id == SpeciesUpgradeCatalog.ToughHideId);
             using (session)
             {
-                session.SetOrdinaryRewardPool(SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(Hare, null));
+                session.SetOrdinaryRewardPool(SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(Rabbit, null));
                 Assert.That(session.Begin(), Is.True);
                 manager.Advance(10.1f);
                 var choices = session.GetCurrentRoundRewardChoices();
                 Assert.That(choices.Choices.Count, Is.EqualTo(researched ? 1 : 0));
                 Assert.That(session.ResolveRewardChoice(choices.SourceId, "upgrade-" + SpeciesUpgradeCatalog.SeedDispersalId, out _), Is.False);
-                Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.SeedDispersalId).CreateSnapshot(Hare)), Is.False);
+                Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.SeedDispersalId).CreateSnapshot(Rabbit)), Is.False);
                 if (researched)
                     Assert.That(choices.Choices.Single().OrdinaryUpgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
                 Assert.That(session.ResolveRewardChoice(choices.SourceId, "skip", out _), Is.True);
@@ -63,8 +63,8 @@ namespace SaltyGame.EditorTests
             }
         }
 
-        [TestCase(FieldDataPopulationInterventionKind.AddHare, 1, 0)]
-        [TestCase(FieldDataPopulationInterventionKind.RemoveHare, 0, 1)]
+        [TestCase(FieldDataPopulationInterventionKind.AddRabbit, 1, 0)]
+        [TestCase(FieldDataPopulationInterventionKind.RemoveRabbit, 0, 1)]
         [TestCase(FieldDataPopulationInterventionKind.AddFox, 1, 0)]
         [TestCase(FieldDataPopulationInterventionKind.RemoveFox, 0, 1)]
         [TestCase(FieldDataPopulationInterventionKind.AddPlants, 5, 0)]
@@ -73,13 +73,13 @@ namespace SaltyGame.EditorTests
             FieldDataPopulationInterventionKind kind, int added, int removed)
         {
             var (_, manager, _, session) = CreateSessionParts(
-                hareCount: 100, foxCount: 4, plantCount: 20, includeFox: true);
+                rabbitCount: 100, foxCount: 4, plantCount: 20, includeFox: true);
             using (session)
             {
                 ReachFirstFundedRoundDecision(manager, session);
                 var priorBirths = new Dictionary<SpeciesId, int>
                 {
-                    [Hare] = session.Run.Metrics.GetActivity(Hare).Births,
+                    [Rabbit] = session.Run.Metrics.GetActivity(Rabbit).Births,
                     [Fox] = session.Run.Metrics.GetActivity(Fox).Births,
                     [Plant] = session.Run.Metrics.GetActivity(Plant).Births,
                 };
@@ -93,7 +93,7 @@ namespace SaltyGame.EditorTests
                 Assert.That(run.Metrics.GetActivity(species).Births, Is.EqualTo(priorBirths[species]));
                 Assert.That(run.Metrics.DeathEvents.Count, Is.EqualTo(priorDeaths));
                 var initial = run.PopulationHistory[0].GetCount(species);
-                if (species == Hare)
+                if (species == Rabbit)
                 {
                     var line = run.Metrics.CreateHerbivoreStatLine(species, initial, GetCount(run, species), added, removed);
                     Assert.That(line.PopulationReconciled, Is.True);
@@ -105,13 +105,13 @@ namespace SaltyGame.EditorTests
                     Assert.That(line.PopulationReconciled, Is.True);
                     Assert.That(line.ActualHuntScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
                 }
-                if (species == Hare || species == Fox)
+                if (species == Rabbit || species == Fox)
                 {
                     var serializer = System.AppDomain.CurrentDomain.GetAssemblies()
                         .Select(assembly => assembly.GetType("SaltyGame.EditorTools.SimulationReportSerialization"))
                         .First(type => type != null);
                     var method = serializer.GetMethods().Single(candidate =>
-                        candidate.Name == (species == Hare ? "CreateHerbivoreStatLine" : "CreatePredatorStatLine")
+                        candidate.Name == (species == Rabbit ? "CreateHerbivoreStatLine" : "CreatePredatorStatLine")
                         && candidate.GetParameters().Length == 2);
                     var report = method.Invoke(null, new object[] { run, species });
                     Assert.That((int)report.GetType().GetField("ADD").GetValue(report), Is.EqualTo(added));
@@ -124,15 +124,15 @@ namespace SaltyGame.EditorTests
         [Test]
         public void IncomeUpgradesAreOneTimeAndPayoutTiersReplaceRatherThanCompound()
         {
-            var (_, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4);
+            var (_, manager, _, session) = CreateSessionParts(rabbitCount: 20, plantCount: 4);
             using (session)
             {
                 Assert.That(session.Begin(), Is.True);
                 manager.Advance(10.1f);
                 Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance("add", "add",
-                    FieldDataIncomeOperation.AddPerHare, 1m), out _), Is.True);
+                    FieldDataIncomeOperation.AddPerRabbit, 1m), out _), Is.True);
                 Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance("add-again", "add",
-                    FieldDataIncomeOperation.AddPerHare, 1m), out _), Is.False);
+                    FieldDataIncomeOperation.AddPerRabbit, 1m), out _), Is.False);
                 Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance("skip", "tier3",
                     FieldDataIncomeOperation.MultiplyPopulationPayout, 2m), out _), Is.False);
                 foreach (var tier in new[] { 1.5m, 1.75m, 2m })
@@ -150,45 +150,45 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
-        public void HareAllowanceCountsGrossPurchasesAndResetsAtTheNextSimulationNode()
+        public void RabbitAllowanceCountsGrossPurchasesAndResetsAtTheNextSimulationNode()
         {
-            var (_, manager, _, session) = CreateSessionParts(hareCount: 200, plantCount: 4);
+            var (_, manager, _, session) = CreateSessionParts(rabbitCount: 200, plantCount: 4);
             using (session)
             {
                 Assert.That(session.Begin(), Is.True);
                 manager.Advance(10.1f);
                 ResolveCurrentReward(session);
                 for (var i = 0; i < 10; i++)
-                    Assert.That(session.TryBuyPopulationControl("hare-" + i,
-                        FieldDataPopulationInterventionKind.AddHare, out _, out var error), Is.True, error);
-                Assert.That(session.PurchasedHaresThisSimulation, Is.EqualTo(10));
-                Assert.That(session.HarePurchasesRemaining, Is.Zero);
-                Assert.That(session.TryBuyPopulationControl("hare-0",
-                    FieldDataPopulationInterventionKind.AddHare, out _, out _), Is.True);
-                Assert.That(session.PurchasedHaresThisSimulation, Is.EqualTo(10));
+                    Assert.That(session.TryBuyPopulationControl("rabbit-" + i,
+                        FieldDataPopulationInterventionKind.AddRabbit, out _, out var error), Is.True, error);
+                Assert.That(session.PurchasedRabbitsThisSimulation, Is.EqualTo(10));
+                Assert.That(session.RabbitPurchasesRemaining, Is.Zero);
+                Assert.That(session.TryBuyPopulationControl("rabbit-0",
+                    FieldDataPopulationInterventionKind.AddRabbit, out _, out _), Is.True);
+                Assert.That(session.PurchasedRabbitsThisSimulation, Is.EqualTo(10));
                 Assert.That(session.TryBuyPopulationControl("remove",
-                    FieldDataPopulationInterventionKind.RemoveHare, out _, out _), Is.True);
+                    FieldDataPopulationInterventionKind.RemoveRabbit, out _, out _), Is.True);
                 var balance = session.AvailableFieldData;
-                var population = GetCount(session.Run, Hare);
+                var population = GetCount(session.Run, Rabbit);
                 Assert.That(session.TryBuyPopulationControl("over-limit",
-                    FieldDataPopulationInterventionKind.AddHare, out _, out _), Is.False);
+                    FieldDataPopulationInterventionKind.AddRabbit, out _, out _), Is.False);
                 Assert.That(session.AvailableFieldData, Is.EqualTo(balance));
-                Assert.That(GetCount(session.Run, Hare), Is.EqualTo(population));
+                Assert.That(GetCount(session.Run, Rabbit), Is.EqualTo(population));
                 ReachFirstFundedRoundDecision(manager, session);
-                Assert.That(session.PurchasedHaresThisSimulation, Is.Zero);
-                Assert.That(session.HarePurchasesRemaining, Is.EqualTo(10));
+                Assert.That(session.PurchasedRabbitsThisSimulation, Is.Zero);
+                Assert.That(session.RabbitPurchasesRemaining, Is.EqualTo(10));
             }
         }
 
         [Test]
-        public void CompletedHumanRunReconcilesEightAddedAndNineRemovedHares()
+        public void CompletedHumanRunReconcilesEightAddedAndNineRemovedRabbits()
         {
-            var line = new SpeciesHerbivoreStatLine(Hare, 55, 80864, 38950, 963,
+            var line = new SpeciesHerbivoreStatLine(Rabbit, 55, 80864, 38950, 963,
                 327, 194, 46285, 610, 0, 143, addedPopulation: 8, removedPopulation: 9);
             Assert.That(line.ExpectedFinalPopulation, Is.EqualTo(143));
             Assert.That(line.PopulationReconciled, Is.True);
             Assert.That(line.ActualPreyScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
-            var inconsistent = new SpeciesHerbivoreStatLine(Hare, 55, 80864, 38950, 963,
+            var inconsistent = new SpeciesHerbivoreStatLine(Rabbit, 55, 80864, 38950, 963,
                 327, 194, 46285, 610, 0, 144, addedPopulation: 8, removedPopulation: 9);
             Assert.That(inconsistent.PopulationReconciled, Is.False);
             Assert.That(inconsistent.ActualPreyScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
@@ -198,7 +198,7 @@ namespace SaltyGame.EditorTests
         public void SixControlsApplyConfiguredAmountsAndChargeEachDistinctIntentOnce()
         {
             var (definition, manager, progression, session) = CreateSessionParts(
-                hareCount: 100, foxCount: 4, plantCount: 20, includeFox: true);
+                rabbitCount: 100, foxCount: 4, plantCount: 20, includeFox: true);
             using (session)
             {
                 Assert.That(session.Begin(), Is.True);
@@ -206,13 +206,13 @@ namespace SaltyGame.EditorTests
                 Assert.That(session.State, Is.EqualTo(FieldDataJourneyFlowState.RoundDecision));
                 Assert.That(session.Ledger.Balance, Is.EqualTo(100));
                 Assert.That(session.CanUsePopulationControls, Is.False);
-                Assert.That(session.TryBuyPopulationControl("before-reward", FieldDataPopulationInterventionKind.AddHare,
+                Assert.That(session.TryBuyPopulationControl("before-reward", FieldDataPopulationInterventionKind.AddRabbit,
                     out _, out var blockedError), Is.False);
                 Assert.That(blockedError, Does.Contain("Resolve or skip"));
                 ResolveCurrentReward(session);
                 Assert.That(session.CanUsePopulationControls, Is.True);
                 Assert.That(session.AvailableFieldData, Is.EqualTo(100));
-                Assert.That(session.TryBuyPopulationControl("first-round", FieldDataPopulationInterventionKind.AddHare,
+                Assert.That(session.TryBuyPopulationControl("first-round", FieldDataPopulationInterventionKind.AddRabbit,
                     out var firstReceipt, out var firstError), Is.True, firstError);
                 Assert.That(firstReceipt.Cost, Is.EqualTo(10));
                 Assert.That(session.AvailableFieldData, Is.EqualTo(90));
@@ -223,7 +223,7 @@ namespace SaltyGame.EditorTests
                 var before = GetCounts(session.Run);
                 var naturalActivityBefore = new[]
                 {
-                    session.Run.Metrics.GetActivity(Hare),
+                    session.Run.Metrics.GetActivity(Rabbit),
                     session.Run.Metrics.GetActivity(Fox),
                     session.Run.Metrics.GetActivity(Plant),
                 };
@@ -231,8 +231,8 @@ namespace SaltyGame.EditorTests
                 var naturalDeathEventsBefore = session.Run.Metrics.DeathEvents.Count;
                 var actions = new[]
                 {
-                    FieldDataPopulationInterventionKind.AddHare,
-                    FieldDataPopulationInterventionKind.RemoveHare,
+                    FieldDataPopulationInterventionKind.AddRabbit,
+                    FieldDataPopulationInterventionKind.RemoveRabbit,
                     FieldDataPopulationInterventionKind.AddFox,
                     FieldDataPopulationInterventionKind.RemoveFox,
                     FieldDataPopulationInterventionKind.AddPlants,
@@ -258,25 +258,25 @@ namespace SaltyGame.EditorTests
 
                 var balanceBeforeMismatchedReplay = session.Ledger.Balance;
                 Assert.That(session.TryBuyPopulationControl("intent-0",
-                    FieldDataPopulationInterventionKind.RemoveHare, out _, out var replayError), Is.False);
+                    FieldDataPopulationInterventionKind.RemoveRabbit, out _, out var replayError), Is.False);
                 Assert.That(replayError, Does.Contain("cannot be reused"));
                 Assert.That(session.Ledger.Balance, Is.EqualTo(balanceBeforeMismatchedReplay));
 
-                Assert.That(GetCount(session.Run, Hare), Is.EqualTo(before[Hare]));
+                Assert.That(GetCount(session.Run, Rabbit), Is.EqualTo(before[Rabbit]));
                 Assert.That(GetCount(session.Run, Fox), Is.EqualTo(before[Fox]));
                 Assert.That(GetCount(session.Run, Plant), Is.EqualTo(before[Plant]));
 
-                Assert.That(session.TryBuyPopulationControl("extra-hare-1",
-                    FieldDataPopulationInterventionKind.AddHare, out _, out var distinctError), Is.True, distinctError);
-                Assert.That(session.TryBuyPopulationControl("extra-hare-2",
-                    FieldDataPopulationInterventionKind.AddHare, out _, out distinctError), Is.True, distinctError);
-                Assert.That(GetCount(session.Run, Hare), Is.EqualTo(before[Hare] + 2));
+                Assert.That(session.TryBuyPopulationControl("extra-rabbit-1",
+                    FieldDataPopulationInterventionKind.AddRabbit, out _, out var distinctError), Is.True, distinctError);
+                Assert.That(session.TryBuyPopulationControl("extra-rabbit-2",
+                    FieldDataPopulationInterventionKind.AddRabbit, out _, out distinctError), Is.True, distinctError);
+                Assert.That(GetCount(session.Run, Rabbit), Is.EqualTo(before[Rabbit] + 2));
                 Assert.That(session.PopulationInterventions.Count, Is.EqualTo(actions.Length + 3));
-                Assert.That(settledAward.PopulationCounts[Hare], Is.EqualTo(before[Hare]),
+                Assert.That(settledAward.PopulationCounts[Rabbit], Is.EqualTo(before[Rabbit]),
                     "Later population controls must not rewrite an already-settled payout snapshot.");
                 Assert.That(new[]
                 {
-                    session.Run.Metrics.GetActivity(Hare),
+                    session.Run.Metrics.GetActivity(Rabbit),
                     session.Run.Metrics.GetActivity(Fox),
                     session.Run.Metrics.GetActivity(Plant),
                 }, Is.EqualTo(naturalActivityBefore), "Paid interventions are not natural ecology events.");
@@ -289,26 +289,26 @@ namespace SaltyGame.EditorTests
         [Test]
         public void RejectedControlsLeaveWalletBoardAndEntityIdsUntouched()
         {
-            var (definition, manager, _, session) = CreateSessionParts(hareCount: 1, plantCount: 4);
+            var (definition, manager, _, session) = CreateSessionParts(rabbitCount: 1, plantCount: 4);
             using (session)
             {
                 Assert.That(session.Begin(), Is.True);
                 manager.Advance(10.1f);
                 ResolveCurrentReward(session);
                 var beforeCells = session.Run.Cells;
-                var hare = FindCreature(beforeCells, Hare);
-                var hareId = hare.cell.EntityId;
+                var rabbit = FindCreature(beforeCells, Rabbit);
+                var rabbitId = rabbit.cell.EntityId;
                 var balance = session.Ledger.Balance;
 
                 Assert.That(session.TryBuyPopulationControl("remove-last", 
-                    FieldDataPopulationInterventionKind.RemoveHare, out _, out var error), Is.False);
+                    FieldDataPopulationInterventionKind.RemoveRabbit, out _, out var error), Is.False);
                 Assert.That(error, Does.Contain("final member"));
                 Assert.That(session.TryBuyPopulationControl("insufficient-funds",
-                    FieldDataPopulationInterventionKind.AddHare, out _, out error), Is.False);
+                    FieldDataPopulationInterventionKind.AddRabbit, out _, out error), Is.False);
                 Assert.That(error, Does.Contain("not enough Field Data"));
 
                 Assert.That(session.Run.Cells, Is.SameAs(beforeCells));
-                Assert.That(FindCreature(session.Run.Cells, Hare).cell.EntityId, Is.EqualTo(hareId));
+                Assert.That(FindCreature(session.Run.Cells, Rabbit).cell.EntityId, Is.EqualTo(rabbitId));
                 Assert.That(session.Ledger.Balance, Is.EqualTo(balance));
                 Assert.That(session.PopulationInterventions, Is.Empty);
             }
@@ -317,8 +317,8 @@ namespace SaltyGame.EditorTests
         [Test]
         public void RejectedPopulationControlDoesNotChangeTheNextPlacementSequence()
         {
-            var (_, leftManager, _, left) = CreateSessionParts(hareCount: 20, plantCount: 4);
-            var (_, rightManager, _, right) = CreateSessionParts(hareCount: 20, plantCount: 4);
+            var (_, leftManager, _, left) = CreateSessionParts(rabbitCount: 20, plantCount: 4);
+            var (_, rightManager, _, right) = CreateSessionParts(rabbitCount: 20, plantCount: 4);
             using (left)
             using (right)
             {
@@ -333,10 +333,10 @@ namespace SaltyGame.EditorTests
                 Assert.That(left.Ledger.Balance, Is.EqualTo(leftBalance));
 
                 Assert.That(left.TryBuyPopulationControl("next-placement",
-                    FieldDataPopulationInterventionKind.AddHare, out var leftReceipt, out var leftError),
+                    FieldDataPopulationInterventionKind.AddRabbit, out var leftReceipt, out var leftError),
                     Is.True, leftError);
                 Assert.That(right.TryBuyPopulationControl("next-placement",
-                    FieldDataPopulationInterventionKind.AddHare, out var rightReceipt, out var rightError),
+                    FieldDataPopulationInterventionKind.AddRabbit, out var rightReceipt, out var rightError),
                     Is.True, rightError);
 
                 Assert.That(leftReceipt.AffectedPositions.Count, Is.EqualTo(1));
@@ -348,7 +348,7 @@ namespace SaltyGame.EditorTests
         [Test]
         public void PlantRemovalShortageRejectsAtomicallyWithEnoughFunds()
         {
-            var (_, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4);
+            var (_, manager, _, session) = CreateSessionParts(rabbitCount: 20, plantCount: 4);
             using (session)
             {
                 ReachFirstFundedRoundDecision(manager, session);
@@ -369,7 +369,7 @@ namespace SaltyGame.EditorTests
         public void PlantAdditionRejectsInsufficientBatchSpaceWithoutCharging()
         {
             var (_, manager, _, session) = CreateSessionParts(
-                hareCount: 20, plantCount: 20, maxPopulationOverride: 40);
+                rabbitCount: 20, plantCount: 20, maxPopulationOverride: 40);
             using (session)
             {
                 ReachFirstFundedRoundDecision(manager, session);
@@ -390,19 +390,19 @@ namespace SaltyGame.EditorTests
         public void PopulationCapacityCountsSharedCreatureAndPlantLayers()
         {
             var (_, manager, _, session) = CreateSessionParts(
-                hareCount: 20, plantCount: 0, maxPopulationOverride: 21);
+                rabbitCount: 20, plantCount: 0, maxPopulationOverride: 21);
             using (session)
             {
                 ReachFirstFundedRoundDecision(manager, session);
 
-                var shared = FindCreature(session.Run.Cells, Hare);
+                var shared = FindCreature(session.Run.Cells, Rabbit);
                 session.Run.Cells.SetCell(shared.x, shared.y,
                     shared.cell.WithPlantResource(TerrainDefaults.Grass, Plant, 20f));
                 var cellsBefore = session.Run.Cells;
                 var balanceBefore = session.Ledger.Balance;
 
                 Assert.That(session.TryBuyPopulationControl("shared-layer-capacity",
-                    FieldDataPopulationInterventionKind.AddHare, out _, out var error), Is.False);
+                    FieldDataPopulationInterventionKind.AddRabbit, out _, out var error), Is.False);
                 Assert.That(error, Does.Contain("maximum population"));
                 Assert.That(session.Run.Cells, Is.SameAs(cellsBefore));
                 Assert.That(session.Ledger.Balance, Is.EqualTo(balanceBefore));
@@ -413,7 +413,7 @@ namespace SaltyGame.EditorTests
         [Test]
         public void PlantAdditionDoesNotOverwriteExistingPlantResourcesToFillBatch()
         {
-            var (_, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4);
+            var (_, manager, _, session) = CreateSessionParts(rabbitCount: 20, plantCount: 4);
             using (session)
             {
                 ReachFirstFundedRoundDecision(manager, session);
@@ -459,12 +459,12 @@ namespace SaltyGame.EditorTests
         [Test]
         public void PlantRemovalPreservesCreatureAndAnimalRemovalPreservesPlantResource()
         {
-            var (definition, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4);
+            var (definition, manager, _, session) = CreateSessionParts(rabbitCount: 20, plantCount: 4);
             var plant = Plant;
             using (session)
             {
                 ReachFirstFundedRoundDecision(manager, session);
-                var shared = FindCreatures(session.Run.Cells, Hare)[0];
+                var shared = FindCreatures(session.Run.Cells, Rabbit)[0];
                 var grid = session.Run.Cells;
                 for (var y = 0; y < grid.Height; y++)
                     for (var x = 0; x < grid.Width; x++)
@@ -492,14 +492,14 @@ namespace SaltyGame.EditorTests
                 Assert.That(afterPlantRemoval.EntityId, Is.EqualTo(sharedEntity));
                 Assert.That(afterPlantRemoval.IsPlantResource, Is.False);
 
-                // Put a plant resource beneath every remaining Hare so a random Hare removal
+                // Put a plant resource beneath every remaining Rabbit so a random Rabbit removal
                 // always exercises the layer-preserving path.
                 for (var y = 0; y < session.Run.Cells.Height; y++)
                 {
                     for (var x = 0; x < session.Run.Cells.Width; x++)
                     {
                         var cell = session.Run.Cells.GetCell(x, y);
-                        if (cell.IsCreature && cell.SpeciesId == Hare)
+                        if (cell.IsCreature && cell.SpeciesId == Rabbit)
                         {
                             session.Run.Cells.SetCell(x, y,
                                 cell.WithPlantResource(TerrainDefaults.Grass, plant, 20f));
@@ -507,9 +507,9 @@ namespace SaltyGame.EditorTests
                     }
                 }
 
-                Assert.That(session.TryBuyPopulationControl("remove-one-hare",
-                    FieldDataPopulationInterventionKind.RemoveHare, out var hareRemoval, out error), Is.True, error);
-                var removedAt = hareRemoval.AffectedPositions[0];
+                Assert.That(session.TryBuyPopulationControl("remove-one-rabbit",
+                    FieldDataPopulationInterventionKind.RemoveRabbit, out var rabbitRemoval, out error), Is.True, error);
+                var removedAt = rabbitRemoval.AffectedPositions[0];
                 var cellAfter = session.Run.Cells.GetCell(removedAt.X, removedAt.Y);
                 Assert.That(cellAfter.IsCreature, Is.False);
                 Assert.That(cellAfter.IsPlantResource, Is.True);
@@ -521,7 +521,7 @@ namespace SaltyGame.EditorTests
         public void PopulationControlsCloseAtNodeSettlementAndStayClosedInShop()
         {
             var (definition, manager, _, session) = CreateSessionParts(
-                hareCount: 20, plantCount: 10, foxCount: 4, includeFox: true);
+                rabbitCount: 20, plantCount: 10, foxCount: 4, includeFox: true);
             using (session)
             {
                 Assert.That(session.Begin(), Is.True);
@@ -550,31 +550,31 @@ namespace SaltyGame.EditorTests
                 Assert.That(session.BeginShopPurchases(), Is.True);
                 Assert.That(session.CanUsePopulationControls, Is.False);
                 Assert.That(session.TryBuyPopulationControl("too-late",
-                    FieldDataPopulationInterventionKind.AddHare, out _, out var error), Is.False);
+                    FieldDataPopulationInterventionKind.AddRabbit, out _, out var error), Is.False);
                 Assert.That(error, Does.Contain("between rounds within a simulation node"));
             }
         }
 
         static (FieldDataJourneyDefinition, SimulationManager, SpeciesProgression, FieldDataJourneySession)
-            CreateSessionParts(int hareCount, int plantCount, int foxCount = 0, bool includeFox = false,
+            CreateSessionParts(int rabbitCount, int plantCount, int foxCount = 0, bool includeFox = false,
                 int maxPopulationOverride = 0, System.Func<string, bool> mutationResearch = null,
                 GenomeSimulationSnapshot activeGenome = null)
         {
             var asset = AssetDatabase.LoadAssetAtPath<FieldDataJourneyDefinitionAsset>(DefinitionPath);
             Assert.That(asset.TryResolve(out var definition, out var error), Is.True, error);
             var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath).CreateRuntimeData();
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var fox = new SpeciesId("fox");
             var plant = new SpeciesId("plant");
-            var defaultHare = scenario.SpeciesRules[hare];
+            var defaultRabbit = scenario.SpeciesRules[rabbit];
             var defaultFox = scenario.SpeciesRules[fox];
             var defaultPlant = scenario.SpeciesRules[plant];
-            var hareRules = new SpeciesRules(
-                movementSpeed: 0f, movementPattern: defaultHare.MovementPattern,
-                attackPattern: defaultHare.AttackPattern, attackAmount: 0,
-                blockPattern: defaultHare.BlockPattern, blockAmount: 0,
-                dietPattern: defaultHare.DietPattern, dietTarget: plant,
-                reproductionPattern: defaultHare.ReproductionPattern, reproductionNeighborCount: 1,
+            var rabbitRules = new SpeciesRules(
+                movementSpeed: 0f, movementPattern: defaultRabbit.MovementPattern,
+                attackPattern: defaultRabbit.AttackPattern, attackAmount: 0,
+                blockPattern: defaultRabbit.BlockPattern, blockAmount: 0,
+                dietPattern: defaultRabbit.DietPattern, dietTarget: plant,
+                reproductionPattern: defaultRabbit.ReproductionPattern, reproductionNeighborCount: 1,
                 reproductionChance: 0f, startingEnergy: 1000, metabolism: 0,
                 role: SpeciesRole.Herbivore, maximumEnergy: 1000, energyLossIntervalTicks: 1);
             var foxRules = new SpeciesRules(
@@ -599,13 +599,13 @@ namespace SaltyGame.EditorTests
                 scenario = scenario.WithoutSpecies(fox);
             }
 
-            scenario = scenario.WithSpeciesRules(hare, hareRules)
+            scenario = scenario.WithSpeciesRules(rabbit, rabbitRules)
                 .WithSpeciesRules(plant, plantRules)
-                .WithStartingProbability(hare, 0f)
+                .WithStartingProbability(rabbit, 0f)
                 .WithStartingProbability(plant, 0f)
                 .WithStartingPopulations(new Dictionary<SpeciesId, int>
                 {
-                    [hare] = hareCount,
+                    [rabbit] = rabbitCount,
                     [plant] = plantCount,
                 });
 
@@ -615,7 +615,7 @@ namespace SaltyGame.EditorTests
                     .WithStartingProbability(fox, 0f)
                     .WithStartingPopulations(new Dictionary<SpeciesId, int>
                     {
-                        [hare] = hareCount,
+                        [rabbit] = rabbitCount,
                         [fox] = foxCount,
                         [plant] = plantCount,
                     });
@@ -630,11 +630,11 @@ namespace SaltyGame.EditorTests
                     maxPopulationOverride, scenario.MinPopulation, scenario.TerrainDefinitions,
                     scenario.AlphaOffspringRules, scenario.StartingPopulations, scenario.WrapEdges);
             var run = new SimulationRunState(
-                SpeciesInitialGridFactory.Create(scenario, 10100), hare, 10100, scenario.RunDurationSeconds, targetTicks, activeGenome);
+                SpeciesInitialGridFactory.Create(scenario, 10100), rabbit, 10100, scenario.RunDurationSeconds, targetTicks, activeGenome);
             run.ConfigureContinuousPhases(100);
             var manager = new SimulationManager();
             manager.SetRunner(new SpeciesSimulationRunner(run, scenario));
-            var progression = new SpeciesProgression(new SpeciesDefinition(hare, scenario.SpeciesRules[hare]), mutationResearch);
+            var progression = new SpeciesProgression(new SpeciesDefinition(rabbit, scenario.SpeciesRules[rabbit]), mutationResearch);
             var session = new FieldDataJourneySession(definition, manager, progression);
             return (definition, manager, progression, session);
         }
@@ -683,7 +683,7 @@ namespace SaltyGame.EditorTests
             var snapshot = run.PopulationHistory[run.PopulationHistory.Count - 1];
             return new Dictionary<SpeciesId, int>
             {
-                [Hare] = snapshot.GetCount(Hare),
+                [Rabbit] = snapshot.GetCount(Rabbit),
                 [Fox] = snapshot.GetCount(Fox),
                 [Plant] = snapshot.GetCount(Plant),
             };
