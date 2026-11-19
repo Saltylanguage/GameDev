@@ -521,7 +521,7 @@ namespace SaltyGame.PlayModeTests
                     authored = Object.Instantiate(preview.SelectedScenario);
                     authored.name = preview.SelectedScenario.name;
                     JsonUtility.FromJsonOverwrite(
-                        $"{{\"width\":45,\"height\":55,\"mapLayout\":{{\"shape\":{(int)MapTopologyDefinition.FixedShape.IrregularLand},\"mapSeed\":{mapSeed},\"edgeRoughness\":{roughness}}}}}",
+                        $"{{\"width\":68,\"height\":48,\"mapLayout\":{{\"shape\":{(int)MapTopologyDefinition.FixedShape.IrregularLand},\"mapSeed\":{mapSeed},\"edgeRoughness\":{roughness},\"interiorHole\":true}}}}",
                         authored);
                     preview.ConfigureScenarioOptions(new[] { authored });
                     Assert.That(preview.SelectedScenario, Is.SameAs(authored));
@@ -540,11 +540,18 @@ namespace SaltyGame.PlayModeTests
                     preview.PauseSimulation();
                     var topology = preview.Run.Cells.Topology;
                     Assert.That(topology.Fingerprint, Is.EqualTo(authored.CreateRuntimeData().Topology.Fingerprint));
-                    var row = topology.Height / 8;
+                    Assert.That(topology.IsPlayableCell(topology.Width / 2, topology.Height / 2), Is.False);
+                    var row = topology.Height / 6;
                     var endpoints = topology.PlayableCoordinates.Where(cell => cell.y == row).ToArray();
+                    Assert.That(endpoints.Length, Is.GreaterThan(1));
                     Assert.That(endpoints[0].x, Is.GreaterThan(0));
 
                     var camera = GameObject.Find("GalapagOS Simulation View").GetComponent<Camera>();
+                    var outputDirectory = GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory();
+                    if (outputDirectory != null)
+                    {
+                        yield return GalapagOSVisualAcceptanceTests.CaptureCamera(outputDirectory, "irregular-land-with-interior-hole", camera);
+                    }
                     var content = (Noesis.FrameworkElement)camera.GetComponent<NoesisView>().Content;
                     var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
                     var panel = window?.Content as Noesis.FrameworkElement;
@@ -555,7 +562,7 @@ namespace SaltyGame.PlayModeTests
                     ledger.ScrollToVerticalOffset(ledger.ScrollableHeight);
                     var board = desktop.GetComponent("SaltyGame.VM_SimulationBoard");
                     yield return GalapagOSVisualAcceptanceTests.TrackSameCreatureAcrossRowSeam(
-                        preview, board, button, camera, GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory(),
+                        preview, board, button, camera, outputDirectory,
                         endpoints[0].x, endpoints[endpoints.Length - 1].x, row);
                 }
             }

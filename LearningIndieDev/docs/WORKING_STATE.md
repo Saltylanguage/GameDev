@@ -1,6 +1,6 @@
 # Working state
 
-**November 19 irregular map shapes:** Bev-Ticket-3 is In Progress. The first slice adds a seeded, connected Irregular Land layout with adjustable edge roughness. The existing LearningIndieDev entry in Unity Hub opens `F:/ForkBin/GameDev/LearningIndieDev` on local `codex/bev-ticket-3-irregular-maps`. See the [irregular-land handoff](handoffs/2026-11-19-1447-codex-bev-ticket-3-connected-irregular-land.md) for playtest settings and validation.
+**November 19 irregular map shapes:** Bev-Ticket-3 is In Progress. Irregular Land now generates a connected coastline with broad seeded lobes, bays and an optional impassable interior gap. The existing LearningIndieDev entry in Unity Hub opens `F:/ForkBin/GameDev/LearningIndieDev` on local `codex/bev-ticket-3-irregular-maps`. See the [coastline handoff](handoffs/2026-11-19-1525-codex-bev-ticket-3-organic-coastlines.md) for playtest settings and validation.
 
 **November 19 fixed map shapes:** Bev-Ticket-1 is Done in Trello and its wrapping commit is an ancestor of `origin/ProjectMain` at `0ea5118`. Bev-Ticket-2 is Done in Trello and `codex/bev-map-work` is published for review as [PR #9](https://github.com/Saltylanguage/GameDev/pull/9) against ProjectMain. It adds seven fixed Inspector layouts, shared seam wrapping, and shape-aware preview and terrain presentation. See the [fixed-shape handoff](handoffs/2026-11-19-0949-codex-bev-ticket-2-fixed-map-shapes.md) for authoring instructions and validation.
 

@@ -22,6 +22,10 @@ namespace SaltyGame
     public sealed class MapTopologyDefinition
     {
         private const int MaximumRoughness = 100;
+        private const int MinimumHoleSize = 16;
+        private const double HoleRadius = 0.15;
+        private static readonly Vector2Int[] CardinalDirections =
+            { Vector2Int.left, Vector2Int.right, Vector2Int.down, Vector2Int.up };
 
         public enum FixedShape
         {
@@ -43,8 +47,11 @@ namespace SaltyGame
         [Tooltip("Irregular Land only. This seed controls the map outline independently of the simulation seed.")]
         private int mapSeed = 1;
         [SerializeField, Range(0, MaximumRoughness)]
-        [Tooltip("Irregular Land only. Higher values vary the distance from the center to the edge more from row to row.")]
+        [Tooltip("Irregular Land only. Higher values make the bays and lobes more pronounced.")]
         private int edgeRoughness = 35;
+        [SerializeField]
+        [Tooltip("Irregular Land only. Adds an impassable interior gap when Width and Height are at least 16.")]
+        private bool interiorHole;
         [SerializeField] bool explicitLayout, rectangle;
         [SerializeField] Vector2Int[] cells = Array.Empty<Vector2Int>();
         [SerializeField] MapBoundaryConnection[] connections = Array.Empty<MapBoundaryConnection>();
@@ -89,26 +96,59 @@ namespace SaltyGame
             // Validate the storage area before building any cells.
             _ = checked(width * height);
             var roughness = Math.Clamp(edgeRoughness, 0, MaximumRoughness);
-            var edgeVariation = (int)((long)width * roughness / (4 * MaximumRoughness));
+            var variation = Math.Sqrt((double)roughness / MaximumRoughness);
+            var hasHole = interiorHole && width >= MinimumHoleSize && height >= MinimumHoleSize;
             var random = new System.Random(mapSeed);
-            var land = new List<Vector2Int>();
+            var broadPhase = random.NextDouble() * 2 * Math.PI;
+            var mediumPhase = random.NextDouble() * 2 * Math.PI;
+            var smallPhase = random.NextDouble() * 2 * Math.PI;
+            var centerX = width / 2;
+            var centerY = height / 2;
+            var centerOffsetX = (2.0 * centerX + 1 - width) / width;
+            var centerOffsetY = (2.0 * centerY + 1 - height) / height;
+            var minimumRadiusSquared = Math.Max(0.36 * 0.36,
+                centerOffsetX * centerOffsetX + centerOffsetY * centerOffsetY);
+            var candidates = new HashSet<Vector2Int>();
             for (var y = 0; y < height; y++)
             {
-                var distanceFromCenter = Math.Abs(2L * y - (height - 1));
-                // Taper toward the top and bottom by up to one-third of the width per edge.
-                var inset = (width / 3L) * distanceFromCenter * distanceFromCenter / ((long)height * height);
-                // Keep the middle column(s) in every row so the entire layout is connected.
-                var left = (int)Math.Clamp(inset + random.Next(-edgeVariation, edgeVariation + 1), 0, (width - 1) / 2);
-                var right = (int)Math.Clamp(width - 1 - inset + random.Next(-edgeVariation, edgeVariation + 1), width / 2, width - 1);
-                for (var x = left; x <= right; x++)
+                var dy = (2.0 * y + 1 - height) / height;
+                for (var x = 0; x < width; x++)
                 {
-                    land.Add(new Vector2Int(x, y));
+                    var dx = (2.0 * x + 1 - width) / width;
+                    var distanceSquared = dx * dx + dy * dy;
+                    if (hasHole && distanceSquared <= HoleRadius * HoleRadius) continue;
+
+                    // Smooth waves around the whole outline keep bays and lobes coherent across rows.
+                    var angle = Math.Atan2(dy, dx);
+                    var waves = 0.22 * Math.Cos(3 * angle + broadPhase)
+                        + 0.14 * Math.Cos(5 * angle + mediumPhase)
+                        + 0.065 * Math.Cos(8 * angle + smallPhase);
+                    var radius = Math.Min(0.70 + variation * waves, 1.0);
+                    if (distanceSquared <= Math.Max(radius * radius, minimumRadiusSquared))
+                    {
+                        candidates.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            // Keep the connected mainland if sampling a narrow boundary leaves isolated cells.
+            var startX = hasHole ? centerX + (int)Math.Ceiling(width * HoleRadius / 2) : centerX;
+            var start = new Vector2Int(startX, centerY);
+            var land = new List<Vector2Int> { start };
+            candidates.Remove(start);
+            for (var index = 0; index < land.Count; index++)
+            {
+                var current = land[index];
+                foreach (var direction in CardinalDirections)
+                {
+                    var next = new Vector2Int(current.x + direction.x, current.y + direction.y);
+                    if (candidates.Remove(next)) land.Add(next);
                 }
             }
 
             var inputs = string.Format(CultureInfo.InvariantCulture,
-                "irregular-land-v1:seed={0};width={1};height={2};roughness={3}",
-                mapSeed, width, height, roughness);
+                "irregular-land-v2:seed={0};width={1};height={2};roughness={3};hole={4}",
+                mapSeed, width, height, roughness, hasHole ? 1 : 0);
             return new MapTopology(width, height, land, generationInputs: inputs);
         }
 

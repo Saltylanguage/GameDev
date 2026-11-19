@@ -81,7 +81,7 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
-        public void AuthoredIrregularLandKeepsConnectedRowsAndRecreatesBothSeams()
+        public void AuthoredIrregularLandRecreatesAConnectedCoastWithBothSeams()
         {
             var scenario = Object.Instantiate(AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath));
             try
@@ -101,15 +101,15 @@ namespace SaltyGame.EditorTests
                 Assert.That((first.Width, first.Height), Is.EqualTo((45, 55)));
                 Assert.That(land, Is.EqualTo(((MapTopology)second.Topology).CopyCells()));
                 Assert.That(second.Fingerprint, Is.EqualTo(first.Fingerprint));
+                Assert.That(topology.GenerationInputs, Does.StartWith("irregular-land-v2:"));
                 Assert.That(topology.GenerationInputs, Does.Contain("seed=17"));
                 Assert.That(land.Length, Is.LessThan(first.Width * first.Height));
-                var rows = land.GroupBy(cell => cell.y).ToArray();
-                Assert.That(rows.Length, Is.EqualTo(first.Height));
-                foreach (var row in rows)
-                {
-                    Assert.That(row.Any(cell => cell.x == first.Width / 2), Is.True);
-                    Assert.That(row.Count(), Is.EqualTo(row.Last().x - row.First().x + 1));
-                }
+                var bayRows = land.GroupBy(cell => cell.y)
+                    .Where(row => row.Count() < row.Last().x - row.First().x + 1)
+                    .Select(row => row.Key).ToHashSet();
+                Assert.That(bayRows.Any(y => bayRows.Contains(y + 1) && bayRows.Contains(y + 2)), Is.True,
+                    "The reference seed should have a bay running across several adjacent rows.");
+                AssertCardinallyConnected(land);
                 AssertOppositeSeams(topology, land);
 
                 var grid = SpeciesInitialGridFactory.Create(first, 10100);
@@ -133,6 +133,68 @@ namespace SaltyGame.EditorTests
             {
                 Object.DestroyImmediate(scenario);
             }
+        }
+
+        [TestCase(68, 48, true)]
+        [TestCase(16, 16, true)]
+        [TestCase(15, 16, false)]
+        [TestCase(2, 11, false)]
+        [TestCase(1, 1, false)]
+        public void IrregularLandInteriorHoleBlocksMovementAndKeepsLandConnected(int width, int height, bool hasHole)
+        {
+            var definition = new MapTopologyDefinition();
+            JsonUtility.FromJsonOverwrite("{\"shape\":8,\"mapSeed\":-23,\"edgeRoughness\":100}", definition);
+            var solid = (MapTopology)definition.Create(width, height);
+            JsonUtility.FromJsonOverwrite("{\"interiorHole\":true}", definition);
+            var topology = (MapTopology)definition.Create(width, height);
+            var land = topology.CopyCells();
+            AssertCardinallyConnected(land);
+
+            if (!hasHole)
+            {
+                Assert.That(land, Is.EqualTo(solid.CopyCells()));
+                return;
+            }
+
+            var center = new Vector2Int(width / 2, height / 2);
+            var gap = solid.CopyCells().Except(land).ToHashSet();
+            Assert.That(gap, Does.Contain(center));
+            Assert.That(land.Except(solid.CopyCells()), Is.Empty);
+            foreach (var cell in gap)
+            {
+                foreach (var direction in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+                {
+                    var shore = cell - direction;
+                    if (topology.IsPlayableCell(shore.x, shore.y))
+                    {
+                        Assert.That(topology.TryResolveOffset(shore.x, shore.y, direction, out _), Is.False);
+                    }
+                    else
+                    {
+                        Assert.That(gap, Does.Contain(shore), "The hole must be enclosed by playable land.");
+                    }
+                }
+            }
+            AssertOppositeSeams(topology, land);
+        }
+
+        private static void AssertCardinallyConnected(Vector2Int[] land)
+        {
+            var remaining = land.ToHashSet();
+            var frontier = new Queue<Vector2Int>();
+            var directions = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+            frontier.Enqueue(land[0]);
+            remaining.Remove(land[0]);
+            while (frontier.Count != 0)
+            {
+                var cell = frontier.Dequeue();
+                foreach (var direction in directions)
+                {
+                    var next = cell + direction;
+                    if (remaining.Remove(next)) frontier.Enqueue(next);
+                }
+            }
+            Assert.That(remaining, Is.Empty);
         }
 
         private static void AssertOppositeSeams(IGridTopology topology, Vector2Int[] playable)
