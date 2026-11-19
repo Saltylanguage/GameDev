@@ -399,9 +399,43 @@ namespace SaltyGame.EditorTests
         [Serializable] class GenomeRunProbe { public string genomeFingerprint, finalStateDigest; public int ticks; }
 
         [Test]
+        public void ForestEdgeWrappingReachesRunsAndScenarioSwitches()
+        {
+            var forest = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath);
+            var bounded = Object.Instantiate(forest);
+            var serialized = new SerializedObject(bounded);
+            serialized.FindProperty("wrapEdges").boolValue = false;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            var previewObject = new GameObject("Wrapping Scenario Test");
+            previewObject.SetActive(false);
+            try
+            {
+                Assert.That(forest.CreateRuntimeData().WrapEdges, Is.True);
+                Assert.That(bounded.CreateRuntimeData().WrapEdges, Is.False);
+                Assert.That(ApplyOverrides().WrapEdges, Is.True);
+                Assert.That(ApplyOverrides("-wrapEdges", "false").WrapEdges, Is.False);
+
+                var preview = previewObject.AddComponent<SpeciesSimulationPreview>();
+                preview.ConfigureScenarioOptions(new[] { forest, bounded });
+                typeof(SpeciesSimulationPreview).GetMethod("Awake", PrivateInstance).Invoke(preview, null);
+                Assert.That(preview.WrapEdges, Is.True);
+                Assert.That(preview.Run.Cells.WrapEdges, Is.True);
+                Assert.That(preview.TrySelectScenario(1, out var message), Is.True, message);
+                Assert.That(preview.Run.Cells.WrapEdges, Is.False);
+                Assert.That(preview.TrySelectScenario(0, out message), Is.True, message);
+                Assert.That(preview.Run.Cells.WrapEdges, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(previewObject);
+                Object.DestroyImmediate(bounded);
+            }
+        }
+
+        [Test]
         public void WrappingOverridesSurviveDataCopiesAndCheckpointsWithMatchedInitialCells()
         {
-            var bounded = ApplyOverrides("-gridWidth", "36", "-gridHeight", "20", "-runTicks", "600",
+            var bounded = ApplyOverrides("-wrapEdges", "false", "-gridWidth", "36", "-gridHeight", "20", "-runTicks", "600",
                 "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=20,fox=10");
             var wrapped = ApplyOverrides("-wrapEdges", "true", "-gridWidth", "36", "-gridHeight", "20",
                 "-runTicks", "600", "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=20,fox=10");

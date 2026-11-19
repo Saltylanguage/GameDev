@@ -3,6 +3,14 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
+**November 19 Forest Edge wrapping:** Josh selected connected map edges for
+the authored Forest Edge route. The scenario owns the setting; Desktop preview
+selection and experiments inherit it, while explicit topology overrides remain
+available. The D5 visual review scenario stays wrapped, and other authored
+scenarios stay bounded. Focused code and asset checks passed, but Unity tests
+could not start because a project lock exists with no reachable Pipeline Editor.
+See the [wrapping handoff](handoffs/2026-11-19-codex-forest-edge-wrapping.md).
+
 **November 18 Rabbit identity:** Josh confirmed Rabbit, Fox, Owl, Deer, and
 Wolf as the planned playable test roster. Rabbit is the canonical gameplay
 species name and ID; the former `hare` identity is retained only for profile

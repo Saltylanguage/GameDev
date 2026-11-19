@@ -3693,6 +3693,7 @@ namespace SaltyGame
                 herbivoreStartingPopulation = 0;
                 carnivoreStartingPopulation = 0;
                 startingPopulationOverrideEnabled = false;
+                wrapEdges = false;
 
                 return;
             }
@@ -3704,6 +3705,7 @@ namespace SaltyGame
             runTicks = authoredData.RunTicks;
             maxPopulation = authoredData.MaxPopulation;
             minPopulation = authoredData.MinPopulation;
+            wrapEdges = authoredData.WrapEdges;
             plantStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
             herbivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
             carnivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);

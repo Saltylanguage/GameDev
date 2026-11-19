@@ -55,6 +55,7 @@ namespace SaltyGame
         int runTicks;
         [SerializeField, Min(0)] int maxPopulation;
         [SerializeField, Min(0)] int minPopulation;
+        [SerializeField] bool wrapEdges;
         [SerializeField] SpeciesEntry[] species = Array.Empty<SpeciesEntry>();
 
         public IReadOnlyList<SpeciesEntry> Species => species;
@@ -104,7 +105,8 @@ namespace SaltyGame
                 maxPopulation,
                 minPopulation,
                 alphaOffspringRules: alphaRules,
-                startingPopulations: startingPopulations);
+                startingPopulations: startingPopulations,
+                wrapEdges: wrapEdges);
         }
     }
 }

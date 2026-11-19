@@ -19,6 +19,7 @@ MonoBehaviour:
   runTicks: 600
   maxPopulation: 0
   minPopulation: 0
+  wrapEdges: 1
   species:
   - definition: {fileID: 11400000, guid: 337318e6bb33d374da67b1618389f443, type: 2}
     startingProbability: 0

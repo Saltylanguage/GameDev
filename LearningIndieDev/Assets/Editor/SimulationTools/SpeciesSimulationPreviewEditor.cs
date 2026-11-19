@@ -183,7 +183,8 @@ namespace SaltyGame.EditorTools
                     "36", "20", seed.ToString(CultureInfo.InvariantCulture), "720", "0", "600", "0.1",
                     "0", "0", "0", false, "400", "20", "10", out message)
                 && preview.TryApplyExperimentalFeatures(true, false, "0", out message)
-                && preview.TryApplyContinuousPhases(true, "100", out message);
+                && preview.TryApplyContinuousPhases(true, "100", out message)
+                && preview.TryApplyWrapEdges(false, out message);
         }
     }
 }

@@ -80,6 +80,16 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **November 19, 2026 Forest Edge wrapping:** Josh chose connected left/right
+  and top/bottom grid edges for the authored Forest Edge route. Scenario assets
+  now own topology; the Desktop preview and experiment runner inherit it unless
+  explicitly overridden. The D5 visual review scenario also retains its
+  existing wrapped setup. Other scenarios remain bounded. This changes
+  movement, perception, combat, feeding, and reproduction at the seams, so
+  earlier bounded route outcomes do not establish the new route's balance.
+  No population or species values were approved by this change. See the
+  [implementation handoff](handoffs/2026-11-19-codex-forest-edge-wrapping.md).
+
 - **November 18, 2026 cozy individual-led direction:** Josh selected
   low-population simulations where individual animal events matter, accepting
   the additional architecture risk. Fox overhunting remains the opening

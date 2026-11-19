@@ -1344,7 +1344,7 @@ namespace SaltyGame.EditorTools
             var hasWindowOverride = options.RunTicks > 0
                 || options.RunDurationSeconds > 0f
                 || options.StepIntervalSeconds > 0f;
-            var updatedData = data.WithWrapEdges(options.WrapEdges);
+            var updatedData = data.WithWrapEdges(options.WrapEdges ?? data.WrapEdges);
             if (hasWindowOverride)
             {
                 var stepInterval = options.StepIntervalSeconds == 0f
@@ -2109,7 +2109,7 @@ namespace SaltyGame.EditorTools
             public int FoxAttackCooldownTicks { get; private set; }
             public float PreContactAvoidanceChance { get; private set; }
             public bool CoupledSpeciesResponses { get; private set; }
-            public bool WrapEdges { get; private set; }
+            public bool? WrapEdges { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public string StartingPopulations { get; private set; }
@@ -2307,7 +2307,8 @@ namespace SaltyGame.EditorTools
                         allowZero: true),
                     PreContactAvoidanceChance = GetFloatValue(arguments, PreContactAvoidanceChanceArgument),
                     CoupledSpeciesResponses = GetBooleanValue(arguments, CoupledSpeciesResponsesArgument),
-                    WrapEdges = GetBooleanValue(arguments, WrapEdgesArgument),
+                    WrapEdges = GetOptionalValue(arguments, WrapEdgesArgument) == null
+                        ? (bool?)null : GetBooleanValue(arguments, WrapEdgesArgument),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     StartingPopulations = GetOptionalValue(arguments, StartingPopulationsArgument),
