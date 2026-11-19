@@ -44,13 +44,16 @@ namespace SaltyGame.PlayModeTests
                 preview.PauseSimulation();
                 Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
                 yield return null;
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                yield return null;
 
                 var camera = GameObject.Find("Prototype Camera");
                 var board = camera.GetComponent("SaltyGame.VM_SimulationBoard");
                 var snapshot = (SimulationBoardSnapshot)GetProperty(board, "Snapshot");
                 Assert.That(snapshot.Width, Is.EqualTo(40));
                 Assert.That(snapshot.Height, Is.EqualTo(40));
-                Assert.That(snapshot.Tick, Is.GreaterThan(0));
+                Assert.That(snapshot.Tick, Is.EqualTo(preview.Run.Tick));
+                Assert.That(snapshot.Tick, Is.GreaterThanOrEqualTo(2));
                 Assert.That(snapshot.TryGetCell(0, 0, out _), Is.False);
 
                 var content = (Noesis.FrameworkElement)GetProperty(camera.GetComponent("NoesisView"), "Content");

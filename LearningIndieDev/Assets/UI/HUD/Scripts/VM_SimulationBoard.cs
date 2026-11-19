@@ -230,11 +230,11 @@ namespace SaltyGame
 
         static bool IsCurrentHuntingFox(Grid<SpeciesCell> cells, SpeciesBehaviorTransition transition)
         {
-            if (!cells.IsInBounds(transition.X, transition.Y))
+            if (!cells.IsInBounds(transition.X, transition.Y)
+                || !cells.TryGetCell(transition.X, transition.Y, out var cell))
             {
                 return false;
             }
-            var cell = cells.GetCell(transition.X, transition.Y);
             return cell.IsCreature
                 && cell.SpeciesId == FoxSpeciesId
                 && cell.EntityId == transition.EntityId
@@ -258,8 +258,8 @@ namespace SaltyGame
             {
                 for (var x = 0; x < run.Cells.Width; x++)
                 {
-                    var cell = run.Cells.GetCell(x, y);
-                    if (!cell.IsCreature || cell.SpeciesId != FoxSpeciesId
+                    if (!run.Cells.TryGetCell(x, y, out var cell)
+                        || !cell.IsCreature || cell.SpeciesId != FoxSpeciesId
                         || cell.BehaviorState != SpeciesBehaviorState.Hunting)
                     {
                         continue;

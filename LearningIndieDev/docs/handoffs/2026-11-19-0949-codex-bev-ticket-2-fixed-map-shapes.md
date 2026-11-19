@@ -37,6 +37,13 @@ The [fixed map shapes card](https://trello.com/c/9c6kJfkg/160-bev-ticket-2-new-m
 
 - Publication and Trello closeout require approval under the studio workflow.
 
+## MainMenu playtest follow-up
+
+- Bevin chose to use the existing LearningIndieDev entry in Unity Hub. The primary checkout at `F:/ForkBin/GameDev` now uses local branch `codex/bev-map-work`, based on the ticket commit `f5bf9df`. The original ticket worktree records the earlier implementation and validation.
+- ForestEdge at Cross Height 20 had 204 playable cells and 475 starting entities. The scenario failed to initialize before the Desktop could open Simulation. Cross Height 40 fits the authored population in 816 playable cells. The Cross 40 scenario is a local working-tree playtest setting.
+- The first MainMenu route test reached the running simulation and exposed a Fox footprint lookup at the off-map coordinate (0, 0). Hunt tracking now skips nonplayable cells. The shaped-board regression advances across two frames to exercise that update.
+- Follow-up live Unity checks passed 2/2. The Hare journey launched from MainMenu with the local 40x40 cross and advanced through at least two ticks. The focused cross test verified later board refresh and cell inspection. [MainMenu results](../../artifacts/unity-tests-20261119-104509/PlayMode-results.json) and [cross results](../../artifacts/unity-tests-20261119-104521/PlayMode-results.json).
+
 ## Next useful step
 
 Review the local branch for publication, then continue the authored-map work with Bev-Ticket-3.
