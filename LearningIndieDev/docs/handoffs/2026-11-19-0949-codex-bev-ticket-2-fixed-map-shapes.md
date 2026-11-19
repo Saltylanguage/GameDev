@@ -47,3 +47,10 @@ The [fixed map shapes card](https://trello.com/c/9c6kJfkg/160-bev-ticket-2-new-m
 ## Next useful step
 
 Review the local branch for publication, then continue the authored-map work with Bev-Ticket-3.
+
+## Creature tracking and seam verification
+
+- In Cell Inspection, select a living creature and choose **Track Creature**. A cyan ring and the inspection coordinates follow its entity ID on each board update. **Stop Tracking** returns to cell inspection at the current location. Choosing a different cell or losing the tracked creature ends tracking.
+- The controlled Cross PlayMode route applies an actual leftward movement step. Hare #451 moves from cell (1, 21) to (40, 21) between ticks 3 and 4, and the ring and inspection follow the same ID. The test also exercises tracking availability for an empty cell, stopping tracking, and replacement by a creature with a different ID.
+- Reviewed captures at [1280x720 before](../../artifacts/visual-evidence-20261119-110227/creature-tracking-before-wrap.png), [1280x720 after](../../artifacts/visual-evidence-20261119-110227/creature-tracking-after-wrap.png), [1920x1080 before](../../artifacts/visual-evidence-20261119-110306/creature-tracking-before-wrap.png), and [1920x1080 after](../../artifacts/visual-evidence-20261119-110306/creature-tracking-after-wrap.png).
+- Live Unity validation passed all 14 [topology tests](../../artifacts/unity-tests-20261119-110316/EditMode-results.json), all seven [authored preset tests](../../artifacts/unity-tests-20261119-110318/EditMode-results.json), the [MainMenu Hare launch check](../../artifacts/unity-tests-20261119-110319/PlayMode-results.json), the [existing cell inspection and speed control check](../../artifacts/unity-tests-20261119-110424/PlayMode-results.json), and the focused graphics check at both resolutions.

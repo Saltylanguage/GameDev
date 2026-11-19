@@ -144,8 +144,10 @@ namespace SaltyGame
         bool panMoved;
         int selectedX = -1;
         int selectedY = -1;
+        private bool isTrackingCreature;
         readonly Pen selectionShadow = new Pen { Brush = Brushes.Black, Thickness = 3f };
         readonly Pen selectionOutline = new Pen { Brush = Brushes.White, Thickness = 1.5f };
+        private readonly Pen trackedCreatureOutline = new Pen { Brush = Brushes.Cyan, Thickness = 2f };
         SolidColorBrush foxHuntShadowBrush;
         SolidColorBrush foxHuntAccentBrush;
         SolidColorBrush heartShadowBrush;
@@ -417,11 +419,12 @@ namespace SaltyGame
             InvalidateVisual();
         }
 
-        public void SetSelectedCell(int x, int y)
+        public void SetSelectedCell(int x, int y, bool trackCreature)
         {
-            if (selectedX == x && selectedY == y) return;
+            if (selectedX == x && selectedY == y && isTrackingCreature == trackCreature) return;
             selectedX = x;
             selectedY = y;
+            isTrackingCreature = trackCreature;
             InvalidateVisual();
         }
 
@@ -775,8 +778,17 @@ namespace SaltyGame
             if (snapshot.TryGetCell(selectedX, selectedY, out _))
             {
                 var selected = GetCellRect(columns, rows, selectedX, snapshot.Height - 1 - selectedY);
-                context.DrawRectangle(null, selectionShadow, selected);
-                context.DrawRectangle(null, selectionOutline, selected);
+                if (isTrackingCreature)
+                {
+                    var center = new Point(selected.X + selected.Width * 0.5f, selected.Y + selected.Height * 0.5f);
+                    context.DrawEllipse(null, selectionShadow, center, selected.Width * 0.62f, selected.Height * 0.62f);
+                    context.DrawEllipse(null, trackedCreatureOutline, center, selected.Width * 0.62f, selected.Height * 0.62f);
+                }
+                else
+                {
+                    context.DrawRectangle(null, selectionShadow, selected);
+                    context.DrawRectangle(null, selectionOutline, selected);
+                }
             }
         }
 

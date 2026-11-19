@@ -509,13 +509,29 @@
                                     BorderThickness="2"
                                     CornerRadius="5"
                                     ClipToBounds="True">
-                                <TextBlock x:Name="CellInspectionText"
-                                           Text="{Binding DataContext.InspectionText, ElementName=SimulationBoard}"
-                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                           FontSize="13"
-                                           Foreground="{DynamicResource Chrono_TreeBark}"
-                                           TextWrapping="Wrap"
-                                           VerticalAlignment="Center" />
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock x:Name="CellInspectionText"
+                                               Text="{Binding DataContext.InspectionText, ElementName=SimulationBoard}"
+                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource Chrono_TreeBark}"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center" />
+                                    <Button x:Name="TrackCreatureButton"
+                                            Grid.Row="1"
+                                            Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                            Content="{Binding DataContext.TrackCreatureButtonText, ElementName=SimulationBoard}"
+                                            Command="{Binding DataContext.TrackCreatureCommand, ElementName=SimulationBoard}"
+                                            Height="27"
+                                            MinHeight="0"
+                                            Padding="6,2"
+                                            FontSize="11"
+                                            HorizontalAlignment="Left" />
+                                </Grid>
                             </Border>
                             <Rectangle Height="1"
                                        Margin="0,8,0,7"

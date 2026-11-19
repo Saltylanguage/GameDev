@@ -79,6 +79,11 @@ namespace SaltyGame.PlayModeTests
                 {
                     yield return CaptureCamera(output, "bev-ticket-2-wrapped-cross", camera.GetComponent<Camera>());
                 }
+
+                var trackButton = (content.FindName("TrackCreatureButton")
+                    ?? (window?.Content as Noesis.FrameworkElement)?.FindName("TrackCreatureButton")) as Noesis.Button;
+                Assert.That(trackButton, Is.Not.Null);
+                yield return TrackSameCreatureAcrossCrossSeam(preview, board, trackButton, camera.GetComponent<Camera>(), output);
             }
             finally
             {
@@ -86,6 +91,73 @@ namespace SaltyGame.PlayModeTests
                 preview.ConfigureScenarioOptions(originalScenarios, originalSelection);
                 UnityEngine.Object.Destroy(scenario);
             }
+        }
+
+        private static IEnumerator TrackSameCreatureAcrossCrossSeam(
+            SpeciesSimulationPreview preview, Component board, Noesis.Button button, Camera camera, string output)
+        {
+            var run = preview.Run;
+            var initial = run.Cells.Copy(cell => cell.IsCreature ? SpeciesCell.Empty : cell);
+            var row = initial.Height / 2;
+            var arrivalX = initial.Width - 1;
+            var hare = new SpeciesId("hare");
+            var creature = new SpeciesCell(hare, energy: 10);
+            initial.SetCell(0, row, creature);
+            initial.SetCell(arrivalX, row, SpeciesCell.Empty);
+            AdvancePausedRun(run, initial, preview.StepInterval);
+            yield return null;
+
+            var select = board.GetType().GetMethod("SelectCell");
+            Assert.That(select.Invoke(board, new object[] { arrivalX, row }), Is.True);
+            Assert.That(button.Command.CanExecute(null), Is.False);
+            Assert.That(select.Invoke(board, new object[] { 0, row }), Is.True);
+            ExecuteCommand(button.Command);
+            yield return null;
+            Assert.That(button.Content, Is.EqualTo("STOP TRACKING"));
+            Assert.That(GetProperty(board, "InspectionText"), Does.Contain($"TRACKING HARE #{creature.EntityId}"));
+            if (output != null)
+            {
+                yield return CaptureCamera(output, "creature-tracking-before-wrap", camera);
+            }
+
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var empty = new GridPattern(Array.Empty<Vector2Int>());
+            var rules = new Dictionary<SpeciesId, SpeciesRules>(preview.ActiveSpeciesRules)
+            {
+                [hare] = new SpeciesRules(1f, left, left, 0, empty, 0, left, null, empty, 0, 0f, 0),
+            };
+            var moved = SpeciesSimulation.Step(initial, rules, run.Seed);
+            Assert.That(moved.GetCell(arrivalX, row).EntityId, Is.EqualTo(creature.EntityId));
+            Assert.That(moved.GetCell(0, row).IsCreature, Is.False);
+            AdvancePausedRun(run, moved, preview.StepInterval);
+            yield return null;
+
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.True);
+            Assert.That(GetProperty(board, "SelectedX"), Is.EqualTo(arrivalX));
+            Assert.That(GetProperty(board, "SelectedY"), Is.EqualTo(row));
+            Assert.That(GetProperty(board, "InspectionText"), Does.Contain($"TRACKING HARE #{creature.EntityId}"));
+            if (output != null)
+            {
+                yield return CaptureCamera(output, "creature-tracking-after-wrap", camera);
+            }
+
+            ExecuteCommand(button.Command);
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.False);
+            Assert.That(GetProperty(board, "SelectedX"), Is.EqualTo(arrivalX));
+            ExecuteCommand(button.Command);
+            var replacement = moved.Copy();
+            replacement.SetCell(arrivalX, row, new SpeciesCell(hare, energy: 10));
+            AdvancePausedRun(run, replacement, preview.StepInterval);
+            yield return null;
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.False);
+            Assert.That(GetProperty(board, "HasSelection"), Is.False);
+        }
+
+        private static void AdvancePausedRun(SimulationRunState run, Grid<SpeciesCell> cells, float stepInterval)
+        {
+            run.Resume();
+            run.Advance(cells, stepInterval);
+            run.Pause();
         }
 
         [UnityTest]

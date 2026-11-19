@@ -361,7 +361,7 @@ namespace SaltyGame
             }
             else if (args.PropertyName == nameof(VM_SimulationBoard.HasSelection))
             {
-                simulationBoard?.SetSelectedCell(simulationBoardViewModel.SelectedX, simulationBoardViewModel.SelectedY);
+                simulationBoard?.SetSelectedCell(simulationBoardViewModel.SelectedX, simulationBoardViewModel.SelectedY, simulationBoardViewModel.IsTrackingCreature);
             }
         }
 
@@ -382,7 +382,7 @@ namespace SaltyGame
             }
 
             simulationBoard.SetSnapshot(simulationBoardViewModel.Snapshot);
-            simulationBoard.SetSelectedCell(simulationBoardViewModel.SelectedX, simulationBoardViewModel.SelectedY);
+            simulationBoard.SetSelectedCell(simulationBoardViewModel.SelectedX, simulationBoardViewModel.SelectedY, simulationBoardViewModel.IsTrackingCreature);
             simulationBoard.SetForestEdgeFlourishes(simulationViewModel.ForestEdgeFlourishes);
             simulationBoard.SetFoxHuntCue(
                 simulationBoardViewModel.FoxHuntCueX,
