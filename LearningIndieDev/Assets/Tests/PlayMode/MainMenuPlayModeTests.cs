@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -480,7 +481,12 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator HareJourneyCanLaunchWithoutAPathLicense()
+        public IEnumerator HareJourneyCanLaunchWithoutAPathLicense() => LaunchHareJourney(false);
+
+        [UnityTest]
+        public IEnumerator IrregularLandLaunchesFromMainMenuAndTracksASeamCrossing() => LaunchHareJourney(true);
+
+        private static IEnumerator LaunchHareJourney(bool useIrregularLand)
         {
             ClearProfiles();
             yield return LoadMainMenu();
@@ -505,15 +511,62 @@ namespace SaltyGame.PlayModeTests
             Assert.That(session.Current.UnlockedGenomeSpeciesIds, Is.Empty);
             var preview = Object.FindAnyObjectByType<SpeciesSimulationPreview>();
             Assert.That(preview, Is.Not.Null);
-            var openSimulation = GetCommand(desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "OpenDesktopIconCommand");
-            openSimulation.GetType().GetMethod("Execute")?.Invoke(openSimulation, new object[] { "Simulation" });
-            Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
-            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
-            Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
-            deadline = Time.realtimeSinceStartup + 3f;
-            while (preview.Run.Tick < 2 && Time.realtimeSinceStartup < deadline) yield return null;
-            Assert.That(preview.Run.Tick, Is.GreaterThanOrEqualTo(2));
-            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Is.Empty);
+            ScenarioDefinitionAsset authored = null;
+            try
+            {
+                if (useIrregularLand)
+                {
+                    const int mapSeed = 17;
+                    const int roughness = 65;
+                    authored = Object.Instantiate(preview.SelectedScenario);
+                    authored.name = preview.SelectedScenario.name;
+                    JsonUtility.FromJsonOverwrite(
+                        $"{{\"width\":45,\"height\":55,\"mapLayout\":{{\"shape\":{(int)MapTopologyDefinition.FixedShape.IrregularLand},\"mapSeed\":{mapSeed},\"edgeRoughness\":{roughness}}}}}",
+                        authored);
+                    preview.ConfigureScenarioOptions(new[] { authored });
+                    Assert.That(preview.SelectedScenario, Is.SameAs(authored));
+                }
+
+                var openSimulation = GetCommand(desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "OpenDesktopIconCommand");
+                openSimulation.GetType().GetMethod("Execute")?.Invoke(openSimulation, new object[] { "Simulation" });
+                GalapagOSVisualAcceptanceTests.ChooseFirstForestEdgeCycle(desktop.GetComponent("SaltyGame.VM_SimulationShell"));
+                deadline = Time.realtimeSinceStartup + 4f;
+                while (preview.Run.Tick < 2 && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.That(preview.Run.Tick, Is.GreaterThanOrEqualTo(2));
+                Assert.That(session.Current.UnlockedGenomeSpeciesIds, Is.Empty);
+
+                if (authored != null)
+                {
+                    preview.PauseSimulation();
+                    var topology = preview.Run.Cells.Topology;
+                    Assert.That(topology.Fingerprint, Is.EqualTo(authored.CreateRuntimeData().Topology.Fingerprint));
+                    var row = topology.Height / 8;
+                    var endpoints = topology.PlayableCoordinates.Where(cell => cell.y == row).ToArray();
+                    Assert.That(endpoints[0].x, Is.GreaterThan(0));
+
+                    var camera = GameObject.Find("GalapagOS Simulation View").GetComponent<Camera>();
+                    var content = (Noesis.FrameworkElement)camera.GetComponent<NoesisView>().Content;
+                    var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
+                    var panel = window?.Content as Noesis.FrameworkElement;
+                    var button = (content.FindName("TrackCreatureButton") ?? panel?.FindName("TrackCreatureButton")) as Noesis.Button;
+                    var ledger = (content.FindName("FieldLedgerScroll") ?? panel?.FindName("FieldLedgerScroll")) as Noesis.ScrollViewer;
+                    Assert.That(button, Is.Not.Null);
+                    Assert.That(ledger, Is.Not.Null);
+                    ledger.ScrollToVerticalOffset(ledger.ScrollableHeight);
+                    var board = desktop.GetComponent("SaltyGame.VM_SimulationBoard");
+                    yield return GalapagOSVisualAcceptanceTests.TrackSameCreatureAcrossRowSeam(
+                        preview, board, button, camera, GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory(),
+                        endpoints[0].x, endpoints[endpoints.Length - 1].x, row);
+                }
+            }
+            finally
+            {
+                if (authored != null)
+                {
+                    preview.StopSimulation();
+                    Object.Destroy(authored);
+                }
+            }
             ClearProfiles();
         }
 

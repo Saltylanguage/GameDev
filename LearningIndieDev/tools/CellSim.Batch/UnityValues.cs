@@ -32,6 +32,7 @@ namespace UnityEngine
 
     public sealed class SerializeField : Attribute { }
     public sealed class MinAttribute : Attribute { public MinAttribute(float value) { } }
+    public sealed class RangeAttribute : Attribute { public RangeAttribute(float minimum, float maximum) { } }
     public sealed class TextAreaAttribute : Attribute { }
     public sealed class TooltipAttribute : Attribute { public TooltipAttribute(string value) { } }
     public sealed class CreateAssetMenuAttribute : Attribute

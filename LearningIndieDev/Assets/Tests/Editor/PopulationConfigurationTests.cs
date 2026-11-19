@@ -47,21 +47,7 @@ namespace SaltyGame.EditorTests
                 Assert.That(topology.IsPlayableCell(0, 0), Is.EqualTo(expectedCellCount == data.Width * data.Height));
 
                 var playable = topology.PlayableCoordinates.ToArray();
-                var rowEdges = playable.GroupBy(cell => cell.y)
-                    .Select(row => (First: row.First(), Last: row.Last(), Direction: Vector2Int.left));
-                var columnEdges = playable.GroupBy(cell => cell.x)
-                    .Select(column => (First: column.First(), Last: column.Last(), Direction: Vector2Int.down));
-                foreach (var edge in rowEdges.Concat(columnEdges))
-                {
-                    Assert.That(topology.TryResolveOffset(edge.First.x, edge.First.y, edge.Direction, out var target), Is.True);
-                    Assert.That(target, Is.EqualTo(edge.Last));
-                    Assert.That(topology.TryResolveOffset(target.x, target.y, -edge.Direction, out var returned), Is.True);
-                    Assert.That(returned, Is.EqualTo(edge.First));
-                    if (edge.First != edge.Last)
-                    {
-                        Assert.That(topology.GetDistance(edge.First.x, edge.First.y, target.x, target.y), Is.EqualTo(1));
-                    }
-                }
+                AssertOppositeSeams(topology, playable);
 
                 var grid = SpeciesInitialGridFactory.Create(data, 17);
                 var repeatedGrid = SpeciesInitialGridFactory.Create(scenario.CreateRuntimeData(), 17);
@@ -91,6 +77,80 @@ namespace SaltyGame.EditorTests
             finally
             {
                 Object.DestroyImmediate(scenario);
+            }
+        }
+
+        [Test]
+        public void AuthoredIrregularLandKeepsConnectedRowsAndRecreatesBothSeams()
+        {
+            var scenario = Object.Instantiate(AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath));
+            try
+            {
+                var serialized = new SerializedObject(scenario);
+                serialized.FindProperty("mapLayout.shape").intValue = (int)MapTopologyDefinition.FixedShape.IrregularLand;
+                serialized.FindProperty("mapLayout.mapSeed").intValue = 17;
+                serialized.FindProperty("mapLayout.edgeRoughness").intValue = 65;
+                serialized.FindProperty("width").intValue = 45;
+                serialized.FindProperty("height").intValue = 55;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                var first = scenario.CreateRuntimeData();
+                var second = scenario.CreateRuntimeData();
+                var topology = (MapTopology)first.Topology;
+                var land = topology.CopyCells();
+                Assert.That((first.Width, first.Height), Is.EqualTo((45, 55)));
+                Assert.That(land, Is.EqualTo(((MapTopology)second.Topology).CopyCells()));
+                Assert.That(second.Fingerprint, Is.EqualTo(first.Fingerprint));
+                Assert.That(topology.GenerationInputs, Does.Contain("seed=17"));
+                Assert.That(land.Length, Is.LessThan(first.Width * first.Height));
+                var rows = land.GroupBy(cell => cell.y).ToArray();
+                Assert.That(rows.Length, Is.EqualTo(first.Height));
+                foreach (var row in rows)
+                {
+                    Assert.That(row.Any(cell => cell.x == first.Width / 2), Is.True);
+                    Assert.That(row.Count(), Is.EqualTo(row.Last().x - row.First().x + 1));
+                }
+                AssertOppositeSeams(topology, land);
+
+                var grid = SpeciesInitialGridFactory.Create(first, 10100);
+                var repeatedGrid = SpeciesInitialGridFactory.Create(second, 10100);
+                foreach (var cell in land)
+                {
+                    Assert.That(repeatedGrid.GetCell(cell.x, cell.y).SpeciesId, Is.EqualTo(grid.GetCell(cell.x, cell.y).SpeciesId));
+                }
+                var outside = Enumerable.Range(0, first.Width).First(x => !topology.IsPlayableCell(x, 0));
+                Assert.That(grid.TryGetCell(outside, 0, out _), Is.False);
+
+                serialized.FindProperty("mapLayout.mapSeed").intValue = -23;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(((MapTopology)scenario.CreateRuntimeData().Topology).CopyCells(), Is.Not.EqualTo(land));
+                serialized.FindProperty("mapLayout.mapSeed").intValue = 17;
+                serialized.FindProperty("mapLayout.edgeRoughness").intValue = 0;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(((MapTopology)scenario.CreateRuntimeData().Topology).CopyCells(), Is.Not.EqualTo(land));
+            }
+            finally
+            {
+                Object.DestroyImmediate(scenario);
+            }
+        }
+
+        private static void AssertOppositeSeams(IGridTopology topology, Vector2Int[] playable)
+        {
+            var rowEdges = playable.GroupBy(cell => cell.y)
+                .Select(row => (First: row.First(), Last: row.Last(), Direction: Vector2Int.left));
+            var columnEdges = playable.GroupBy(cell => cell.x)
+                .Select(column => (First: column.First(), Last: column.Last(), Direction: Vector2Int.down));
+            foreach (var edge in rowEdges.Concat(columnEdges))
+            {
+                Assert.That(topology.TryResolveOffset(edge.First.x, edge.First.y, edge.Direction, out var target), Is.True);
+                Assert.That(target, Is.EqualTo(edge.Last));
+                Assert.That(topology.TryResolveOffset(target.x, target.y, -edge.Direction, out var returned), Is.True);
+                Assert.That(returned, Is.EqualTo(edge.First));
+                if (edge.First != edge.Last)
+                {
+                    Assert.That(topology.GetDistance(edge.First.x, edge.First.y, target.x, target.y), Is.EqualTo(1));
+                }
             }
         }
 

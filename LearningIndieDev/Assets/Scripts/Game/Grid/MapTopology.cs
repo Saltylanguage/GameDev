@@ -21,6 +21,8 @@ namespace SaltyGame
     [Serializable]
     public sealed class MapTopologyDefinition
     {
+        private const int MaximumRoughness = 100;
+
         public enum FixedShape
         {
             AuthoredLayout = 0,
@@ -31,11 +33,18 @@ namespace SaltyGame
             Cross = 5,
             ShortRectangle = 6,
             LongRectangle = 7,
+            IrregularLand = 8,
         }
 
         [SerializeField]
-        [Tooltip("Fixed shapes use the asset's Height as their size. Authored Layout uses Width and Height and preserves existing custom cells.")]
+        [Tooltip("Fixed shapes use Height as their size. Irregular Land and Authored Layout use Width and Height.")]
         private FixedShape shape;
+        [SerializeField]
+        [Tooltip("Irregular Land only. This seed controls the map outline independently of the simulation seed.")]
+        private int mapSeed = 1;
+        [SerializeField, Range(0, MaximumRoughness)]
+        [Tooltip("Irregular Land only. Higher values vary the distance from the center to the edge more from row to row.")]
+        private int edgeRoughness = 35;
         [SerializeField] bool explicitLayout, rectangle;
         [SerializeField] Vector2Int[] cells = Array.Empty<Vector2Int>();
         [SerializeField] MapBoundaryConnection[] connections = Array.Empty<MapBoundaryConnection>();
@@ -54,6 +63,11 @@ namespace SaltyGame
 
         public IGridTopology Create(int width, int height)
         {
+            if (shape == FixedShape.IrregularLand)
+            {
+                return CreateIrregularLand(width, height);
+            }
+
             if (shape != FixedShape.AuthoredLayout)
             {
                 return CreateFixedShape(shape, height);
@@ -63,6 +77,39 @@ namespace SaltyGame
             if (rectangle) return new MapTopology(width, height, generationInputs: generationInputs);
             if (cells == null || cells.Length == 0) throw new ArgumentException("An explicit authored layout needs playable cells.");
             return new MapTopology(width, height, cells, connections, generationInputs);
+        }
+
+        private MapTopology CreateIrregularLand(int width, int height)
+        {
+            if (width <= 0 || height <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(width), "Map dimensions must be positive.");
+            }
+
+            // Validate the storage area before building any cells.
+            _ = checked(width * height);
+            var roughness = Math.Clamp(edgeRoughness, 0, MaximumRoughness);
+            var edgeVariation = (int)((long)width * roughness / (4 * MaximumRoughness));
+            var random = new System.Random(mapSeed);
+            var land = new List<Vector2Int>();
+            for (var y = 0; y < height; y++)
+            {
+                var distanceFromCenter = Math.Abs(2L * y - (height - 1));
+                // Taper toward the top and bottom by up to one-third of the width per edge.
+                var inset = (width / 3L) * distanceFromCenter * distanceFromCenter / ((long)height * height);
+                // Keep the middle column(s) in every row so the entire layout is connected.
+                var left = (int)Math.Clamp(inset + random.Next(-edgeVariation, edgeVariation + 1), 0, (width - 1) / 2);
+                var right = (int)Math.Clamp(width - 1 - inset + random.Next(-edgeVariation, edgeVariation + 1), width / 2, width - 1);
+                for (var x = left; x <= right; x++)
+                {
+                    land.Add(new Vector2Int(x, y));
+                }
+            }
+
+            var inputs = string.Format(CultureInfo.InvariantCulture,
+                "irregular-land-v1:seed={0};width={1};height={2};roughness={3}",
+                mapSeed, width, height, roughness);
+            return new MapTopology(width, height, land, generationInputs: inputs);
         }
 
         private static MapTopology CreateFixedShape(FixedShape shape, int height)
