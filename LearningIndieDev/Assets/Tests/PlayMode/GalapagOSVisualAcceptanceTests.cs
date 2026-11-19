@@ -22,6 +22,65 @@ namespace SaltyGame.PlayModeTests
         const string LegacyDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         [UnityTest]
+        public IEnumerator FieldLedgerScrollReachesTrackingUnderHareLossCard()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            var preview = runtime.SpeciesPreview;
+            preview.PauseSimulation();
+            var camera = GameObject.Find("Prototype Camera");
+            var board = camera.GetComponent("SaltyGame.VM_SimulationBoard");
+            var shell = camera.GetComponent("SaltyGame.VM_SimulationShell");
+            var hareId = new SpeciesId("hare");
+            var cells = preview.Run.Cells;
+            var hare = cells.Topology.PlayableCoordinates.First(cell => cells.GetCell(cell.x, cell.y).SpeciesId == hareId);
+            Assert.That(board.GetType().GetMethod("SelectCell").Invoke(board, new object[] { hare.x, hare.y }), Is.True);
+
+            const BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
+            shell.GetType().GetMethod("ClearEventReaction", instance).Invoke(shell, null);
+            Assert.That(shell.GetType().GetMethod("PresentEventReaction", instance).Invoke(shell, new object[]
+            {
+                "HARES LOST",
+                "Recent Hare losses: 1 in combat, 0 starved, 0 other. Also 16 Hare and 0 Fox births.",
+                false,
+                3,
+            }), Is.True);
+            yield return null;
+
+            var content = (Noesis.FrameworkElement)GetProperty(camera.GetComponent("NoesisView"), "Content");
+            var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
+            var panel = window.Content as Noesis.FrameworkElement;
+            var ledger = (content.FindName("FieldLedgerScroll") ?? panel.FindName("FieldLedgerScroll")) as Noesis.ScrollViewer;
+            var tracking = (content.FindName("TrackCreatureButton") ?? panel.FindName("TrackCreatureButton")) as Noesis.Button;
+            var zoom = (content.FindName("BoardZoomControls") ?? panel.FindName("BoardZoomControls")) as Noesis.FrameworkElement;
+            Assert.That(ledger, Is.Not.Null);
+            Assert.That(tracking, Is.Not.Null);
+            Assert.That(zoom, Is.Not.Null);
+            Assert.That(ledger.ScrollableHeight, Is.GreaterThan(0f));
+            var viewportBottom = ledger.PointToScreen(new Noesis.Point(0, ledger.ActualHeight)).Y;
+            Assert.That(tracking.PointToScreen(new Noesis.Point(0, tracking.ActualHeight)).Y, Is.GreaterThan(viewportBottom));
+            Assert.That(viewportBottom, Is.LessThan(zoom.PointToScreen(new Noesis.Point(0, 0)).Y));
+
+            ledger.RaiseEvent(new Noesis.MouseWheelEventArgs(ledger, Noesis.UIElement.MouseWheelEvent, -120));
+            yield return null;
+            Assert.That(ledger.VerticalOffset, Is.GreaterThan(0f));
+            ledger.ScrollToVerticalOffset(ledger.ScrollableHeight);
+            yield return null;
+            Assert.That(tracking.PointToScreen(new Noesis.Point(0, tracking.ActualHeight)).Y, Is.LessThanOrEqualTo(viewportBottom));
+            Assert.That(tracking.PointToScreen(new Noesis.Point(0, 0)).Y,
+                Is.GreaterThanOrEqualTo(ledger.PointToScreen(new Noesis.Point(0, 0)).Y));
+            ExecuteCommand(tracking.Command);
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.True);
+
+            var output = TryGetVisualOutputDirectory();
+            if (output != null)
+            {
+                yield return CaptureCamera(output, "field-ledger-scrolled-with-event", camera.GetComponent<Camera>());
+            }
+        }
+
+        [UnityTest]
         public IEnumerator FixedCrossRendersAndInspectsOnlyPlayableCells()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
