@@ -481,12 +481,17 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator HareJourneyCanLaunchWithoutAPathLicense() => LaunchHareJourney(false);
+        public IEnumerator HareJourneyCanLaunchWithoutAPathLicense() => LaunchHareJourney();
 
         [UnityTest]
-        public IEnumerator IrregularLandLaunchesFromMainMenuAndTracksASeamCrossing() => LaunchHareJourney(true);
+        public IEnumerator RectangularMapLaunchesFromMainMenu() =>
+            LaunchHareJourney(MapTopologyDefinition.FixedShape.AuthoredLayout);
 
-        private static IEnumerator LaunchHareJourney(bool useIrregularLand)
+        [UnityTest]
+        public IEnumerator DetachedIslandLaunchesFromMainMenuAndTracksASeamCrossing() =>
+            LaunchHareJourney(MapTopologyDefinition.FixedShape.IrregularLand);
+
+        private static IEnumerator LaunchHareJourney(MapTopologyDefinition.FixedShape? shape = null)
         {
             ClearProfiles();
             yield return LoadMainMenu();
@@ -514,15 +519,14 @@ namespace SaltyGame.PlayModeTests
             ScenarioDefinitionAsset authored = null;
             try
             {
-                if (useIrregularLand)
+                if (shape.HasValue)
                 {
-                    const int mapSeed = 17;
-                    const int roughness = 65;
                     authored = Object.Instantiate(preview.SelectedScenario);
                     authored.name = preview.SelectedScenario.name;
-                    JsonUtility.FromJsonOverwrite(
-                        $"{{\"width\":68,\"height\":48,\"mapLayout\":{{\"shape\":{(int)MapTopologyDefinition.FixedShape.IrregularLand},\"mapSeed\":{mapSeed},\"edgeRoughness\":{roughness},\"interiorHole\":true}}}}",
-                        authored);
+                    var map = shape == MapTopologyDefinition.FixedShape.IrregularLand
+                        ? "{\"width\":68,\"height\":48,\"mapLayout\":{\"shape\":8,\"mapSeed\":17,\"edgeRoughness\":65,\"interiorHole\":true,\"detachedIsland\":true}}"
+                        : "{\"width\":36,\"height\":20,\"mapLayout\":{\"shape\":0,\"explicitLayout\":false}}";
+                    JsonUtility.FromJsonOverwrite(map, authored);
                     preview.ConfigureScenarioOptions(new[] { authored });
                     Assert.That(preview.SelectedScenario, Is.SameAs(authored));
                 }
@@ -540,17 +544,36 @@ namespace SaltyGame.PlayModeTests
                     preview.PauseSimulation();
                     var topology = preview.Run.Cells.Topology;
                     Assert.That(topology.Fingerprint, Is.EqualTo(authored.CreateRuntimeData().Topology.Fingerprint));
-                    Assert.That(topology.IsPlayableCell(topology.Width / 2, topology.Height / 2), Is.False);
-                    var row = topology.Height / 6;
-                    var endpoints = topology.PlayableCoordinates.Where(cell => cell.y == row).ToArray();
-                    Assert.That(endpoints.Length, Is.GreaterThan(1));
-                    Assert.That(endpoints[0].x, Is.GreaterThan(0));
-
                     var camera = GameObject.Find("GalapagOS Simulation View").GetComponent<Camera>();
                     var outputDirectory = GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory();
+                    if (shape == MapTopologyDefinition.FixedShape.AuthoredLayout)
+                    {
+                        Assert.That(topology, Is.TypeOf<RectangularGridTopology>());
+                        if (outputDirectory != null)
+                            yield return GalapagOSVisualAcceptanceTests.CaptureCamera(outputDirectory, "rectangular-map", camera);
+                        yield break;
+                    }
+
+                    Assert.That(topology.IsPlayableCell(25, 24), Is.False);
+                    var sharedRow = topology.PlayableCoordinates.GroupBy(cell => cell.y)
+                        .OrderByDescending(cells => cells.Count()).First(cells =>
+                        {
+                            var first = cells.First();
+                            return topology.TryResolveOffset(first.x, first.y, Vector2Int.left, out var destination)
+                                && destination.x > first.x && destination != cells.Last();
+                        });
+                    var source = sharedRow.First();
+                    var island = sharedRow.Last();
+                    Assert.That(topology.TryResolveOffset(source.x, source.y, Vector2Int.left, out var arrival), Is.True);
+                    Assert.That(topology.GetDistance(source.x, source.y, island.x, island.y), Is.EqualTo(int.MaxValue));
+                    var between = Enumerable.Range(arrival.x + 1, island.x - arrival.x - 1)
+                        .First(x => !topology.IsPlayableCell(x, source.y));
+                    var boardSnapshot = SimulationBoardSnapshot.Create(preview.Run, preview.ActiveSpeciesRules, preview.PlayerSpecies);
+                    Assert.That(boardSnapshot.TryGetCell(between, source.y, out _), Is.False);
+                    Assert.That(boardSnapshot.TryGetCell(island.x, island.y, out _), Is.True);
                     if (outputDirectory != null)
                     {
-                        yield return GalapagOSVisualAcceptanceTests.CaptureCamera(outputDirectory, "irregular-land-with-interior-hole", camera);
+                        yield return GalapagOSVisualAcceptanceTests.CaptureCamera(outputDirectory, "irregular-land-with-detached-island", camera);
                     }
                     var content = (Noesis.FrameworkElement)camera.GetComponent<NoesisView>().Content;
                     var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
@@ -563,7 +586,7 @@ namespace SaltyGame.PlayModeTests
                     var board = desktop.GetComponent("SaltyGame.VM_SimulationBoard");
                     yield return GalapagOSVisualAcceptanceTests.TrackSameCreatureAcrossRowSeam(
                         preview, board, button, camera, outputDirectory,
-                        endpoints[0].x, endpoints[endpoints.Length - 1].x, row);
+                        source.x, arrival.x, source.y);
                 }
             }
             finally
@@ -573,8 +596,8 @@ namespace SaltyGame.PlayModeTests
                     preview.StopSimulation();
                     Object.Destroy(authored);
                 }
+                ClearProfiles();
             }
-            ClearProfiles();
         }
 
         [UnityTest]

@@ -90,6 +90,8 @@ namespace SaltyGame.EditorTests
                 serialized.FindProperty("mapLayout.shape").intValue = (int)MapTopologyDefinition.FixedShape.IrregularLand;
                 serialized.FindProperty("mapLayout.mapSeed").intValue = 17;
                 serialized.FindProperty("mapLayout.edgeRoughness").intValue = 65;
+                serialized.FindProperty("mapLayout.interiorHole").boolValue = false;
+                serialized.FindProperty("mapLayout.detachedIsland").boolValue = false;
                 serialized.FindProperty("width").intValue = 45;
                 serialized.FindProperty("height").intValue = 55;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -178,8 +180,41 @@ namespace SaltyGame.EditorTests
             AssertOppositeSeams(topology, land);
         }
 
+        [Test]
+        public void DetachedIslandSettingProducesRepeatableSeparateLandmasses()
+        {
+            var definition = JsonUtility.FromJson<MapTopologyDefinition>(
+                "{\"shape\":8,\"mapSeed\":17,\"edgeRoughness\":65,\"interiorHole\":true}");
+            var mainland = definition.Create(68, 48);
+            JsonUtility.FromJsonOverwrite("{\"detachedIsland\":true}", definition);
+            var topology = (MapTopology)definition.Create(68, 48);
+            Assert.That(definition.Create(68, 48).Fingerprint, Is.EqualTo(topology.Fingerprint));
+            Assert.That(topology.GenerationInputs, Does.Contain("island=1"));
+            Assert.That(topology.CopyCells(), Is.Not.EqualTo(mainland.PlayableCoordinates.ToArray()));
+
+            var land = topology.CopyCells();
+            var occupiedColumns = land.Select(cell => cell.x).ToHashSet();
+            var divide = Enumerable.Range(occupiedColumns.Min(), occupiedColumns.Max() - occupiedColumns.Min())
+                .First(column => !occupiedColumns.Contains(column));
+            var west = land.Where(cell => cell.x < divide).ToArray();
+            var east = land.Where(cell => cell.x > divide).ToArray();
+            AssertCardinallyConnected(west);
+            AssertCardinallyConnected(east);
+            Assert.That(west.Select(cell => cell.y).Intersect(east.Select(cell => cell.y)), Is.Not.Empty);
+            AssertOppositeSeams(topology, west);
+            AssertOppositeSeams(topology, east);
+            Assert.That(topology.GetDistance(west[0].x, west[0].y, east[0].x, east[0].y), Is.EqualTo(int.MaxValue));
+            Assert.That(topology.IsPlayableCell(25, 24), Is.False);
+            Assert.That(definition.Create(23, 16).PlayableCoordinates.ToArray(), Is.Not.Empty);
+            Assert.That(((MapTopology)definition.Create(23, 16)).GenerationInputs, Does.Not.Contain("island=1"));
+
+            JsonUtility.FromJsonOverwrite("{\"mapSeed\":-23}", definition);
+            Assert.That(definition.Create(68, 48).PlayableCoordinates.ToArray(), Is.Not.EqualTo(land));
+        }
+
         private static void AssertCardinallyConnected(Vector2Int[] land)
         {
+            Assert.That(land, Is.Not.Empty);
             var remaining = land.ToHashSet();
             var frontier = new Queue<Vector2Int>();
             var directions = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };

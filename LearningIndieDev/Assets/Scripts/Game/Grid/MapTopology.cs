@@ -23,6 +23,8 @@ namespace SaltyGame
     {
         private const int MaximumRoughness = 100;
         private const int MinimumHoleSize = 16;
+        private const int MinimumIslandMapWidth = 24;
+        private const int MinimumIslandMapHeight = 16;
         private const double HoleRadius = 0.15;
         private static readonly Vector2Int[] CardinalDirections =
             { Vector2Int.left, Vector2Int.right, Vector2Int.down, Vector2Int.up };
@@ -52,6 +54,9 @@ namespace SaltyGame
         [SerializeField]
         [Tooltip("Irregular Land only. Adds an impassable interior gap when Width and Height are at least 16.")]
         private bool interiorHole;
+        [SerializeField]
+        [Tooltip("Irregular Land only. Adds a separate island when Width is at least 24 and Height is at least 16.")]
+        private bool detachedIsland;
         [SerializeField] bool explicitLayout, rectangle;
         [SerializeField] Vector2Int[] cells = Array.Empty<Vector2Int>();
         [SerializeField] MapBoundaryConnection[] connections = Array.Empty<MapBoundaryConnection>();
@@ -97,8 +102,32 @@ namespace SaltyGame
             _ = checked(width * height);
             var roughness = Math.Clamp(edgeRoughness, 0, MaximumRoughness);
             var variation = Math.Sqrt((double)roughness / MaximumRoughness);
-            var hasHole = interiorHole && width >= MinimumHoleSize && height >= MinimumHoleSize;
+            var hasIsland = detachedIsland && width >= MinimumIslandMapWidth && height >= MinimumIslandMapHeight;
+            var mainlandWidth = hasIsland ? width - width / 4 : width;
+            var hasHole = interiorHole && mainlandWidth >= MinimumHoleSize && height >= MinimumHoleSize;
             var random = new System.Random(mapSeed);
+            var land = BuildLandmass(mainlandWidth, height, random, variation, hasHole);
+            if (hasIsland)
+            {
+                var islandWidth = width - mainlandWidth - 1;
+                var islandHeight = height / 3;
+                var islandStartY = random.Next(height - islandHeight + 1);
+                // Reserve one empty column so even a diagonal step cannot cross to the island.
+                foreach (var cell in BuildLandmass(islandWidth, islandHeight, random, variation, hasHole: false))
+                {
+                    land.Add(new Vector2Int(mainlandWidth + 1 + cell.x, islandStartY + cell.y));
+                }
+            }
+
+            var inputs = string.Format(CultureInfo.InvariantCulture,
+                "irregular-land-v2:seed={0};width={1};height={2};roughness={3};hole={4}",
+                mapSeed, width, height, roughness, hasHole ? 1 : 0);
+            if (hasIsland) inputs += ";island=1";
+            return new MapTopology(width, height, land, generationInputs: inputs);
+        }
+
+        private static List<Vector2Int> BuildLandmass(int width, int height, System.Random random, double variation, bool hasHole)
+        {
             var broadPhase = random.NextDouble() * 2 * Math.PI;
             var mediumPhase = random.NextDouble() * 2 * Math.PI;
             var smallPhase = random.NextDouble() * 2 * Math.PI;
@@ -131,7 +160,7 @@ namespace SaltyGame
                 }
             }
 
-            // Keep the connected mainland if sampling a narrow boundary leaves isolated cells.
+            // Keep only the cells connected to the core after sampling the outline.
             var startX = hasHole ? centerX + (int)Math.Ceiling(width * HoleRadius / 2) : centerX;
             var start = new Vector2Int(startX, centerY);
             var land = new List<Vector2Int> { start };
@@ -146,10 +175,7 @@ namespace SaltyGame
                 }
             }
 
-            var inputs = string.Format(CultureInfo.InvariantCulture,
-                "irregular-land-v2:seed={0};width={1};height={2};roughness={3};hole={4}",
-                mapSeed, width, height, roughness, hasHole ? 1 : 0);
-            return new MapTopology(width, height, land, generationInputs: inputs);
+            return land;
         }
 
         private static MapTopology CreateFixedShape(FixedShape shape, int height)
@@ -239,6 +265,7 @@ namespace SaltyGame
             sorted.Sort((a, b) => a.y != b.y ? a.y.CompareTo(b.y) : a.x.CompareTo(b.x));
             this.cells = sorted.ToArray();
             CellCount = sorted.Count;
+            var landmasses = FindLandmasses();
             var pairs = new List<MapBoundaryConnection>(connections ?? Array.Empty<MapBoundaryConnection>());
             foreach (var pair in pairs)
             {
@@ -246,31 +273,58 @@ namespace SaltyGame
                     || pair.direction == Vector2Int.zero || Math.Abs(pair.direction.x) > 1 || Math.Abs(pair.direction.y) > 1
                     || validCells.Contains(new Vector2Int(pair.source.x + pair.direction.x, pair.source.y + pair.direction.y)) || validCells.Contains(new Vector2Int(pair.target.x - pair.direction.x, pair.target.y - pair.direction.y)))
                     throw new ArgumentException("Boundary pairings must join valid cells at opposite missing neighbors.");
+                if (landmasses[pair.source] != landmasses[pair.target])
+                    throw new ArgumentException("Boundary pairings must stay on the same landmass.");
                 AddBoundary(pair.source, pair.direction, pair.target);
                 AddBoundary(pair.target, new Vector2Int(-pair.direction.x, -pair.direction.y), pair.source);
             }
-            // Only the outer row/column endpoints wrap; an interior hole has no connection.
-            for (var y = 0; y < Height; y++)
-            {
-                var first = -1;
-                var last = -1;
-                for (var x = 0; x < Width; x++)
-                    if (IsValidCell(x, y)) { if (first < 0) first = x; last = x; }
-                if (first >= 0) ConnectOuterEndpoints(new Vector2Int(first, y), Vector2Int.left, new Vector2Int(last, y));
-            }
-            for (var x = 0; x < Width; x++)
-            {
-                var first = -1;
-                var last = -1;
-                for (var y = 0; y < Height; y++)
-                    if (IsValidCell(x, y)) { if (first < 0) first = y; last = y; }
-                if (first >= 0) ConnectOuterEndpoints(new Vector2Int(x, first), Vector2Int.down, new Vector2Int(x, last));
-            }
+            AddOuterSeams(landmasses, horizontal: true);
+            AddOuterSeams(landmasses, horizontal: false);
             pairs.Clear();
             foreach (var edge in boundaries)
                 pairs.Add(new MapBoundaryConnection(edge.Key.Item1, edge.Key.Item2, edge.Value));
             pairs.Sort((a, b) => string.CompareOrdinal(Key(a), Key(b)));
             this.connections = pairs.ToArray();
+        }
+
+        private Dictionary<Vector2Int, int> FindLandmasses()
+        {
+            var landmasses = new Dictionary<Vector2Int, int>(CellCount);
+            var frontier = new Queue<Vector2Int>();
+            var landmass = 0;
+            foreach (var cell in cells)
+            {
+                if (!landmasses.TryAdd(cell, landmass)) continue;
+                frontier.Enqueue(cell);
+                while (frontier.Count > 0)
+                {
+                    var current = frontier.Dequeue();
+                    // Direct diagonal steps are legal, so use the same adjacency to define an island.
+                    for (var dy = -1; dy <= 1; dy++)
+                        for (var dx = -1; dx <= 1; dx++)
+                        {
+                            var next = new Vector2Int(current.x + dx, current.y + dy);
+                            if (validCells.Contains(next) && landmasses.TryAdd(next, landmass)) frontier.Enqueue(next);
+                        }
+                }
+                landmass++;
+            }
+            return landmasses;
+        }
+
+        private void AddOuterSeams(Dictionary<Vector2Int, int> landmasses, bool horizontal)
+        {
+            var extents = new Dictionary<(int Landmass, int Line), (Vector2Int First, Vector2Int Last)>();
+            // Cells are sorted by row then column, so each line's endpoints arrive in order.
+            foreach (var cell in cells)
+            {
+                var key = (landmasses[cell], horizontal ? cell.y : cell.x);
+                var first = extents.TryGetValue(key, out var existing) ? existing.First : cell;
+                extents[key] = (first, cell);
+            }
+            var direction = horizontal ? Vector2Int.left : Vector2Int.down;
+            foreach (var endpoints in extents.Values)
+                ConnectOuterEndpoints(endpoints.First, direction, endpoints.Last);
         }
 
         public int Width { get; }
