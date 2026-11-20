@@ -65,6 +65,38 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void SharedRowsAndColumnsWrapWithinEachLandmass()
+        {
+            var cells = new[] { new Vector2Int(0, 0), new Vector2Int(1, 0), new Vector2Int(0, 1),
+                new Vector2Int(4, 0), new Vector2Int(5, 0), new Vector2Int(0, 4), new Vector2Int(0, 5) };
+            var topology = new MapTopology(6, 6, cells);
+
+            Assert.That(topology.TryResolve(0, 0, Vector2Int.left, out var west), Is.True);
+            Assert.That(west, Is.EqualTo(cells[1]));
+            Assert.That(topology.TryResolve(4, 0, Vector2Int.left, out var east), Is.True);
+            Assert.That(east, Is.EqualTo(cells[4]));
+            Assert.That(topology.TryResolve(0, 0, Vector2Int.down, out var south), Is.True);
+            Assert.That(south, Is.EqualTo(cells[2]));
+            Assert.That(topology.TryResolve(0, 4, Vector2Int.down, out var north), Is.True);
+            Assert.That(north, Is.EqualTo(cells[6]));
+            Assert.That(topology.GetDistance(0, 0, 4, 0), Is.EqualTo(int.MaxValue));
+            Assert.That(topology.GetDistance(0, 0, 0, 4), Is.EqualTo(int.MaxValue));
+
+            var grid = new Grid<int>(6, 6, topology: topology);
+            grid.SetCell(1, 0, 1);
+            grid.SetCell(4, 0, 2);
+            grid.SetCell(0, 4, 3);
+            var neighbors = grid.GetPattern(0, 0, Cardinal).Offsets.Select(offset =>
+            {
+                Assert.That(grid.TryGetCellAtOffset(0, 0, offset, out var value), Is.True);
+                return value;
+            });
+            Assert.That(neighbors, Is.EquivalentTo(new[] { 0, 1 }));
+            Assert.Throws<ArgumentException>(() => new MapTopology(6, 6, cells,
+                new[] { new MapBoundaryConnection(cells[0], Vector2Int.left, cells[4]) }));
+        }
+
+        [Test]
         public void GapsCannotBeReadWrittenSpawnedIntoOrCrossedByLongOffsets()
         {
             var topology = Layout("irregular");

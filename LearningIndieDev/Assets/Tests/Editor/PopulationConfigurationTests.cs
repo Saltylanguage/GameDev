@@ -47,21 +47,7 @@ namespace SaltyGame.EditorTests
                 Assert.That(topology.IsPlayableCell(0, 0), Is.EqualTo(expectedCellCount == data.Width * data.Height));
 
                 var playable = topology.PlayableCoordinates.ToArray();
-                var rowEdges = playable.GroupBy(cell => cell.y)
-                    .Select(row => (First: row.First(), Last: row.Last(), Direction: Vector2Int.left));
-                var columnEdges = playable.GroupBy(cell => cell.x)
-                    .Select(column => (First: column.First(), Last: column.Last(), Direction: Vector2Int.down));
-                foreach (var edge in rowEdges.Concat(columnEdges))
-                {
-                    Assert.That(topology.TryResolveOffset(edge.First.x, edge.First.y, edge.Direction, out var target), Is.True);
-                    Assert.That(target, Is.EqualTo(edge.Last));
-                    Assert.That(topology.TryResolveOffset(target.x, target.y, -edge.Direction, out var returned), Is.True);
-                    Assert.That(returned, Is.EqualTo(edge.First));
-                    if (edge.First != edge.Last)
-                    {
-                        Assert.That(topology.GetDistance(edge.First.x, edge.First.y, target.x, target.y), Is.EqualTo(1));
-                    }
-                }
+                AssertOppositeSeams(topology, playable);
 
                 var grid = SpeciesInitialGridFactory.Create(data, 17);
                 var repeatedGrid = SpeciesInitialGridFactory.Create(scenario.CreateRuntimeData(), 17);
@@ -91,6 +77,177 @@ namespace SaltyGame.EditorTests
             finally
             {
                 Object.DestroyImmediate(scenario);
+            }
+        }
+
+        [Test]
+        public void AuthoredIrregularLandRecreatesAConnectedCoastWithBothSeams()
+        {
+            var scenario = Object.Instantiate(AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath));
+            try
+            {
+                var serialized = new SerializedObject(scenario);
+                serialized.FindProperty("mapLayout.shape").intValue = (int)MapTopologyDefinition.FixedShape.IrregularLand;
+                serialized.FindProperty("mapLayout.mapSeed").intValue = 17;
+                serialized.FindProperty("mapLayout.edgeRoughness").intValue = 65;
+                serialized.FindProperty("mapLayout.interiorHole").boolValue = false;
+                serialized.FindProperty("mapLayout.detachedIsland").boolValue = false;
+                serialized.FindProperty("width").intValue = 45;
+                serialized.FindProperty("height").intValue = 55;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                var first = scenario.CreateRuntimeData();
+                var second = scenario.CreateRuntimeData();
+                var topology = (MapTopology)first.Topology;
+                var land = topology.CopyCells();
+                Assert.That((first.Width, first.Height), Is.EqualTo((45, 55)));
+                Assert.That(land, Is.EqualTo(((MapTopology)second.Topology).CopyCells()));
+                Assert.That(second.Fingerprint, Is.EqualTo(first.Fingerprint));
+                Assert.That(topology.GenerationInputs, Does.StartWith("irregular-land-v2:"));
+                Assert.That(topology.GenerationInputs, Does.Contain("seed=17"));
+                Assert.That(land.Length, Is.LessThan(first.Width * first.Height));
+                var bayRows = land.GroupBy(cell => cell.y)
+                    .Where(row => row.Count() < row.Last().x - row.First().x + 1)
+                    .Select(row => row.Key).ToHashSet();
+                Assert.That(bayRows.Any(y => bayRows.Contains(y + 1) && bayRows.Contains(y + 2)), Is.True,
+                    "The reference seed should have a bay running across several adjacent rows.");
+                AssertCardinallyConnected(land);
+                AssertOppositeSeams(topology, land);
+
+                var grid = SpeciesInitialGridFactory.Create(first, 10100);
+                var repeatedGrid = SpeciesInitialGridFactory.Create(second, 10100);
+                foreach (var cell in land)
+                {
+                    Assert.That(repeatedGrid.GetCell(cell.x, cell.y).SpeciesId, Is.EqualTo(grid.GetCell(cell.x, cell.y).SpeciesId));
+                }
+                var outside = Enumerable.Range(0, first.Width).First(x => !topology.IsPlayableCell(x, 0));
+                Assert.That(grid.TryGetCell(outside, 0, out _), Is.False);
+
+                serialized.FindProperty("mapLayout.mapSeed").intValue = -23;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(((MapTopology)scenario.CreateRuntimeData().Topology).CopyCells(), Is.Not.EqualTo(land));
+                serialized.FindProperty("mapLayout.mapSeed").intValue = 17;
+                serialized.FindProperty("mapLayout.edgeRoughness").intValue = 0;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(((MapTopology)scenario.CreateRuntimeData().Topology).CopyCells(), Is.Not.EqualTo(land));
+            }
+            finally
+            {
+                Object.DestroyImmediate(scenario);
+            }
+        }
+
+        [TestCase(68, 48, true)]
+        [TestCase(16, 16, true)]
+        [TestCase(15, 16, false)]
+        [TestCase(2, 11, false)]
+        [TestCase(1, 1, false)]
+        public void IrregularLandInteriorHoleBlocksMovementAndKeepsLandConnected(int width, int height, bool hasHole)
+        {
+            var definition = new MapTopologyDefinition();
+            JsonUtility.FromJsonOverwrite("{\"shape\":8,\"mapSeed\":-23,\"edgeRoughness\":100}", definition);
+            var solid = (MapTopology)definition.Create(width, height);
+            JsonUtility.FromJsonOverwrite("{\"interiorHole\":true}", definition);
+            var topology = (MapTopology)definition.Create(width, height);
+            var land = topology.CopyCells();
+            AssertCardinallyConnected(land);
+
+            if (!hasHole)
+            {
+                Assert.That(land, Is.EqualTo(solid.CopyCells()));
+                return;
+            }
+
+            var center = new Vector2Int(width / 2, height / 2);
+            var gap = solid.CopyCells().Except(land).ToHashSet();
+            Assert.That(gap, Does.Contain(center));
+            Assert.That(land.Except(solid.CopyCells()), Is.Empty);
+            foreach (var cell in gap)
+            {
+                foreach (var direction in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+                {
+                    var shore = cell - direction;
+                    if (topology.IsPlayableCell(shore.x, shore.y))
+                    {
+                        Assert.That(topology.TryResolveOffset(shore.x, shore.y, direction, out _), Is.False);
+                    }
+                    else
+                    {
+                        Assert.That(gap, Does.Contain(shore), "The hole must be enclosed by playable land.");
+                    }
+                }
+            }
+            AssertOppositeSeams(topology, land);
+        }
+
+        [Test]
+        public void DetachedIslandSettingProducesRepeatableSeparateLandmasses()
+        {
+            var definition = JsonUtility.FromJson<MapTopologyDefinition>(
+                "{\"shape\":8,\"mapSeed\":17,\"edgeRoughness\":65,\"interiorHole\":true}");
+            var mainland = definition.Create(68, 48);
+            JsonUtility.FromJsonOverwrite("{\"detachedIsland\":true}", definition);
+            var topology = (MapTopology)definition.Create(68, 48);
+            Assert.That(definition.Create(68, 48).Fingerprint, Is.EqualTo(topology.Fingerprint));
+            Assert.That(topology.GenerationInputs, Does.Contain("island=1"));
+            Assert.That(topology.CopyCells(), Is.Not.EqualTo(mainland.PlayableCoordinates.ToArray()));
+
+            var land = topology.CopyCells();
+            var occupiedColumns = land.Select(cell => cell.x).ToHashSet();
+            var divide = Enumerable.Range(occupiedColumns.Min(), occupiedColumns.Max() - occupiedColumns.Min())
+                .First(column => !occupiedColumns.Contains(column));
+            var west = land.Where(cell => cell.x < divide).ToArray();
+            var east = land.Where(cell => cell.x > divide).ToArray();
+            AssertCardinallyConnected(west);
+            AssertCardinallyConnected(east);
+            Assert.That(west.Select(cell => cell.y).Intersect(east.Select(cell => cell.y)), Is.Not.Empty);
+            AssertOppositeSeams(topology, west);
+            AssertOppositeSeams(topology, east);
+            Assert.That(topology.GetDistance(west[0].x, west[0].y, east[0].x, east[0].y), Is.EqualTo(int.MaxValue));
+            Assert.That(topology.IsPlayableCell(25, 24), Is.False);
+            Assert.That(definition.Create(23, 16).PlayableCoordinates.ToArray(), Is.Not.Empty);
+            Assert.That(((MapTopology)definition.Create(23, 16)).GenerationInputs, Does.Not.Contain("island=1"));
+
+            JsonUtility.FromJsonOverwrite("{\"mapSeed\":-23}", definition);
+            Assert.That(definition.Create(68, 48).PlayableCoordinates.ToArray(), Is.Not.EqualTo(land));
+        }
+
+        private static void AssertCardinallyConnected(Vector2Int[] land)
+        {
+            Assert.That(land, Is.Not.Empty);
+            var remaining = land.ToHashSet();
+            var frontier = new Queue<Vector2Int>();
+            var directions = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+            frontier.Enqueue(land[0]);
+            remaining.Remove(land[0]);
+            while (frontier.Count != 0)
+            {
+                var cell = frontier.Dequeue();
+                foreach (var direction in directions)
+                {
+                    var next = cell + direction;
+                    if (remaining.Remove(next)) frontier.Enqueue(next);
+                }
+            }
+            Assert.That(remaining, Is.Empty);
+        }
+
+        private static void AssertOppositeSeams(IGridTopology topology, Vector2Int[] playable)
+        {
+            var rowEdges = playable.GroupBy(cell => cell.y)
+                .Select(row => (First: row.First(), Last: row.Last(), Direction: Vector2Int.left));
+            var columnEdges = playable.GroupBy(cell => cell.x)
+                .Select(column => (First: column.First(), Last: column.Last(), Direction: Vector2Int.down));
+            foreach (var edge in rowEdges.Concat(columnEdges))
+            {
+                Assert.That(topology.TryResolveOffset(edge.First.x, edge.First.y, edge.Direction, out var target), Is.True);
+                Assert.That(target, Is.EqualTo(edge.Last));
+                Assert.That(topology.TryResolveOffset(target.x, target.y, -edge.Direction, out var returned), Is.True);
+                Assert.That(returned, Is.EqualTo(edge.First));
+                if (edge.First != edge.Last)
+                {
+                    Assert.That(topology.GetDistance(edge.First.x, edge.First.y, target.x, target.y), Is.EqualTo(1));
+                }
             }
         }
 

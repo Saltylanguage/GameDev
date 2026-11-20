@@ -142,7 +142,8 @@ namespace SaltyGame.PlayModeTests
                 var trackButton = (content.FindName("TrackCreatureButton")
                     ?? (window?.Content as Noesis.FrameworkElement)?.FindName("TrackCreatureButton")) as Noesis.Button;
                 Assert.That(trackButton, Is.Not.Null);
-                yield return TrackSameCreatureAcrossCrossSeam(preview, board, trackButton, camera.GetComponent<Camera>(), output);
+                yield return TrackSameCreatureAcrossRowSeam(preview, board, trackButton, camera.GetComponent<Camera>(), output,
+                    sourceX: 0, arrivalX: snapshot.Width - 1, row: snapshot.Height / 2);
             }
             finally
             {
@@ -152,16 +153,15 @@ namespace SaltyGame.PlayModeTests
             }
         }
 
-        private static IEnumerator TrackSameCreatureAcrossCrossSeam(
-            SpeciesSimulationPreview preview, Component board, Noesis.Button button, Camera camera, string output)
+        internal static IEnumerator TrackSameCreatureAcrossRowSeam(
+            SpeciesSimulationPreview preview, Component board, Noesis.Button button, Camera camera, string output,
+            int sourceX, int arrivalX, int row)
         {
             var run = preview.Run;
             var initial = run.Cells.Copy(cell => cell.IsCreature ? SpeciesCell.Empty : cell);
-            var row = initial.Height / 2;
-            var arrivalX = initial.Width - 1;
             var hare = new SpeciesId("hare");
             var creature = new SpeciesCell(hare, energy: 10);
-            initial.SetCell(0, row, creature);
+            initial.SetCell(sourceX, row, creature);
             initial.SetCell(arrivalX, row, SpeciesCell.Empty);
             AdvancePausedRun(run, initial, preview.StepInterval);
             yield return null;
@@ -169,7 +169,7 @@ namespace SaltyGame.PlayModeTests
             var select = board.GetType().GetMethod("SelectCell");
             Assert.That(select.Invoke(board, new object[] { arrivalX, row }), Is.True);
             Assert.That(button.Command.CanExecute(null), Is.False);
-            Assert.That(select.Invoke(board, new object[] { 0, row }), Is.True);
+            Assert.That(select.Invoke(board, new object[] { sourceX, row }), Is.True);
             ExecuteCommand(button.Command);
             yield return null;
             Assert.That(button.Content, Is.EqualTo("STOP TRACKING"));
@@ -187,7 +187,7 @@ namespace SaltyGame.PlayModeTests
             };
             var moved = SpeciesSimulation.Step(initial, rules, run.Seed);
             Assert.That(moved.GetCell(arrivalX, row).EntityId, Is.EqualTo(creature.EntityId));
-            Assert.That(moved.GetCell(0, row).IsCreature, Is.False);
+            Assert.That(moved.GetCell(sourceX, row).IsCreature, Is.False);
             AdvancePausedRun(run, moved, preview.StepInterval);
             yield return null;
 
@@ -1648,6 +1648,17 @@ namespace SaltyGame.PlayModeTests
             var parameters = arguments.Length == 0 ? new object[] { null } : arguments;
             Assert.That((bool)command.GetType().GetMethod("CanExecute")?.Invoke(command, parameters), Is.True);
             command.GetType().GetMethod("Execute")?.Invoke(command, parameters);
+        }
+
+        internal static void ChooseFirstForestEdgeCycle(Component simulationShell)
+        {
+            Assert.That(simulationShell, Is.Not.Null);
+            Assert.That(GetProperty(simulationShell, "JourneyMapVisibility").ToString(), Is.EqualTo("Visible"));
+            ExecuteCommand(GetProperty(FindJourneyNode(simulationShell, "forest-edge-start"), "ChooseCommand"));
+            var rewards = (Array)GetProperty(simulationShell, "JourneyRewardItems");
+            ExecuteCommand(GetProperty(rewards.GetValue(0), "ChooseCommand"));
+            ExecuteCommand(GetProperty(FindJourneyNode(simulationShell, "first-cycle"), "ChooseCommand"));
+            Assert.That(GetProperty(simulationShell, "JourneyMapVisibility").ToString(), Is.EqualTo("Collapsed"));
         }
 
         static object FindJourneyNode(object simulationViewModel, string nodeId)
