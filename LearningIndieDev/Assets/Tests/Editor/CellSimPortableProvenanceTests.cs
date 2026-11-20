@@ -122,8 +122,11 @@ namespace SaltyGame.EditorTests
             var definition = JsonUtility.FromJson<MapTopologyDefinition>(
                 "{\"shape\":8,\"mapSeed\":17,\"edgeRoughness\":65,\"interiorHole\":true,\"detachedIsland\":true}");
             var topology = definition.Create(68, 48);
-            var data = new CellularSimData(68, 48, new Dictionary<SpeciesId, float>(), SpeciesRuleDefaults.Create(),
-                2f, 0.2f, startingPopulations: new Dictionary<SpeciesId, int> { [SpeciesIds.Herbivore] = 10 }, topology: topology);
+            var hare = new SpeciesId("hare");
+            const string scenarioPath = "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset";
+            var scenario = UnityEditor.AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(scenarioPath);
+            var data = new CellularSimData(68, 48, new Dictionary<SpeciesId, float>(), scenario.CreateRuntimeData().SpeciesRules,
+                2f, 0.2f, startingPopulations: new Dictionary<SpeciesId, int> { [hare] = 10 }, topology: topology);
             var runner = GetPortableRunnerType();
             var snapshotType = runner.GetNestedType("PortableSnapshot", BindingFlags.Public);
             var snapshot = snapshotType.GetMethod("Create").Invoke(null, new object[] { data });
@@ -132,10 +135,11 @@ namespace SaltyGame.EditorTests
             Assert.That(restored.Fingerprint, Is.EqualTo(data.Fingerprint));
             Assert.That(restored.Topology.Fingerprint, Is.EqualTo(topology.Fingerprint));
 
-            var arguments = new[] { "-playerSpeciesId", SpeciesIds.Herbivore.Value, "-runTicks", "10" };
+            var arguments = new[] { "-playerSpeciesId", hare.Value, "-runTicks", "10" };
             var run = runner.GetMethod("RunPortableSeed");
             var original = (string)run.Invoke(null, new object[] { snapshot, arguments, 10100, false, data });
             var replay = (string)run.Invoke(null, new object[] { exported, arguments, 10100, false, null });
+            Assert.That(original, Does.Contain("\"spatial\":{"));
             var originalDigest = JsonUtility.FromJson<ReplayDigest>(original).finalStateDigest;
             Assert.That(originalDigest, Is.Not.Null.And.Not.Empty);
             Assert.That(JsonUtility.FromJson<ReplayDigest>(replay).finalStateDigest, Is.EqualTo(originalDigest));

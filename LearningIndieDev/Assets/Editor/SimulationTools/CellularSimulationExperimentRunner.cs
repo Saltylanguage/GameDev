@@ -2811,16 +2811,13 @@ namespace SaltyGame.EditorTools
                 this.playerSpecies = playerSpecies;
                 this.predatorSpecies = predatorSpecies;
                 width = initialGrid.Width;
-                visited = new bool[initialGrid.Count];
-                for (var y = 0; y < initialGrid.Height; y++)
+                visited = new bool[initialGrid.StorageCount];
+                foreach (var location in initialGrid.Topology.PlayableCoordinates)
                 {
-                    for (var x = 0; x < width; x++)
+                    var cell = initialGrid.GetCell(location.x, location.y);
+                    if (cell.IsCreature && cell.SpeciesId == playerSpecies)
                     {
-                        var cell = initialGrid.GetCell(x, y);
-                        if (cell.IsCreature && cell.SpeciesId == playerSpecies)
-                        {
-                            Track(cell.EntityId, x, y);
-                        }
+                        Track(cell.EntityId, location.x, location.y);
                     }
                 }
             }
@@ -2829,7 +2826,7 @@ namespace SaltyGame.EditorTools
             {
                 if (!phases.TryGetValue(phaseIndex, out var phase))
                 {
-                    phase = new SpatialPhase(phaseIndex, grid.Count);
+                    phase = new SpatialPhase(phaseIndex, grid.StorageCount);
                     phases.Add(phaseIndex, phase);
                 }
 
@@ -2837,8 +2834,7 @@ namespace SaltyGame.EditorTools
                 {
                     for (var x = 0; x < grid.Width; x++)
                     {
-                        var cell = grid.GetCell(x, y);
-                        if (!cell.IsCreature || cell.SpeciesId != playerSpecies)
+                        if (!grid.TryGetCell(x, y, out var cell) || !cell.IsCreature || cell.SpeciesId != playerSpecies)
                         {
                             continue;
                         }
@@ -2856,7 +2852,7 @@ namespace SaltyGame.EditorTools
                         var neighbors = 0;
                         foreach (var offset in rules.ReproductionPattern.Offsets)
                         {
-                            if (grid.TryGetCell(x + offset.x, y + offset.y, out var nearby)
+                            if (grid.TryGetCellAtOffset(x, y, offset, out var nearby)
                                 && nearby.IsCreature && nearby.SpeciesId == playerSpecies)
                             {
                                 neighbors++;
@@ -2876,7 +2872,7 @@ namespace SaltyGame.EditorTools
                             for (var dx = -1; dx <= 1; dx++)
                             {
                                 if ((dx != 0 || dy != 0)
-                                    && grid.TryGetCell(x + dx, y + dy, out var nearby)
+                                    && grid.TryGetCellAtOffset(x, y, new Vector2Int(dx, dy), out var nearby)
                                     && nearby.IsCreature && nearby.SpeciesId == predatorSpecies)
                                 {
                                     foxAdjacent = true;
