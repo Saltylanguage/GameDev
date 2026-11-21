@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -395,13 +396,18 @@ namespace SaltyGame.PlayModeTests
             var session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             var profileId = session.CreateProfile("Permanent Rabbit nodes").ProfileId;
-            session.AddRabbitData(40);
+            session.AddRabbitData(120);
             session.AddResearchData(37);
             Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out var error), Is.True, error);
-            var active = new[] { "rabbit.guarded-burrow", "rabbit.keen-hearing", "rabbit.swift-digging", "rabbit.safe-foraging" };
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.swift-digging", out _), Is.False,
+                "Long Stride requires Heightened Senses.");
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.safe-foraging", out _), Is.False,
+                "Efficient Digestion requires Tough Hide.");
+            var active = new[] { FieldDataPermanentProgressionDefinition.SprintNodeId,
+                "rabbit.guarded-burrow", "rabbit.keen-hearing", "rabbit.swift-digging", "rabbit.safe-foraging" };
             foreach (var id in active)
                 Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out error), Is.True, error);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(30));
             yield return LoadMainMenu();
             session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
@@ -418,8 +424,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(effective.MovementSpeed, Is.EqualTo(natural.MovementSpeed));
             Assert.That(effective.DigestionEnergyBonus, Is.EqualTo(natural.DigestionEnergyBonus));
             Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, active[0], out _), Is.False);
-            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.warren-network", out error), Is.True, error);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(5));
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.escape-instinct", out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.Zero);
             Assert.That(session.Current.ResearchData, Is.EqualTo(37));
             ClearProfiles();
         }
@@ -432,48 +438,60 @@ namespace SaltyGame.PlayModeTests
             var session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             var profileId = session.CreateProfile("Permanent replacement").ProfileId;
-            session.AddRabbitData(50);
+            session.AddRabbitData(130);
             session.AddResearchData(60);
             var rabbit = new SpeciesId("rabbit");
             Assert.That(session.TryPurchaseRabbitGenomeLicense(profileId, out var error), Is.True, error);
-            foreach (var id in new[] { "rabbit.guarded-burrow", "rabbit.keen-hearing", "rabbit.swift-digging", "rabbit.safe-foraging" })
+            foreach (var id in new[] { FieldDataPermanentProgressionDefinition.SprintNodeId,
+                         "rabbit.guarded-burrow", "rabbit.keen-hearing", "rabbit.swift-digging", "rabbit.safe-foraging" })
                 Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out error), Is.True, error);
             Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out error), Is.True, error);
             Assert.That(session.Current.ResearchData, Is.EqualTo(40));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(20));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(40));
             yield return LoadMainMenu();
             session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 1, out _), Is.False);
-            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.warren-network", out error), Is.True, error);
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.escape-instinct", out error), Is.True, error);
             Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 1, out error), Is.True, error);
-            var selected = new[] { "rabbit.warren-network", "rabbit.keen-hearing", "rabbit.swift-digging", "rabbit.safe-foraging" };
+            var selected = new[] { FieldDataPermanentProgressionDefinition.SprintNodeId, "rabbit.guarded-burrow",
+                "rabbit.keen-hearing", "rabbit.swift-digging", "rabbit.safe-foraging", "rabbit.escape-instinct" };
             Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 2, selected, out error), Is.True, error);
             Assert.That(session.Current.ResearchData, Is.EqualTo(20));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(15));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
             yield return LoadMainMenu();
             session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             Assert.That(session.Current.ProfileId, Is.EqualTo(profileId));
             Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
-            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(selected));
             Assert.That(genome.ResetGeneration, Is.EqualTo(2));
             var frozen = FieldDataPermanentProgressionDefinition.CreateStarter().FreezeOwnedLoadout(genome);
             Assert.That(frozen.GetPopulationPoolCapacity(rabbit), Is.EqualTo(50));
-            Assert.That(frozen.GetSpeciesGenome(rabbit).PopulationReservesRank, Is.EqualTo(1));
+            Assert.That(frozen.GetSpeciesGenome(rabbit).PopulationReservesRank, Is.Zero);
             Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 2, selected, out error), Is.True, error);
             Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 2, new[] { selected[0] }, out _), Is.False);
             Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 0, out _), Is.False);
             Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, 1, out _), Is.False);
             Assert.That(session.Current.ResearchData, Is.EqualTo(20));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(15));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
             ClearProfiles();
         }
 
         [UnityTest]
-        public IEnumerator RabbitJourneyCanLaunchWithoutAPathLicense()
+        public IEnumerator RabbitJourneyCanLaunchWithoutAPathLicense() => LaunchRabbitJourney();
+
+        [UnityTest]
+        public IEnumerator RectangularMapLaunchesFromMainMenu() =>
+            LaunchRabbitJourney(MapTopologyDefinition.FixedShape.AuthoredLayout);
+
+        [UnityTest]
+        public IEnumerator DetachedIslandLaunchesFromMainMenuAndTracksASeamCrossing() =>
+            LaunchRabbitJourney(MapTopologyDefinition.FixedShape.IrregularLand);
+
+        private static IEnumerator LaunchRabbitJourney(MapTopologyDefinition.FixedShape? shape = null)
         {
             ClearProfiles();
             yield return LoadMainMenu();
@@ -498,16 +516,88 @@ namespace SaltyGame.PlayModeTests
             Assert.That(session.Current.UnlockedGenomeSpeciesIds, Is.Empty);
             var preview = Object.FindAnyObjectByType<SpeciesSimulationPreview>();
             Assert.That(preview, Is.Not.Null);
-            var openSimulation = GetCommand(desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "OpenDesktopIconCommand");
-            openSimulation.GetType().GetMethod("Execute")?.Invoke(openSimulation, new object[] { "Simulation" });
-            Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
-            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
-            Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
-            deadline = Time.realtimeSinceStartup + 3f;
-            while (preview.Run.Tick < 2 && Time.realtimeSinceStartup < deadline) yield return null;
-            Assert.That(preview.Run.Tick, Is.GreaterThanOrEqualTo(2));
-            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Is.Empty);
-            ClearProfiles();
+            ScenarioDefinitionAsset authored = null;
+            try
+            {
+                if (shape.HasValue)
+                {
+                    authored = Object.Instantiate(preview.SelectedScenario);
+                    authored.name = preview.SelectedScenario.name;
+                    var map = shape == MapTopologyDefinition.FixedShape.IrregularLand
+                        ? "{\"width\":68,\"height\":48,\"mapLayout\":{\"shape\":8,\"mapSeed\":17,\"edgeRoughness\":65,\"interiorHole\":true,\"detachedIsland\":true}}"
+                        : "{\"width\":36,\"height\":20,\"mapLayout\":{\"shape\":0,\"explicitLayout\":false}}";
+                    JsonUtility.FromJsonOverwrite(map, authored);
+                    preview.ConfigureScenarioOptions(new[] { authored });
+                    Assert.That(preview.SelectedScenario, Is.SameAs(authored));
+                }
+
+                var openSimulation = GetCommand(desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "OpenDesktopIconCommand");
+                openSimulation.GetType().GetMethod("Execute")?.Invoke(openSimulation, new object[] { "Simulation" });
+                GalapagOSVisualAcceptanceTests.ChooseFirstForestEdgeCycle(desktop.GetComponent("SaltyGame.VM_SimulationShell"));
+                deadline = Time.realtimeSinceStartup + 4f;
+                while (preview.Run.Tick < 2 && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.That(preview.Run.Tick, Is.GreaterThanOrEqualTo(2));
+                Assert.That(session.Current.UnlockedGenomeSpeciesIds, Is.Empty);
+
+                if (authored != null)
+                {
+                    preview.PauseSimulation();
+                    var topology = preview.Run.Cells.Topology;
+                    Assert.That(topology.Fingerprint, Is.EqualTo(authored.CreateRuntimeData().Topology.Fingerprint));
+                    var camera = GameObject.Find("GalapagOS Simulation View").GetComponent<Camera>();
+                    var outputDirectory = GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory();
+                    if (shape == MapTopologyDefinition.FixedShape.AuthoredLayout)
+                    {
+                        Assert.That(topology, Is.TypeOf<RectangularGridTopology>());
+                        if (outputDirectory != null)
+                            yield return GalapagOSVisualAcceptanceTests.CaptureCamera(outputDirectory, "rectangular-map", camera);
+                        yield break;
+                    }
+
+                    Assert.That(topology.IsPlayableCell(25, 24), Is.False);
+                    var sharedRow = topology.PlayableCoordinates.GroupBy(cell => cell.y)
+                        .OrderByDescending(cells => cells.Count()).First(cells =>
+                        {
+                            var first = cells.First();
+                            return topology.TryResolveOffset(first.x, first.y, Vector2Int.left, out var destination)
+                                && destination.x > first.x && destination != cells.Last();
+                        });
+                    var source = sharedRow.First();
+                    var island = sharedRow.Last();
+                    Assert.That(topology.TryResolveOffset(source.x, source.y, Vector2Int.left, out var arrival), Is.True);
+                    Assert.That(topology.GetDistance(source.x, source.y, island.x, island.y), Is.EqualTo(int.MaxValue));
+                    var between = Enumerable.Range(arrival.x + 1, island.x - arrival.x - 1)
+                        .First(x => !topology.IsPlayableCell(x, source.y));
+                    var boardSnapshot = SimulationBoardSnapshot.Create(preview.Run, preview.ActiveSpeciesRules, preview.PlayerSpecies);
+                    Assert.That(boardSnapshot.TryGetCell(between, source.y, out _), Is.False);
+                    Assert.That(boardSnapshot.TryGetCell(island.x, island.y, out _), Is.True);
+                    if (outputDirectory != null)
+                    {
+                        yield return GalapagOSVisualAcceptanceTests.CaptureCamera(outputDirectory, "irregular-land-with-detached-island", camera);
+                    }
+                    var content = (Noesis.FrameworkElement)camera.GetComponent<NoesisView>().Content;
+                    var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
+                    var panel = window?.Content as Noesis.FrameworkElement;
+                    var button = (content.FindName("TrackCreatureButton") ?? panel?.FindName("TrackCreatureButton")) as Noesis.Button;
+                    var ledger = (content.FindName("FieldLedgerScroll") ?? panel?.FindName("FieldLedgerScroll")) as Noesis.ScrollViewer;
+                    Assert.That(button, Is.Not.Null);
+                    Assert.That(ledger, Is.Not.Null);
+                    ledger.ScrollToVerticalOffset(ledger.ScrollableHeight);
+                    var board = desktop.GetComponent("SaltyGame.VM_SimulationBoard");
+                    yield return GalapagOSVisualAcceptanceTests.TrackSameCreatureAcrossRowSeam(
+                        preview, board, button, camera, outputDirectory,
+                        source.x, arrival.x, source.y);
+                }
+            }
+            finally
+            {
+                if (authored != null)
+                {
+                    preview.StopSimulation();
+                    Object.Destroy(authored);
+                }
+                ClearProfiles();
+            }
         }
 
         [UnityTest]

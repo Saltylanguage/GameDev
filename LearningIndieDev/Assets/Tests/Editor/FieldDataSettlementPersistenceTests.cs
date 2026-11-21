@@ -174,10 +174,8 @@ namespace SaltyGame.Tests
         [Test]
         public void VersionEightKeepsItsExplicitPopulationReservesRankDuringMigration()
         {
-            StartNodes(100);
-            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            foreach (var node in definition.RabbitMap.Nodes.Take(6))
-                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
+            StartNodes(400);
+            PurchasePopulationReservesPath();
             for (var rank = 2; rank <= 5; rank++)
                 Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.warren-network", out var error), Is.True, error);
             var balance = session.Current.RabbitData;
@@ -188,7 +186,7 @@ namespace SaltyGame.Tests
             session.Reload();
             Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.PopulationReservesRank, Is.EqualTo(5));
-            Assert.That(genome.CapacityUsed, Is.EqualTo(6));
+            Assert.That(genome.CapacityUsed, Is.EqualTo(8));
             Assert.That(session.Current.RabbitData, Is.EqualTo(balance));
             Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(10));
         }
@@ -865,45 +863,91 @@ namespace SaltyGame.Tests
             session.UnlockGenome(rabbit);
         }
 
-        [Test]
-        public void FoundingRabbitsIsPurchasedOnceAndLaunchEffectFollowsEquipmentAcrossReloadAndReset()
+        void PurchasePopulationReservesPath()
         {
-            StartNodes(20);
+            var path = new[]
+            {
+                "rabbit.open-ground-sprint", "rabbit.keen-hearing", "rabbit.crowding-tolerance",
+                "rabbit.reproductive-drive", "rabbit.escape-instinct", "rabbit.seed-dispersal",
+                "rabbit.gestation-upgrade", "rabbit.burrowing", "rabbit.shared-burrows",
+                "rabbit.expanded-burrows", "rabbit.guarded-burrow", "rabbit.safe-foraging",
+                "rabbit.warren-network",
+            };
+            foreach (var id in path)
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out var error), Is.True, error);
+        }
+
+        [Test]
+        public void FoundingRabbitsRanksPersistScaleLaunchEffectAndFollowEquipmentAcrossReloadAndReset()
+        {
+            StartNodes(300);
+            foreach (var pathNodeId in new[] { "rabbit.open-ground-sprint", "rabbit.keen-hearing", "rabbit.crowding-tolerance",
+                         "rabbit.reproductive-drive", "rabbit.escape-instinct",
+                         "rabbit.seed-dispersal", "rabbit.gestation-upgrade" })
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, pathNodeId, out var pathError), Is.True, pathError);
             const string id = "rabbit.founding-rabbits";
             var lab = new FieldDataGenomeLab(session);
             Assert.That(lab.CanBuyNode(id), Is.True);
             var before = session.Current.RabbitData;
             Assert.That(lab.BuyNode(id), Is.True, lab.Status);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(before - 5));
-            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out _), Is.False);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(before - 40));
+            Assert.That(lab.NodeOffer(id), Does.Contain("RANK 2 / 3"));
+            Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out var rankError), Is.True, rankError);
             session.Reload();
             Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.IsNodeUnlocked(id), Is.True);
             Assert.That(genome.IsNodeActive(id), Is.True);
-            Assert.That(genome.CapacityUsed, Is.EqualTo(1));
+            Assert.That(genome.CapacityUsed, Is.EqualTo(8));
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             var frozen = definition.FreezeOwnedLoadout(genome);
-            Assert.That(frozen.GetSpeciesGenome(rabbit).GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.EqualTo(5));
+            Assert.That(genome.FoundingRabbitsRank, Is.EqualTo(2));
+            Assert.That(frozen.GetSpeciesGenome(rabbit).GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.EqualTo(10));
             Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, genome.ResetGeneration, out var error), Is.True, error);
             Assert.That(session.Current.TryGetGenomeProfile(rabbit, out genome), Is.True);
             Assert.That(genome.IsNodeUnlocked(id), Is.True);
             Assert.That(genome.IsNodeActive(id), Is.False);
             Assert.That(definition.FreezeOwnedLoadout(genome).GetSpeciesGenome(rabbit)
                 .GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.Zero);
-            Assert.That(frozen.GetSpeciesGenome(rabbit).GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.EqualTo(5));
+            Assert.That(frozen.GetSpeciesGenome(rabbit).GetPopulationModifier(SpeciesAttributeIds.StartingPopulation), Is.EqualTo(10));
+        }
+
+        [Test]
+        public void LitterUpgradeRanksPersistAsResearchWithoutUsingExtraGenomeCapacity()
+        {
+            StartNodes(400);
+            foreach (var pathNodeId in new[] { "rabbit.open-ground-sprint", "rabbit.keen-hearing", "rabbit.crowding-tolerance",
+                         "rabbit.reproductive-drive", "rabbit.escape-instinct", "rabbit.seed-dispersal" })
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, pathNodeId, out var pathError), Is.True, pathError);
+            const string id = "rabbit.larger-litters";
+            var lab = new FieldDataGenomeLab(session);
+            Assert.That(lab.BuyNode(id), Is.True, lab.Status);
+            Assert.That(lab.CanBuyNode(id), Is.True);
+            Assert.That(lab.NodeOffer(id), Does.Contain("RANK 2 / 3"));
+            Assert.That(lab.BuyNode(id), Is.True, lab.Status);
+            Assert.That(lab.BuyNode(id), Is.True, lab.Status);
+            Assert.That(lab.CanBuyNode(id), Is.False);
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
+            Assert.That(genome.LitterUpgradeRank, Is.EqualTo(3));
+            Assert.That(genome.CapacityUsed, Is.EqualTo(7));
+            session.Reload();
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out genome), Is.True);
+            Assert.That(genome.LitterUpgradeRank, Is.EqualTo(3));
         }
 
         [Test]
         public void SeedResearchIsSinglePermanentUnlockAndDoesNotGrantTheMutationAtLaunch()
         {
-            StartNodes(20);
+            StartNodes(300);
+            foreach (var prerequisite in new[] { "rabbit.open-ground-sprint", "rabbit.keen-hearing",
+                         "rabbit.crowding-tolerance", "rabbit.reproductive-drive", "rabbit.escape-instinct" })
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, prerequisite, out var prerequisiteError), Is.True, prerequisiteError);
             var lab = new FieldDataGenomeLab(session);
             const string id = "rabbit.seed-dispersal";
-            Assert.That(lab.NodeOffer(id), Does.Contain("(TEST)"));
+            Assert.That(lab.NodeOffer(id), Does.Contain("30 RABBIT DATA"));
             var empty = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, rabbit);
             Assert.That(empty(SpeciesUpgradeCatalog.SeedDispersalId), Is.False);
             Assert.That(lab.BuyNode(id), Is.True, lab.Status);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(15));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(180));
             Assert.That(lab.BuyNode(id), Is.False);
             session.Reload();
             Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
@@ -926,9 +970,9 @@ namespace SaltyGame.Tests
             StartNodes(20);
             const string id = "rabbit.crowding-tolerance";
             var lab = new FieldDataGenomeLab(session);
-            Assert.That(lab.NodeOffer(id), Does.Contain("(TEST)"));
+            Assert.That(lab.NodeOffer(id), Does.Contain("10 RABBIT DATA"));
             Assert.That(lab.BuyNode(id), Is.True, lab.Status);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(15));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
             session.Reload();
             Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.UnlockedNodeIds, Does.Contain(id));
@@ -978,26 +1022,20 @@ namespace SaltyGame.Tests
                 SpeciesUpgradeCatalog.LargerMaximumLitterId, SpeciesUpgradeCatalog.ThreatExposureId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId);
             AssertIsolated("rabbit.larger-litters", SpeciesUpgradeCatalog.LargerMaximumLitterId,
-                SpeciesUpgradeCatalog.LargerMinimumLitterId, SpeciesUpgradeCatalog.ThreatExposureId,
+                SpeciesUpgradeCatalog.ThreatExposureId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId);
 
-            StartNodes(40);
-            var lab = new FieldDataGenomeLab(session);
-            foreach (var id in new[] { "rabbit.escape-instinct", "rabbit.increased-minimum-litter", "rabbit.larger-litters" })
-            {
-                Assert.That(lab.NodeOffer(id), Does.Contain("(TEST)"));
-                Assert.That(lab.BuyNode(id), Is.True, lab.Status);
-                Assert.That(lab.BuyNode(id), Is.False);
-            }
-            Assert.That(session.Current.RabbitData, Is.EqualTo(25));
+            StartNodes(500);
+            foreach (var id in new[] { "rabbit.open-ground-sprint", "rabbit.keen-hearing", "rabbit.crowding-tolerance",
+                         "rabbit.reproductive-drive", "rabbit.escape-instinct", "rabbit.seed-dispersal", "rabbit.larger-litters" })
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out var purchaseError), Is.True, purchaseError);
             session.Reload();
             Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.UnlockedNodeIds, Does.Contain("rabbit.escape-instinct"));
-            Assert.That(genome.UnlockedNodeIds, Does.Contain("rabbit.increased-minimum-litter"));
             Assert.That(genome.UnlockedNodeIds, Does.Contain("rabbit.larger-litters"));
             Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, genome.ResetGeneration, out var error), Is.True, error);
             var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(session.Current, rabbit);
-            Assert.That(eligible(SpeciesUpgradeCatalog.ReproductiveDriveId), Is.False);
+            Assert.That(eligible(SpeciesUpgradeCatalog.ReproductiveDriveId), Is.True);
             var progression = new SpeciesProgression(new SpeciesDefinition(rabbit, natural), eligible);
             var minimum = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMinimumLitterId).CreateSnapshot(rabbit);
             var maximum = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMaximumLitterId).CreateSnapshot(rabbit);
@@ -1020,11 +1058,11 @@ namespace SaltyGame.Tests
         [TestCase(true)]
         public void ResearchRemainsPurchasableAtFullLoadoutAndFailedSaveDoesNotCharge(bool persistThenThrow)
         {
-            StartNodes(100);
+            StartNodes(200);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             foreach (var node in definition.RabbitMap.Nodes.Take(8))
                 Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
-            const string id = "rabbit.reproductive-drive";
+            const string id = "rabbit.shared-burrows";
             var lab = new FieldDataGenomeLab(session);
             Assert.That(lab.CapacityUsed, Is.EqualTo(8));
             Assert.That(lab.CanBuyNode(id), Is.True);
@@ -1037,7 +1075,7 @@ namespace SaltyGame.Tests
             storage.FailOnSave = -1;
             Assert.That(lab.BuyNode(id), Is.True, lab.Status);
             Assert.That(lab.Status, Does.Contain("not equipped"));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(balance - 5));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(balance - 20));
             session.Reload();
             Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.IsNodeUnlocked(id), Is.True);
@@ -1056,19 +1094,19 @@ namespace SaltyGame.Tests
         [Test]
         public void PopulationReservesRanksPersistWithoutAdditionalCapacityAndSurviveReset()
         {
-            StartNodes(100);
+            StartNodes(400);
+            PurchasePopulationReservesPath();
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            foreach (var node in definition.RabbitMap.Nodes.Take(6))
-                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
             for (var rank = 2; rank <= 5; rank++)
             {
                 Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.warren-network", out var error), Is.True, error);
                 Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var current), Is.True);
                 Assert.That(current.PopulationReservesRank, Is.EqualTo(rank));
-                Assert.That(definition.FreezeOwnedLoadout(current).GetSpeciesGenome(rabbit).PopulationReservesRank, Is.EqualTo(rank));
-                Assert.That(current.ActiveNodeIds.Count, Is.EqualTo(6));
+                Assert.That(definition.FreezeOwnedLoadout(current).GetSpeciesGenome(rabbit).PopulationReservesRank, Is.Zero,
+                    "Population Reserves rank is active only when its node is equipped.");
+                Assert.That(current.ActiveNodeIds.Count, Is.EqualTo(8));
             }
-            Assert.That(session.Current.RabbitData, Is.Zero);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
             Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.warren-network", out _), Is.False);
             session.Reload();
             Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var reloaded), Is.True);
@@ -1089,12 +1127,10 @@ namespace SaltyGame.Tests
         [TestCase(true)]
         public void PopulationReservesLabShowsRankPricesAndRejectsFailedSaveWithoutCharging(bool persistThenThrow)
         {
-            StartNodes(100);
-            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            foreach (var node in definition.RabbitMap.Nodes.Take(6))
-                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
+            StartNodes(300);
+            PurchasePopulationReservesPath();
             var lab = new FieldDataGenomeLab(session);
-            Assert.That(lab.NodeOffer("rabbit.warren-network"), Does.Contain("10 RABBIT DATA"));
+            Assert.That(lab.NodeOffer("rabbit.warren-network"), Does.Contain("30 RABBIT DATA"));
             var before = session.Current;
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persistThenThrow;
@@ -1102,9 +1138,9 @@ namespace SaltyGame.Tests
             Assert.That(session.Current, Is.SameAs(before));
             storage.FailOnSave = 0;
             Assert.That(lab.BuyNode("rabbit.warren-network"), Is.True, lab.Status);
-            Assert.That(lab.NodeOffer("rabbit.warren-network"), Does.Contain("15 RABBIT DATA"));
+            Assert.That(lab.NodeOffer("rabbit.warren-network"), Does.Contain("30 RABBIT DATA"));
             Assert.That(lab.NodeReason("rabbit.warren-network"), Does.Contain("20 purchased Rabbits"));
-            Assert.That(lab.CapacityUsed, Is.EqualTo(6));
+            Assert.That(lab.CapacityUsed, Is.EqualTo(8));
         }
 
         [Test]
@@ -1208,10 +1244,12 @@ namespace SaltyGame.Tests
         [Test]
         public void VersionSevenOwnedPopulationReservesMigratesToRankOneWithoutLosingWallets()
         {
-            StartNodes(100);
-            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            foreach (var node in definition.RabbitMap.Nodes.Take(6))
-                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, node.Id, out var error), Is.True, error);
+            StartNodes(300);
+            PurchasePopulationReservesPath();
+            Assert.That(session.Current.TryGetGenomeProfile(rabbit, out var owned), Is.True);
+            Assert.That(session.TryResetGenomeLoadout(profileId, rabbit, owned.ResetGeneration, out var resetError), Is.True, resetError);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, owned.ResetGeneration + 1,
+                new[] { "rabbit.warren-network" }, out var arrangeError), Is.True, arrangeError);
             var before = session.Current.RabbitData;
             var old = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
             old["version"] = 7;
@@ -1227,11 +1265,11 @@ namespace SaltyGame.Tests
         }
 
         [TestCase(0L, false)]
-        [TestCase(4L, false)]
-        [TestCase(5L, true)]
-        [TestCase(6L, true)]
+        [TestCase(9L, false)]
+        [TestCase(10L, true)]
+        [TestCase(11L, true)]
         [TestCase(long.MaxValue, true)]
-        public void RabbitNodePurchaseChargesFiveAndPersistsPermanentOwnershipWithActivation(long balance, bool succeeds)
+        public void RabbitNodePurchaseChargesApprovedPriceAndPersistsPermanentOwnershipWithActivation(long balance, bool succeeds)
         {
             StartNodes(balance);
             var saves = storage.SaveCalls;
@@ -1245,12 +1283,12 @@ namespace SaltyGame.Tests
             }
             Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
             var paid = JObject.Parse(storage.Writes.Last())["profiles"][0];
-            Assert.That((long)paid["speciesDataWallets"].Single(wallet => (string)wallet["speciesId"] == "rabbit")["balance"], Is.EqualTo(balance - 5));
+            Assert.That((long)paid["speciesDataWallets"].Single(wallet => (string)wallet["speciesId"] == "rabbit")["balance"], Is.EqualTo(balance - 10));
             Assert.That(paid["genomeProfiles"][0]["unlockedNodeIds"].Values<string>(), Is.EqualTo(new[] { "rabbit.guarded-burrow" }));
             Assert.That(paid["genomeProfiles"][0]["activeNodeIds"].Values<string>(), Is.EqualTo(new[] { "rabbit.guarded-burrow" }));
             Assert.That(paid["genomeProfiles"][0]["allocations"], Is.Empty);
             var reopened = NewSession(storage.Restart());
-            Assert.That(reopened.Current.RabbitData, Is.EqualTo(balance - 5));
+            Assert.That(reopened.Current.RabbitData, Is.EqualTo(balance - 10));
             Assert.That(reopened.Current.TryGetGenomeProfile(rabbit, out var genome), Is.True);
             Assert.That(genome.IsNodeUnlocked("rabbit.guarded-burrow"), Is.True);
             Assert.That(genome.IsNodeActive("rabbit.guarded-burrow"), Is.True);
@@ -1267,14 +1305,14 @@ namespace SaltyGame.Tests
         [TestCase("rabbit.warren-network", null, 0f)]
         public void RabbitNodePurchaseUsesOwnedInactivePrerequisitesAndExactCatalogEffects(string id, string attribute, float amount)
         {
-            StartNodes(5);
+            StartNodes(500);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            var owned = definition.RabbitMap.Nodes.Take(6).Select(node => node.Id).Where(nodeId => nodeId != id).ToArray();
+            var owned = definition.RabbitMap.GetNode(id).PrerequisiteNodeIds.ToArray();
             Assert.That(session.TrySetGenomeConfiguration(rabbit, owned, Array.Empty<string>(), out var error), Is.True, error);
             Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out error), Is.True, error);
             session.Reload();
             session.Current.TryGetGenomeProfile(rabbit, out var genome);
-            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(owned.Length + 1));
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { id }));
             var frozen = definition.FreezeOwnedLoadout(genome).GetSpeciesGenome(rabbit);
             Assert.That(frozen.CatalogFingerprint, Is.EqualTo(definition.Catalog.Fingerprint));
@@ -1304,7 +1342,7 @@ namespace SaltyGame.Tests
         }
 
         [TestCase("rabbit.keen-hearing", "")]
-        [TestCase("rabbit.safe-foraging", "rabbit.guarded-burrow,rabbit.keen-hearing")]
+        [TestCase("rabbit.safe-foraging", "rabbit.keen-hearing")]
         [TestCase("rabbit.warren-network", "rabbit.guarded-burrow,rabbit.safe-foraging")]
         public void RabbitNodePurchaseRequiresAllOwnedAncestors(string id, string ownedIds)
         {
@@ -1356,7 +1394,7 @@ namespace SaltyGame.Tests
             Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.True, error);
             Assert.That(notifications, Is.EqualTo(1));
             Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(35));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(30));
         }
 
         [TestCase(false)]
@@ -1377,9 +1415,13 @@ namespace SaltyGame.Tests
         [Test]
         public void RabbitNodePurchaseFitsAllSixOnePointNodes()
         {
-            StartNodes();
+            StartNodes(100);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            var ids = definition.RabbitMap.Nodes.Take(6).Select(node => node.Id).ToArray();
+            var ids = new[]
+            {
+                "rabbit.guarded-burrow", "rabbit.open-ground-sprint", "rabbit.crowding-tolerance",
+                "rabbit.burrowing", "rabbit.keen-hearing", "rabbit.swift-digging",
+            };
             foreach (var id in ids.Take(4))
                 Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, id, out var error), Is.True, error);
             session.Current.TryGetGenomeProfile(rabbit, out var genome);
@@ -1390,14 +1432,14 @@ namespace SaltyGame.Tests
             Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, ids[5], out reason), Is.True, reason);
             session.Current.TryGetGenomeProfile(rabbit, out genome);
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(ids));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(20));
         }
 
         [TestCase(false)]
         [TestCase(true)]
         public void RabbitNodeSaveFailurePublishesNoPurchaseAndRetryChargesOnce(bool persistThenThrow)
         {
-            StartNodes(5);
+            StartNodes(10);
             var before = session.Current;
             var notifications = 0;
             session.SnapshotChanged += snapshot => notifications++;
@@ -1418,7 +1460,7 @@ namespace SaltyGame.Tests
         [TestCase(true)]
         public void RabbitNodeRestartAfterUncertainSaveChargesOnlyOnce(bool persisted)
         {
-            StartNodes(5);
+            StartNodes(10);
             storage.FailOnSave = storage.SaveCalls + 1;
             storage.PersistThenThrow = persisted;
             Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out _), Is.False);
@@ -1442,7 +1484,7 @@ namespace SaltyGame.Tests
             storage.FailOnSave = -1;
             var before = session.Current;
             Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out error), Is.True, error);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData - 5));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData - 10));
             Assert.That(session.Current.ResearchData, Is.EqualTo(before.ResearchData));
             Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(before.ConversionResearchLevel));
             Assert.That(session.Current.CompletedRuns, Is.EqualTo(before.CompletedRuns));
@@ -1454,7 +1496,7 @@ namespace SaltyGame.Tests
             Assert.That(foxGenome.ActiveNodeIds, Is.EqualTo(new[] { "fox.legacy" }));
             Assert.That(session.Current.PendingSettlement.JourneyId, Is.EqualTo("node-pending"));
             Assert.That(session.TryRetryPendingFieldDataSettlement(profileId, out _, out error), Is.True, error);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData - 5 + 11));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData - 10 + 11));
         }
 
         [TestCase(false)]
@@ -1500,15 +1542,16 @@ namespace SaltyGame.Tests
             }
             else
             {
-                StartNodes(10);
+                StartNodes(40);
                 Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.guarded-burrow", out var error), Is.True, error);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.open-ground-sprint", out error), Is.True, error);
                 Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.keen-hearing", out error), Is.True, error);
                 if (phase == "write") File.WriteAllText(path, storage.Durable[Helper_ProfileSession.StoreKey]);
             }
             var reopened = NewSession(storage.Restart());
             Assert.That(reopened.Current.RabbitData, Is.Zero);
             reopened.Current.TryGetGenomeProfile(rabbit, out var genome);
-            Assert.That(genome.UnlockedNodeIds, Is.EqualTo(new[] { "rabbit.guarded-burrow", "rabbit.keen-hearing" }));
+            Assert.That(genome.UnlockedNodeIds, Is.EqualTo(new[] { "rabbit.guarded-burrow", "rabbit.open-ground-sprint", "rabbit.keen-hearing" }));
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(genome.UnlockedNodeIds));
             var writes = storage.SaveCalls;
             Assert.That(session.TryPurchaseRabbitGenomeNode(profileId, "rabbit.keen-hearing", out _), Is.False);
@@ -1518,7 +1561,13 @@ namespace SaltyGame.Tests
         void StartLoadout(long researchData = 60)
         {
             StartNodes(40);
-            var ids = FieldDataPermanentProgressionDefinition.CreateStarter().RabbitMap.Nodes.Take(6).Select(node => node.Id).ToArray();
+            // This fixture models an existing owned loadout. Keep it stable when the authored
+            // research tree grows or its purchase prerequisites change.
+            var ids = new[]
+            {
+                "rabbit.guarded-burrow", "rabbit.keen-hearing", "rabbit.swift-digging",
+                "rabbit.safe-foraging", "rabbit.warren-network", "rabbit.crowding-tolerance",
+            };
             Assert.That(session.TrySetGenomeConfiguration(rabbit, ids, ids.Take(4), out var error), Is.True, error);
             var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
             json["profiles"][0]["researchData"] = researchData;
@@ -1820,6 +1869,12 @@ namespace SaltyGame.Tests
                 : invalid == "duplicate" ? new[] { all[0], all[0] }
                 : invalid == "locked" ? new[] { all[1] }
                 : invalid == "missing-ancestor" ? new[] { all[4] } : all;
+            if (invalid == "missing-ancestor")
+            {
+                Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, selection, out error), Is.True, error,
+                    "Owned nodes remain selectable independently of which other owned nodes are equipped.");
+                return;
+            }
             var before = session.Current;
             var saves = storage.SaveCalls;
             Assert.That(session.TryArrangeGenomeLoadout(profileId, rabbit, 1, selection, out error), Is.False);
@@ -2123,7 +2178,7 @@ namespace SaltyGame.Tests
         [Test]
         public void GeneLabPermanentUnappliedResetBlocksPurchasesWithoutLosingFreeSelection()
         {
-            StartNodes(40);
+            StartNodes(80);
             var lab = new FieldDataGenomeLab(session);
             var ids = lab.Catalog.SpeciesMaps.Single().Nodes.Select(node => node.Id).ToArray();
             foreach (var id in ids.Take(4)) Assert.That(lab.BuyNode(id), Is.True, lab.Status);
@@ -2151,7 +2206,8 @@ namespace SaltyGame.Tests
             StartLoadout();
             var lab = new FieldDataGenomeLab(session);
             Assert.That(lab.Reset(), Is.True, lab.Status);
-            foreach (var node in lab.Catalog.SpeciesMaps.Single().Nodes.Take(6)) Assert.That(lab.Toggle(node.Id), Is.True);
+            session.Current.TryGetGenomeProfile(rabbit, out var genome);
+            foreach (var id in genome.UnlockedNodeIds) Assert.That(lab.Toggle(id), Is.True);
             Assert.That(lab.SelectedCapacity, Is.EqualTo(6));
             Assert.That(lab.CanApply, Is.True);
             session.AddResearchData(1);

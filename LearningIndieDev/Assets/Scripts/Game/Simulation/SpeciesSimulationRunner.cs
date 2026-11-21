@@ -114,8 +114,11 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(simulationData));
             }
 
+            var restoredRun = checkpoint.Restore();
+            if (restoredRun.Cells.Topology.Fingerprint != simulationData.Topology.Fingerprint)
+                throw new ArgumentException("Checkpoint topology does not match the simulation data.", nameof(simulationData));
             var runner = new SpeciesSimulationRunner(
-                checkpoint.Restore(),
+                restoredRun,
                 simulationData,
                 combatResolutionMode,
                 attackOpportunityMode,
@@ -376,6 +379,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < currentCells.Width; x++)
                 {
+                    if (!currentCells.IsPlayableCell(x, y)) continue;
                     var cell = currentCells.GetCell(x, y);
                     if (cell.IsCreature)
                     {

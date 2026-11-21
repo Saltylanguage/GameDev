@@ -86,6 +86,71 @@ namespace SaltyGame.EditorTests
             Assert.That(withBurrowDigest, Is.Not.EqualTo(surfaceOnlyDigest));
         }
 
+        [Test]
+        public void ShapeTopologyAndGenerationInputsSurvivePortableJsonAndChangeReplayIdentity()
+        {
+            var cells = new[] { new Vector2Int(0, 1), new Vector2Int(1, 1), new Vector2Int(2, 1), new Vector2Int(1, 0), new Vector2Int(1, 2) };
+            var edges = new[] { new MapBoundaryConnection(cells[0], Vector2Int.left, cells[2]),
+                new MapBoundaryConnection(cells[3], Vector2Int.down, cells[4]) };
+            var topology = new MapTopology(3, 3, cells, edges, "cross;seed=17");
+            var authored = JsonUtility.FromJson<MapTopologyDefinition>(JsonUtility.ToJson(new MapTopologyDefinition(topology)));
+            Assert.That(authored.Create(3, 3).Fingerprint, Is.EqualTo(topology.Fingerprint));
+            var none = new GridPattern(Array.Empty<Vector2Int>());
+            var rules = new SpeciesRules(0f, none, none, 0, none, 0, none, null, none, 0, 0f, 0);
+            var data = new CellularSimData(3, 3, new Dictionary<SpeciesId, float>(),
+                new Dictionary<SpeciesId, SpeciesRules> { [SpeciesIds.Herbivore] = rules }, 10f, 0.1f, topology: topology);
+            var snapshotType = GetPortableRunnerType().GetNestedType("PortableSnapshot", BindingFlags.Public);
+            var snapshot = snapshotType.GetMethod("Create").Invoke(null, new object[] { data });
+            var json = JsonUtility.ToJson(snapshot);
+            var deserialized = JsonUtility.FromJson(json, snapshotType);
+            var restored = (CellularSimData)snapshotType.GetMethod("Restore").Invoke(deserialized, null);
+            Assert.That(restored.Fingerprint, Is.EqualTo(data.Fingerprint));
+            Assert.That(restored.Topology.Fingerprint, Is.EqualTo(topology.Fingerprint));
+            Assert.That(restored.Topology.TryResolveOffset(0, 1, Vector2Int.left, out var target), Is.True);
+            Assert.That(target, Is.EqualTo(new Vector2Int(2, 1)));
+            var first = new SimulationRunState(SpeciesInitialGridFactory.Create(data, 17), SpeciesIds.Herbivore, 17, 10f);
+            var changedData = data.WithTopology(new MapTopology(3, 3, cells, edges, "cross;seed=18"));
+            var changed = new SimulationRunState(SpeciesInitialGridFactory.Create(changedData, 17), SpeciesIds.Herbivore, 17, 10f);
+            Assert.That(GetPortableRunStateDigest(first), Is.Not.EqualTo(GetPortableRunStateDigest(changed)));
+            snapshotType.GetField("mapCells").SetValue(deserialized, null);
+            Assert.Throws<TargetInvocationException>(() => snapshotType.GetMethod("Restore").Invoke(deserialized, null));
+        }
+
+        [Test]
+        public void GeneratedIslandsKeepTopologyAndFinalStateThroughPortableReplay()
+        {
+            var definition = JsonUtility.FromJson<MapTopologyDefinition>(
+                "{\"shape\":8,\"mapSeed\":17,\"edgeRoughness\":65,\"interiorHole\":true,\"detachedIsland\":true}");
+            var topology = definition.Create(68, 48);
+            var rabbit = new SpeciesId("rabbit");
+            const string scenarioPath = "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset";
+            var scenario = UnityEditor.AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(scenarioPath);
+            var data = new CellularSimData(68, 48, new Dictionary<SpeciesId, float>(), scenario.CreateRuntimeData().SpeciesRules,
+                2f, 0.2f, startingPopulations: new Dictionary<SpeciesId, int> { [rabbit] = 10 }, topology: topology);
+            var runner = GetPortableRunnerType();
+            var snapshotType = runner.GetNestedType("PortableSnapshot", BindingFlags.Public);
+            var snapshot = snapshotType.GetMethod("Create").Invoke(null, new object[] { data });
+            var exported = JsonUtility.FromJson(JsonUtility.ToJson(snapshot), snapshotType);
+            var restored = (CellularSimData)snapshotType.GetMethod("Restore").Invoke(exported, null);
+            Assert.That(restored.Fingerprint, Is.EqualTo(data.Fingerprint));
+            Assert.That(restored.Topology.Fingerprint, Is.EqualTo(topology.Fingerprint));
+
+            var arguments = new[] { "-playerSpeciesId", rabbit.Value, "-runTicks", "10" };
+            var run = runner.GetMethod("RunPortableSeed");
+            var original = (string)run.Invoke(null, new object[] { snapshot, arguments, 10100, false, data });
+            var replay = (string)run.Invoke(null, new object[] { exported, arguments, 10100, false, null });
+            Assert.That(original, Does.Contain("\"spatial\":{"));
+            var originalDigest = JsonUtility.FromJson<ReplayDigest>(original).finalStateDigest;
+            Assert.That(originalDigest, Is.Not.Null.And.Not.Empty);
+            Assert.That(JsonUtility.FromJson<ReplayDigest>(replay).finalStateDigest, Is.EqualTo(originalDigest));
+        }
+
+        [Serializable]
+        private sealed class ReplayDigest
+        {
+            public string finalStateDigest = null;
+        }
+
         static Type GetPortableRunnerType()
         {
             var type = AppDomain.CurrentDomain.GetAssemblies()

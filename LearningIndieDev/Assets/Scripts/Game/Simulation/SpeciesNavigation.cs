@@ -20,7 +20,7 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(cells));
             }
 
-            if (!cells.IsInBounds(start.x, start.y))
+            if (!cells.IsPlayableCell(start.x, start.y))
             {
                 throw new ArgumentOutOfRangeException(nameof(start));
             }
@@ -41,13 +41,13 @@ namespace SaltyGame
             }
 
             var startIndex = GetIndex(cells, start.x, start.y);
-            var previous = new int[cells.Count];
+            var previous = new int[checked(cells.Width * cells.Height)];
             Array.Fill(previous, -1);
             previous[startIndex] = startIndex;
             var queue = new Queue<int>();
             queue.Enqueue(startIndex);
-            movementPattern = cells.GetPattern(movementPattern);
-            var offsetStart = movementPattern.Count == 0 ? 0 : random.Next(movementPattern.Count);
+            var initialPattern = cells.GetPattern(start.x, start.y, movementPattern);
+            var offsetStart = initialPattern.Count == 0 ? 0 : random.Next(initialPattern.Count);
 
             while (queue.Count > 0)
             {
@@ -61,17 +61,17 @@ namespace SaltyGame
                     return true;
                 }
 
-                for (var offsetIndex = 0; offsetIndex < movementPattern.Count; offsetIndex++)
+                var currentPattern = cells.GetPattern(currentX, currentY, movementPattern);
+                for (var offsetIndex = 0; offsetIndex < currentPattern.Count; offsetIndex++)
                 {
-                    var offset = movementPattern.Offsets[(offsetStart + offsetIndex) % movementPattern.Count];
+                    var offset = currentPattern.Offsets[(offsetStart + offsetIndex) % currentPattern.Count];
                     if (offset.x == 0 && offset.y == 0)
                     {
                         continue;
                     }
 
-                    var nextX = currentX + offset.x;
-                    var nextY = currentY + offset.y;
-                    if (!cells.TryResolveCoordinates(ref nextX, ref nextY))
+                    var nextXResolved = cells.TryResolveOffset(currentX, currentY, offset, out var nextX, out var nextY);
+                    if (!nextXResolved)
                     {
                         continue;
                     }
@@ -96,11 +96,10 @@ namespace SaltyGame
 
         static bool IsInInteractionRange(Grid<SpeciesCell> cells, int x, int y, Vector2Int target, GridPattern interactionPattern)
         {
-            foreach (var offset in cells.GetPattern(interactionPattern).Offsets)
+            foreach (var offset in cells.GetPattern(x, y, interactionPattern).Offsets)
             {
-                var targetX = x + offset.x;
-                var targetY = y + offset.y;
-                if (cells.TryResolveCoordinates(ref targetX, ref targetY)
+                var targetXResolved = cells.TryResolveOffset(x, y, offset, out var targetX, out var targetY);
+                if (targetXResolved
                     && targetX == target.x && targetY == target.y)
                 {
                     return true;

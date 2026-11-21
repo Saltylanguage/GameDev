@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: rabbit.warren-network
   displayName: Population Reserves
-  description: Raises purchased Rabbit allowance by 5 per rank for each simulation node.
+  description: Raises purchased Rabbit allowance by 5 per researched rank for each simulation node.
   targetSpeciesId: rabbit
   prerequisiteNodeIds:
-  - rabbit.guarded-burrow
+  - rabbit.expanded-burrows
   - rabbit.safe-foraging
-  rabbitDataPrice: 5
+  rabbitDataPrice: 30
   capacityPoints: 1
+  maximumRanks: 1
   branchName: FD2
   modifiers: []

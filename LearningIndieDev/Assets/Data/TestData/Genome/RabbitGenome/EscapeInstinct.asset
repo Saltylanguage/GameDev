@@ -14,12 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: rabbit.escape-instinct
   displayName: Escape Instinct
-  description: Unlocks Escape Instinct outside Forest Edge, Quick Escape, and Field
-    Data offers. Forest Edge offers Escape Instinct without research. Research cost
-    and path are test values.
+  description: Unlocks Escape Instinct and Quick Escape when researched and equipped; the introductory Forest Edge Journey offers Escape Instinct without research.
   targetSpeciesId: rabbit
-  prerequisiteNodeIds: []
-  rabbitDataPrice: 5
+  prerequisiteNodeIds:
+  - rabbit.keen-hearing
+  rabbitDataPrice: 30
   capacityPoints: 1
   maximumRanks: 1
   branchName: FD2

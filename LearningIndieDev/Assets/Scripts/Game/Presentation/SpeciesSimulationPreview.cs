@@ -322,9 +322,9 @@ namespace SaltyGame
         }
 
         [Header("Grid")]
-        [SerializeField, Tooltip("Connect left/right and top/bottom edges for both species. Change before starting a session.")] bool wrapEdges;
         [SerializeField, Min(1)] int width = 32;
         [SerializeField, Min(1)] int height = 20;
+        [SerializeField, Tooltip("Connect opposing grid edges before starting a session.")] bool wrapEdges;
         [SerializeField] int seed = 12345;
         [SerializeField] bool randomizeSeedOnStart = true;
         [SerializeField] string playerSpeciesKey = "herbivore";
@@ -402,11 +402,15 @@ namespace SaltyGame
         bool journeyActive;
         GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
         Func<string, bool> mutationResearch;
+        Func<string, bool> mutationEquipment;
+        Func<string, int> mutationRankLimit;
         bool mutationResearchFromProfile;
 
         public void BindMutationResearch(ProfileSessionSnapshot profile)
         {
             mutationResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, playerSpecies);
+            mutationEquipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, playerSpecies);
+            mutationRankLimit = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, playerSpecies);
             mutationResearchFromProfile = profile != null;
             if (!sessionStarted && progression != null) ResetExpeditionProgression(progression.Definition.Rules);
         }
@@ -590,7 +594,7 @@ namespace SaltyGame
 
             return selectedUpgrade == null
                 ? "No upgrade selected."
-                : $"{SpeciesUpgradeCatalog.GetDisplayName(selectedUpgrade.Id)} — legacy upgrade applied to the next run.";
+                : $"{SpeciesUpgradeCatalog.GetDisplayName(selectedUpgrade.Id)} â€” legacy upgrade applied to the next run.";
         }
         public SpeciesPreviewState State => previewState;
         public bool WrapEdges => wrapEdges;
@@ -1265,7 +1269,9 @@ namespace SaltyGame
 
         SpeciesUpgradeSnapshot[] CreateFieldDataOrdinaryRewardPool()
         {
-            return SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(playerSpecies, authoredRewardOptions, mutationResearch);
+            var pool = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(playerSpecies, authoredRewardOptions, mutationResearch);
+            if (!mutationResearchFromProfile || mutationRankLimit == null || progression == null) return pool;
+            return pool.Where(upgrade => progression.GetUpgradeLevel(upgrade.Id) < mutationRankLimit(upgrade.Id)).ToArray();
         }
 
         /// <summary>Opts this preview into the approved Field Data route before its first run starts.</summary>
@@ -1543,6 +1549,15 @@ namespace SaltyGame
 
             var nextWidth = Mathf.Max(1, parsedWidth);
             var nextHeight = Mathf.Max(1, parsedHeight);
+            var scenarioData = SelectedScenario?.CreateRuntimeData();
+            var hasFixedLayout = scenarioData?.Topology is MapTopology;
+            if (hasFixedLayout && (nextWidth != scenarioData.Width || nextHeight != scenarioData.Height))
+            {
+                validationMessage = $"The selected map has fixed dimensions ({scenarioData.Width} x {scenarioData.Height}). Change its size in the scenario asset.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
             var nextMaximumPopulation = Mathf.Max(0, parsedMaximumPopulation);
             var nextStepInterval = Mathf.Max(0.01f, parsedStepInterval);
             var nextRunTicks = runWindowIsTicks ? Mathf.Max(1, parsedRunTicks) : 0;
@@ -1568,17 +1583,18 @@ namespace SaltyGame
                         + herbivoreStartingPopulation
                         + carnivoreStartingPopulation
                     : 0L;
-            if (SelectedScenario != null
+            if (scenarioData != null
                 && ((hasStartingPopulationValues && totalStartingPopulation == 0)
                     || (!hasStartingPopulationValues && !startingPopulationOverrideEnabled)))
             {
-                foreach (var population in SelectedScenario.CreateRuntimeData().StartingPopulations.Values)
+                foreach (var population in scenarioData.StartingPopulations.Values)
                 {
                     totalStartingPopulation += population;
                 }
             }
 
-            if (totalStartingPopulation > (long)nextWidth * nextHeight)
+            var capacity = hasFixedLayout ? scenarioData.Topology.CellCount : (long)nextWidth * nextHeight;
+            if (totalStartingPopulation > capacity)
             {
                 validationMessage = "Starting populations cannot exceed the grid capacity.";
                 settingsMessage = validationMessage;
@@ -1630,12 +1646,11 @@ namespace SaltyGame
                 herbivoreStartingPopulation = parsedHerbivoreStartingPopulation;
                 carnivoreStartingPopulation = parsedCarnivoreStartingPopulation;
                 startingPopulationOverrideEnabled = configuredStartingPopulation > 0;
-                if (!startingPopulationOverrideEnabled && SelectedScenario != null)
+                if (!startingPopulationOverrideEnabled && scenarioData != null)
                 {
-                    var authoredData = SelectedScenario.CreateRuntimeData();
-                    plantStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
-                    herbivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
-                    carnivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
+                    plantStartingPopulation = GetStartingPopulation(scenarioData, SpeciesIds.Plant, SpeciesRole.Plant);
+                    herbivoreStartingPopulation = GetStartingPopulation(scenarioData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
+                    carnivoreStartingPopulation = GetStartingPopulation(scenarioData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
                 }
             }
             randomizeSeedOnStart = randomizeSeed;
@@ -2785,18 +2800,30 @@ namespace SaltyGame
                 return;
             }
 
-            if (settingsKey != DefaultSettingsKey && SelectedScenario != null)
+            var authoredData = SelectedScenario?.CreateRuntimeData();
+            if (settingsKey != DefaultSettingsKey && authoredData != null)
             {
-                var authoredData = SelectedScenario.CreateRuntimeData();
                 saved.width = authoredData.Width;
                 saved.height = authoredData.Height;
                 PlayerPrefs.SetString(DefaultSettingsKey, JsonUtility.ToJson(saved));
                 PlayerPrefs.Save();
             }
 
-            if (SelectedScenario != null && !saved.startingPopulationOverrideEnabled)
+            if (authoredData?.Topology is MapTopology topology)
             {
-                var authoredData = SelectedScenario.CreateRuntimeData();
+                saved.width = authoredData.Width;
+                saved.height = authoredData.Height;
+                var savedPopulation = (long)Mathf.Max(0, saved.plantStartingPopulation)
+                    + Mathf.Max(0, saved.herbivoreStartingPopulation) + Mathf.Max(0, saved.carnivoreStartingPopulation);
+                if (savedPopulation > topology.CellCount
+                    || (authoredData.MaxPopulation > 0 && savedPopulation > authoredData.MaxPopulation))
+                {
+                    saved.startingPopulationOverrideEnabled = false;
+                }
+            }
+
+            if (authoredData != null && !saved.startingPopulationOverrideEnabled)
+            {
                 var authoredPlant = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
                 var authoredHerbivore = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
                 var authoredCarnivore = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
@@ -2871,6 +2898,8 @@ namespace SaltyGame
         {
             progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, playerRules),
                 playerSpecies.Value == "rabbit" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile,
+                mutationRankLimit: playerSpecies.Value == "rabbit" ? mutationRankLimit : null,
+                mutationEquipment: playerSpecies.Value == "rabbit" ? mutationEquipment : null,
                 introductoryRabbitMutations: ShouldUseJourneyPrototype());
             coupledResponseProgression = null;
             appliedRunUpgrades.Clear();
@@ -3148,6 +3177,10 @@ namespace SaltyGame
             {
                 case SpeciesUpgradeCatalog.FasterMovementId:
                     return "Move faster to escape predators and reach fresh food.";
+                case SpeciesUpgradeCatalog.FasterGestationId:
+                    return "Reduce Rabbit gestation time by 15% per rank, up to three ranks.";
+                case SpeciesUpgradeCatalog.OpenGroundSprintId:
+                    return "Move 0.5 faster across exposed ground during this journey.";
                 case SpeciesUpgradeCatalog.ToughHideId:
                     return "Gain 2 health. A healthy Rabbit can survive a basic Fox hit. Survivors still need food.";
                 case SpeciesUpgradeCatalog.EfficientDigestionId:
@@ -3307,14 +3340,14 @@ namespace SaltyGame
                 .ToArray();
             if (missingPrerequisites.Length > 0)
             {
-                return $"LOCKED — requires {string.Join(", ", missingPrerequisites)}";
+                return $"LOCKED â€” requires {string.Join(", ", missingPrerequisites)}";
             }
 
             var blockedBy = upgrade.ExcludedUpgradeIds
                 .FirstOrDefault(id => progression.GetUpgradeLevel(id) > 0);
             if (!string.IsNullOrWhiteSpace(blockedBy))
             {
-                return $"LOCKED — conflicts with {blockedBy}";
+                return $"LOCKED â€” conflicts with {blockedBy}";
             }
 
             if (previewState != SpeciesPreviewState.PhaseDecision
@@ -3334,7 +3367,7 @@ namespace SaltyGame
             var timing = appliedToCurrentRun
                 ? "Added to the next phase and retained if this run restarts."
                 : "Applied to the next run.";
-            return $"{upgrade.DisplayName} — {upgrade.Description} Effects: {effects}. {timing}";
+            return $"{upgrade.DisplayName} â€” {upgrade.Description} Effects: {effects}. {timing}";
         }
 
         bool CanAddBoundaryPopulation(SpeciesUpgradeSnapshot upgrade)
@@ -3412,7 +3445,8 @@ namespace SaltyGame
                     role: draft.Role,
                     forageBelowEnergy: draft.ForageBelowEnergy,
                     maximumEnergy: draft.MaximumEnergy,
-                    maximumHealth: draft.MaximumHealth,
+                    // Saved editor drafts from before maximumHealth was added deserialize it as zero.
+                    maximumHealth: draft.MaximumHealth == 0 ? 1 : draft.MaximumHealth,
                     litterMinimum: draft.LitterMinimum,
                     litterMaximum: draft.LitterMaximum,
                     trackingPersistenceSteps: draft.TrackingPersistenceSteps,

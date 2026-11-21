@@ -72,7 +72,8 @@ namespace SaltyGame
             IEnumerable<string> unlockedNodeIds = null,
             IEnumerable<string> activeNodeIds = null,
             IEnumerable<GenomeNodeAllocation> allocations = null,
-            long resetGeneration = 0, int populationReservesRank = -1)
+            long resetGeneration = 0, int populationReservesRank = -1,
+            int litterUpgradeRank = -1, int foundingRabbitsRank = -1)
         {
             if (!speciesId.IsValid)
             {
@@ -91,6 +92,16 @@ namespace SaltyGame
             if (PopulationReservesRank < 0 || PopulationReservesRank > 5
                 || (PopulationReservesRank > 0) != Contains(this.unlockedNodeIds, "rabbit.warren-network"))
                 throw new ArgumentException("Population Reserves rank must match permanent ownership.");
+            LitterUpgradeRank = litterUpgradeRank == -1
+                ? (Contains(this.unlockedNodeIds, "rabbit.larger-litters") ? 1 : 0) : litterUpgradeRank;
+            FoundingRabbitsRank = foundingRabbitsRank == -1
+                ? (Contains(this.unlockedNodeIds, "rabbit.founding-rabbits") ? 1 : 0) : foundingRabbitsRank;
+            if (LitterUpgradeRank < 0 || LitterUpgradeRank > 3
+                || (LitterUpgradeRank > 0) != Contains(this.unlockedNodeIds, "rabbit.larger-litters"))
+                throw new ArgumentException("Litter Upgrade rank must match permanent ownership.");
+            if (FoundingRabbitsRank < 0 || FoundingRabbitsRank > 3
+                || (FoundingRabbitsRank > 0) != Contains(this.unlockedNodeIds, "rabbit.founding-rabbits"))
+                throw new ArgumentException("Founding Rabbits rank must match permanent ownership.");
             var copiedAllocations = new List<GenomeNodeAllocation>();
             var allocatedIds = new HashSet<string>(StringComparer.Ordinal);
             var capacityUsed = 0;
@@ -156,6 +167,8 @@ namespace SaltyGame
         public int CapacityUsed { get; }
         public long ResetGeneration { get; }
         public int PopulationReservesRank { get; }
+        public int LitterUpgradeRank { get; }
+        public int FoundingRabbitsRank { get; }
 
         public bool IsNodeUnlocked(string nodeId)
         {
@@ -185,7 +198,7 @@ namespace SaltyGame
 
         public SpeciesGenomeProfile WithActiveNodeIds(IEnumerable<string> nextActiveNodeIds)
         {
-            return new SpeciesGenomeProfile(SpeciesId, unlockedNodeIds, nextActiveNodeIds, allocations, ResetGeneration, PopulationReservesRank);
+            return new SpeciesGenomeProfile(SpeciesId, unlockedNodeIds, nextActiveNodeIds, allocations, ResetGeneration, PopulationReservesRank, LitterUpgradeRank, FoundingRabbitsRank);
         }
 
         public SpeciesGenomeSnapshot CreateSnapshot()
@@ -195,7 +208,8 @@ namespace SaltyGame
                 capacityPointsByNode.Add(allocation.NodeId, checked(allocation.CapacityPoints + allocation.Rank - 1));
             return new SpeciesGenomeSnapshot(SpeciesId, activeNodeIds,
                 allocationCapacityPoints: capacityPointsByNode,
-                populationReservesRank: IsNodeActive("rabbit.warren-network") ? PopulationReservesRank : 0);
+                populationReservesRank: IsNodeActive("rabbit.warren-network") ? PopulationReservesRank : 0,
+                foundingRabbitsRank: IsNodeActive("rabbit.founding-rabbits") ? FoundingRabbitsRank : 0);
         }
 
         static IReadOnlyList<string> CopyIds(IEnumerable<string> ids, string parameterName)
@@ -251,7 +265,8 @@ namespace SaltyGame
 
         public SpeciesGenomeSnapshot(SpeciesId speciesId, IEnumerable<string> activeNodeIds = null,
             IEnumerable<GenomeUpgradeNodeSnapshot> resolvedNodes = null, string catalogFingerprint = null,
-            IReadOnlyDictionary<string, int> allocationCapacityPoints = null, int populationReservesRank = 0)
+            IReadOnlyDictionary<string, int> allocationCapacityPoints = null, int populationReservesRank = 0,
+            int foundingRabbitsRank = 0)
         {
             if (!speciesId.IsValid)
             {
@@ -261,6 +276,8 @@ namespace SaltyGame
             SpeciesId = speciesId;
             if (populationReservesRank < 0 || populationReservesRank > 5) throw new ArgumentOutOfRangeException(nameof(populationReservesRank));
             PopulationReservesRank = populationReservesRank;
+            if (foundingRabbitsRank < 0 || foundingRabbitsRank > 3) throw new ArgumentOutOfRangeException(nameof(foundingRabbitsRank));
+            FoundingRabbitsRank = foundingRabbitsRank;
             var copied = new List<string>();
             var seen = new HashSet<string>(StringComparer.Ordinal);
             if (activeNodeIds != null)
@@ -315,6 +332,7 @@ namespace SaltyGame
 
         public SpeciesId SpeciesId { get; }
         public int PopulationReservesRank { get; }
+        public int FoundingRabbitsRank { get; }
         public IReadOnlyList<string> ActiveNodeIds => activeNodeIds;
         public IReadOnlyList<GenomeUpgradeNodeSnapshot> ResolvedNodes => resolvedNodes;
         public int GetAllocationCapacityPoints(string nodeId) =>
@@ -358,6 +376,8 @@ namespace SaltyGame
                 foreach (var modifier in node.Modifiers)
                     if (modifier.AttributeId == attributeId)
                         total = checked(total + (int)modifier.SignedValue);
+            if (attributeId == SpeciesAttributeIds.StartingPopulation && FoundingRabbitsRank > 1)
+                total = checked(total + (FoundingRabbitsRank - 1) * 5);
             return total;
         }
 
@@ -385,6 +405,7 @@ namespace SaltyGame
             Append(canonical, GenomeContract.Version);
             Append(canonical, SpeciesId.Value);
             if (PopulationReservesRank > 0) Append(canonical, "population-reserves-rank:" + PopulationReservesRank.ToString(CultureInfo.InvariantCulture));
+            if (FoundingRabbitsRank > 0) Append(canonical, "founding-rabbits-rank:" + FoundingRabbitsRank.ToString(CultureInfo.InvariantCulture));
 
             var orderedNodeIds = new List<string>(activeNodeIds);
             orderedNodeIds.Sort(StringComparer.Ordinal);
@@ -544,7 +565,7 @@ namespace SaltyGame
                         allocationPoints[id] = points > 0 ? points : node.CapacityPoints;
                 }
                 snapshots.Add(new SpeciesGenomeSnapshot(genome.SpeciesId, genome.ActiveNodeIds, nodes,
-                    catalog.Fingerprint, allocationPoints, genome.PopulationReservesRank));
+                    catalog.Fingerprint, allocationPoints, genome.PopulationReservesRank, genome.FoundingRabbitsRank));
             }
             return new GenomeSimulationSnapshot(snapshots);
         }
@@ -787,6 +808,8 @@ namespace SaltyGame
                     || (Id != SpeciesSimulation.FertileDroppingsNodeId && Id != "rabbit.warren-network"
                         && Id != "rabbit.guarded-burrow" && Id != "rabbit.keen-hearing"
                         && Id != "rabbit.swift-digging" && Id != "rabbit.safe-foraging"
+                        && Id != FieldDataPermanentProgressionDefinition.SprintNodeId
+                        && Id != FieldDataPermanentProgressionDefinition.GestationUpgradeNodeId
                         && Id != "rabbit.seed-dispersal" && Id != "rabbit.crowding-tolerance"
                         && Id != "rabbit.reproductive-drive" && Id != "rabbit.escape-instinct"
                         && Id != "rabbit.increased-minimum-litter" && Id != "rabbit.larger-litters"

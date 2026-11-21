@@ -51,6 +51,7 @@ namespace SaltyGame
             {
                 for (var targetX = 0; targetX < cells.Width; targetX++)
                 {
+                    if (!cells.IsPlayableCell(targetX, targetY)) continue;
                     var cell = cells.GetCell(targetX, targetY);
                     var scent = cell.ScentMarker;
                     var distance = cells.GetDistance(x, y, targetX, targetY);
@@ -89,6 +90,7 @@ namespace SaltyGame
             {
                 for (var targetX = 0; targetX < cells.Width; targetX++)
                 {
+                    if (!cells.IsPlayableCell(targetX, targetY)) continue;
                     var cell = cells.GetCell(targetX, targetY);
                     var scent = cell.ScentMarker;
                     var distance = cells.GetDistance(x, y, targetX, targetY);
@@ -129,6 +131,7 @@ namespace SaltyGame
             {
                 for (var targetX = 0; targetX < cells.Width; targetX++)
                 {
+                    if (!cells.IsPlayableCell(targetX, targetY)) continue;
                     var cell = cells.GetCell(targetX, targetY);
                     var scent = cell.ScentMarker;
                     var distance = cells.GetDistance(x, y, targetX, targetY);
@@ -185,6 +188,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < cells.Width; x++)
                 {
+                    if (!cells.IsPlayableCell(x, y)) continue;
                     var cell = cells.GetCell(x, y);
                     if (cell.IsCreature && cell.EntityId > 0)
                     {
@@ -251,6 +255,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < cells.Width; x++)
                 {
+                    if (!cells.IsPlayableCell(x, y)) continue;
                     var candidate = cells.GetCell(x, y);
                     if (candidate.IsCreature
                         && candidate.EntityId == hunter.TrackingTargetEntityId
@@ -313,11 +318,10 @@ namespace SaltyGame
             var visionPattern = speciesRules.Awareness.PredatorDetectionPattern;
             var bestDistance = int.MaxValue;
             target = default;
-            foreach (var offset in cells.GetPattern(visionPattern).Offsets)
+            foreach (var offset in cells.GetPattern(x, y, visionPattern).Offsets)
             {
-                var targetX = x + offset.x;
-                var targetY = y + offset.y;
-                if (!cells.TryResolveCoordinates(ref targetX, ref targetY)
+                var targetXResolved = cells.TryResolveOffset(x, y, offset, out var targetX, out var targetY);
+                if (!targetXResolved
                     || !cells.TryGetCell(targetX, targetY, out var candidate)
                     || !candidate.IsCreature
                     || !rules.TryGetValue(candidate.SpeciesId, out var threatRules)
@@ -385,11 +389,10 @@ namespace SaltyGame
 
             var bestDistance = int.MaxValue;
             target = default;
-            foreach (var offset in cells.GetPattern(speciesRules.Awareness.PredatorDetectionPattern).Offsets)
+            foreach (var offset in cells.GetPattern(x, y, speciesRules.Awareness.PredatorDetectionPattern).Offsets)
             {
-                var targetX = x + offset.x;
-                var targetY = y + offset.y;
-                if (!cells.TryResolveCoordinates(ref targetX, ref targetY)
+                var targetXResolved = cells.TryResolveOffset(x, y, offset, out var targetX, out var targetY);
+                if (!targetXResolved
                     || !cells.TryGetCell(targetX, targetY, out var candidate)
                     || !candidate.IsCreature
                     || !rules.TryGetValue(candidate.SpeciesId, out var threatRules)
@@ -441,6 +444,7 @@ namespace SaltyGame
             {
                 for (var threatX = 0; threatX < cells.Width; threatX++)
                 {
+                    if (!cells.IsPlayableCell(threatX, threatY)) continue;
                     var threat = cells.GetCell(threatX, threatY);
                     if (!threat.IsCreature
                         || !rules.TryGetValue(threat.SpeciesId, out var threatRules)
@@ -497,11 +501,10 @@ namespace SaltyGame
 
             var bestDistance = int.MaxValue;
             target = default;
-            foreach (var offset in cells.GetPattern(visionPattern).Offsets)
+            foreach (var offset in cells.GetPattern(x, y, visionPattern).Offsets)
             {
-                var targetX = x + offset.x;
-                var targetY = y + offset.y;
-                if (!cells.TryResolveCoordinates(ref targetX, ref targetY)
+                var targetXResolved = cells.TryResolveOffset(x, y, offset, out var targetX, out var targetY);
+                if (!targetXResolved
                     || !cells.TryGetCell(targetX, targetY, out var candidate)
                     || (requireCreature
                         ? !candidate.IsCreature || candidate.SpeciesId != targetSpecies
@@ -529,11 +532,10 @@ namespace SaltyGame
             int targetY,
             GridPattern attackPattern)
         {
-            foreach (var offset in cells.GetPattern(attackPattern).Offsets)
+            foreach (var offset in cells.GetPattern(attackerX, attackerY, attackPattern).Offsets)
             {
-                var candidateX = attackerX + offset.x;
-                var candidateY = attackerY + offset.y;
-                if (cells.TryResolveCoordinates(ref candidateX, ref candidateY)
+                var candidateXResolved = cells.TryResolveOffset(attackerX, attackerY, offset, out var candidateX, out var candidateY);
+                if (candidateXResolved
                     && candidateX == targetX && candidateY == targetY)
                 {
                     return true;

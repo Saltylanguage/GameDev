@@ -15,6 +15,263 @@ namespace SaltyGame.EditorTests
         const string ScenarioPath = "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset";
         const BindingFlags PrivateInstance = BindingFlags.Instance | BindingFlags.NonPublic;
 
+        [TestCase(MapTopologyDefinition.FixedShape.Square, 11, 121)]
+        [TestCase(MapTopologyDefinition.FixedShape.Circle, 11, 97)]
+        [TestCase(MapTopologyDefinition.FixedShape.Oval, 16, 136)]
+        [TestCase(MapTopologyDefinition.FixedShape.Diamond, 11, 61)]
+        [TestCase(MapTopologyDefinition.FixedShape.Cross, 11, 57)]
+        [TestCase(MapTopologyDefinition.FixedShape.ShortRectangle, 16, 176)]
+        [TestCase(MapTopologyDefinition.FixedShape.LongRectangle, 22, 242)]
+        public void AuthoredFixedShapeControlsGeometryWrappingPlacementAndBoardCells(
+            MapTopologyDefinition.FixedShape shape, int expectedWidth, int expectedCellCount)
+        {
+            var scenario = Object.Instantiate(AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath));
+            try
+            {
+                var serialized = new SerializedObject(scenario);
+                serialized.FindProperty("mapLayout.shape").intValue = (int)shape;
+                serialized.FindProperty("height").intValue = 11;
+                var species = serialized.FindProperty("species");
+                for (var index = 0; index < species.arraySize; index++)
+                {
+                    species.GetArrayElementAtIndex(index).FindPropertyRelative("startingPopulation").intValue = 4;
+                }
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                var data = scenario.CreateRuntimeData();
+                var topology = data.Topology;
+                Assert.That(data.Width, Is.EqualTo(expectedWidth));
+                Assert.That(data.Height, Is.EqualTo(11));
+                Assert.That(topology.CellCount, Is.EqualTo(expectedCellCount));
+                Assert.That(scenario.CreateRuntimeData().Fingerprint, Is.EqualTo(data.Fingerprint));
+                Assert.That(topology.IsPlayableCell(0, 0), Is.EqualTo(expectedCellCount == data.Width * data.Height));
+
+                var playable = topology.PlayableCoordinates.ToArray();
+                AssertOppositeSeams(topology, playable);
+
+                var grid = SpeciesInitialGridFactory.Create(data, 17);
+                var repeatedGrid = SpeciesInitialGridFactory.Create(scenario.CreateRuntimeData(), 17);
+                var rabbit = new SpeciesId("rabbit");
+                var run = new SimulationRunState(grid, rabbit, 17, data.RunDurationSeconds);
+                var board = SimulationBoardSnapshot.Create(run, data.SpeciesRules, rabbit);
+                foreach (var position in playable)
+                {
+                    var cell = grid.GetCell(position.x, position.y);
+                    Assert.That(repeatedGrid.GetCell(position.x, position.y).SpeciesId, Is.EqualTo(cell.SpeciesId));
+                }
+                foreach (var startingPopulation in data.StartingPopulations)
+                {
+                    Assert.That(playable.Count(position => grid.GetCell(position.x, position.y).SpeciesId == startingPopulation.Key),
+                        Is.EqualTo(startingPopulation.Value));
+                }
+                for (var y = 0; y < data.Height; y++)
+                {
+                    for (var x = 0; x < data.Width; x++)
+                    {
+                        var isPlayable = topology.IsPlayableCell(x, y);
+                        Assert.That(grid.TryGetCell(x, y, out _), Is.EqualTo(isPlayable));
+                        Assert.That(board.TryGetCell(x, y, out _), Is.EqualTo(isPlayable));
+                    }
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(scenario);
+            }
+        }
+
+        [Test]
+        public void AuthoredIrregularLandRecreatesAConnectedCoastWithBothSeams()
+        {
+            var scenario = Object.Instantiate(AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath));
+            try
+            {
+                var serialized = new SerializedObject(scenario);
+                serialized.FindProperty("mapLayout.shape").intValue = (int)MapTopologyDefinition.FixedShape.IrregularLand;
+                serialized.FindProperty("mapLayout.mapSeed").intValue = 17;
+                serialized.FindProperty("mapLayout.edgeRoughness").intValue = 65;
+                serialized.FindProperty("mapLayout.interiorHole").boolValue = false;
+                serialized.FindProperty("mapLayout.detachedIsland").boolValue = false;
+                serialized.FindProperty("width").intValue = 45;
+                serialized.FindProperty("height").intValue = 55;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                var first = scenario.CreateRuntimeData();
+                var second = scenario.CreateRuntimeData();
+                var topology = (MapTopology)first.Topology;
+                var land = topology.CopyCells();
+                Assert.That((first.Width, first.Height), Is.EqualTo((45, 55)));
+                Assert.That(land, Is.EqualTo(((MapTopology)second.Topology).CopyCells()));
+                Assert.That(second.Fingerprint, Is.EqualTo(first.Fingerprint));
+                Assert.That(topology.GenerationInputs, Does.StartWith("irregular-land-v2:"));
+                Assert.That(topology.GenerationInputs, Does.Contain("seed=17"));
+                Assert.That(land.Length, Is.LessThan(first.Width * first.Height));
+                var bayRows = land.GroupBy(cell => cell.y)
+                    .Where(row => row.Count() < row.Last().x - row.First().x + 1)
+                    .Select(row => row.Key).ToHashSet();
+                Assert.That(bayRows.Any(y => bayRows.Contains(y + 1) && bayRows.Contains(y + 2)), Is.True,
+                    "The reference seed should have a bay running across several adjacent rows.");
+                AssertCardinallyConnected(land);
+                AssertOppositeSeams(topology, land);
+
+                var grid = SpeciesInitialGridFactory.Create(first, 10100);
+                var repeatedGrid = SpeciesInitialGridFactory.Create(second, 10100);
+                foreach (var cell in land)
+                {
+                    Assert.That(repeatedGrid.GetCell(cell.x, cell.y).SpeciesId, Is.EqualTo(grid.GetCell(cell.x, cell.y).SpeciesId));
+                }
+                var outside = Enumerable.Range(0, first.Width).First(x => !topology.IsPlayableCell(x, 0));
+                Assert.That(grid.TryGetCell(outside, 0, out _), Is.False);
+
+                serialized.FindProperty("mapLayout.mapSeed").intValue = -23;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(((MapTopology)scenario.CreateRuntimeData().Topology).CopyCells(), Is.Not.EqualTo(land));
+                serialized.FindProperty("mapLayout.mapSeed").intValue = 17;
+                serialized.FindProperty("mapLayout.edgeRoughness").intValue = 0;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(((MapTopology)scenario.CreateRuntimeData().Topology).CopyCells(), Is.Not.EqualTo(land));
+            }
+            finally
+            {
+                Object.DestroyImmediate(scenario);
+            }
+        }
+
+        [TestCase(68, 48, true)]
+        [TestCase(16, 16, true)]
+        [TestCase(15, 16, false)]
+        [TestCase(2, 11, false)]
+        [TestCase(1, 1, false)]
+        public void IrregularLandInteriorHoleBlocksMovementAndKeepsLandConnected(int width, int height, bool hasHole)
+        {
+            var definition = new MapTopologyDefinition();
+            JsonUtility.FromJsonOverwrite("{\"shape\":8,\"mapSeed\":-23,\"edgeRoughness\":100}", definition);
+            var solid = (MapTopology)definition.Create(width, height);
+            JsonUtility.FromJsonOverwrite("{\"interiorHole\":true}", definition);
+            var topology = (MapTopology)definition.Create(width, height);
+            var land = topology.CopyCells();
+            AssertCardinallyConnected(land);
+
+            if (!hasHole)
+            {
+                Assert.That(land, Is.EqualTo(solid.CopyCells()));
+                return;
+            }
+
+            var center = new Vector2Int(width / 2, height / 2);
+            var gap = solid.CopyCells().Except(land).ToHashSet();
+            Assert.That(gap, Does.Contain(center));
+            Assert.That(land.Except(solid.CopyCells()), Is.Empty);
+            foreach (var cell in gap)
+            {
+                foreach (var direction in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
+                {
+                    var shore = cell - direction;
+                    if (topology.IsPlayableCell(shore.x, shore.y))
+                    {
+                        Assert.That(topology.TryResolveOffset(shore.x, shore.y, direction, out _), Is.False);
+                    }
+                    else
+                    {
+                        Assert.That(gap, Does.Contain(shore), "The hole must be enclosed by playable land.");
+                    }
+                }
+            }
+            AssertOppositeSeams(topology, land);
+        }
+
+        [Test]
+        public void DetachedIslandSettingProducesRepeatableSeparateLandmasses()
+        {
+            var definition = JsonUtility.FromJson<MapTopologyDefinition>(
+                "{\"shape\":8,\"mapSeed\":17,\"edgeRoughness\":65,\"interiorHole\":true}");
+            var mainland = definition.Create(68, 48);
+            JsonUtility.FromJsonOverwrite("{\"detachedIsland\":true}", definition);
+            var topology = (MapTopology)definition.Create(68, 48);
+            Assert.That(definition.Create(68, 48).Fingerprint, Is.EqualTo(topology.Fingerprint));
+            Assert.That(topology.GenerationInputs, Does.Contain("island=1"));
+            Assert.That(topology.CopyCells(), Is.Not.EqualTo(mainland.PlayableCoordinates.ToArray()));
+
+            var land = topology.CopyCells();
+            var occupiedColumns = land.Select(cell => cell.x).ToHashSet();
+            var divide = Enumerable.Range(occupiedColumns.Min(), occupiedColumns.Max() - occupiedColumns.Min())
+                .First(column => !occupiedColumns.Contains(column));
+            var west = land.Where(cell => cell.x < divide).ToArray();
+            var east = land.Where(cell => cell.x > divide).ToArray();
+            AssertCardinallyConnected(west);
+            AssertCardinallyConnected(east);
+            Assert.That(west.Select(cell => cell.y).Intersect(east.Select(cell => cell.y)), Is.Not.Empty);
+            AssertOppositeSeams(topology, west);
+            AssertOppositeSeams(topology, east);
+            Assert.That(topology.GetDistance(west[0].x, west[0].y, east[0].x, east[0].y), Is.EqualTo(int.MaxValue));
+            Assert.That(topology.IsPlayableCell(25, 24), Is.False);
+            Assert.That(definition.Create(23, 16).PlayableCoordinates.ToArray(), Is.Not.Empty);
+            Assert.That(((MapTopology)definition.Create(23, 16)).GenerationInputs, Does.Not.Contain("island=1"));
+
+            JsonUtility.FromJsonOverwrite("{\"mapSeed\":-23}", definition);
+            Assert.That(definition.Create(68, 48).PlayableCoordinates.ToArray(), Is.Not.EqualTo(land));
+        }
+
+        private static void AssertCardinallyConnected(Vector2Int[] land)
+        {
+            Assert.That(land, Is.Not.Empty);
+            var remaining = land.ToHashSet();
+            var frontier = new Queue<Vector2Int>();
+            var directions = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+            frontier.Enqueue(land[0]);
+            remaining.Remove(land[0]);
+            while (frontier.Count != 0)
+            {
+                var cell = frontier.Dequeue();
+                foreach (var direction in directions)
+                {
+                    var next = cell + direction;
+                    if (remaining.Remove(next)) frontier.Enqueue(next);
+                }
+            }
+            Assert.That(remaining, Is.Empty);
+        }
+
+        private static void AssertOppositeSeams(IGridTopology topology, Vector2Int[] playable)
+        {
+            var rowEdges = playable.GroupBy(cell => cell.y)
+                .Select(row => (First: row.First(), Last: row.Last(), Direction: Vector2Int.left));
+            var columnEdges = playable.GroupBy(cell => cell.x)
+                .Select(column => (First: column.First(), Last: column.Last(), Direction: Vector2Int.down));
+            foreach (var edge in rowEdges.Concat(columnEdges))
+            {
+                Assert.That(topology.TryResolveOffset(edge.First.x, edge.First.y, edge.Direction, out var target), Is.True);
+                Assert.That(target, Is.EqualTo(edge.Last));
+                Assert.That(topology.TryResolveOffset(target.x, target.y, -edge.Direction, out var returned), Is.True);
+                Assert.That(returned, Is.EqualTo(edge.First));
+                if (edge.First != edge.Last)
+                {
+                    Assert.That(topology.GetDistance(edge.First.x, edge.First.y, target.x, target.y), Is.EqualTo(1));
+                }
+            }
+        }
+
+        [TestCase(0, 1), TestCase(3, 3)]
+        public void LegacyPreviewDraftHealthMigratesWithoutChangingPositiveValues(int serializedHealth, int expectedHealth)
+        {
+            var root = new GameObject("Legacy preview draft test");
+            root.SetActive(false);
+            try
+            {
+                var preview = root.AddComponent<SpeciesSimulationPreview>();
+                var draftMap = (System.Collections.IDictionary)typeof(SpeciesSimulationPreview)
+                    .GetMethod("CreateRuleDrafts", PrivateInstance)
+                    .Invoke(preview, new object[] { SpeciesRuleDefaults.Create() });
+                foreach (var draft in draftMap.Values)
+                    draft.GetType().GetField("MaximumHealth").SetValue(draft, serializedHealth);
+                typeof(SpeciesSimulationPreview).GetField("ruleDrafts", PrivateInstance).SetValue(preview, draftMap);
+                var rules = (IReadOnlyDictionary<SpeciesId, SpeciesRules>)typeof(SpeciesSimulationPreview)
+                    .GetMethod("CreateRulesFromDrafts", PrivateInstance).Invoke(preview, null);
+                foreach (var rule in rules.Values) Assert.That(rule.MaximumHealth, Is.EqualTo(expectedHealth));
+            }
+            finally { Object.DestroyImmediate(root); }
+        }
+
         static CellularSimData ApplyOverrides(params string[] arguments)
         {
             var runner = AppDomain.CurrentDomain.GetAssemblies()
@@ -502,12 +759,37 @@ namespace SaltyGame.EditorTests
                 Assert.That(preview.Run.Tick, Is.EqualTo(1));
                 Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Paused));
                 Assert.That(apply.Invoke(null, arguments), Is.False);
-                Assert.That(preview.TryApplyWrapEdges(false, out _), Is.False);
                 Assert.That(preview.WrapEdges, Is.True);
                 Assert.That(preview.Run.Tick, Is.EqualTo(1));
                 foreach (var key in prefsKeys)
                     Assert.That(PlayerPrefs.HasKey(key) ? PlayerPrefs.GetString(key) : null, Is.EqualTo(prefsBefore[key]));
                 Assert.That(System.IO.File.ReadAllText(ScenarioPath), Is.EqualTo(assetBefore));
+            }
+            finally
+            {
+                Object.DestroyImmediate(previewObject);
+            }
+        }
+
+        [Test]
+        public void PreviewAlwaysBuildsWrappingSimulationData()
+        {
+            var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath);
+            var previewObject = new GameObject("Wrapping Preview Test");
+            previewObject.SetActive(false);
+            try
+            {
+                var preview = previewObject.AddComponent<SpeciesSimulationPreview>();
+                preview.ConfigureScenarioOptions(new[] { scenario });
+                typeof(SpeciesSimulationPreview).GetField("rules", PrivateInstance)
+                    .SetValue(preview, scenario.CreateRuntimeData().SpeciesRules);
+
+                var data = (CellularSimData)typeof(SpeciesSimulationPreview)
+                    .GetMethod("CreateSimulationData", PrivateInstance)
+                    .Invoke(preview, null);
+
+                Assert.That(preview.WrapEdges, Is.True);
+                Assert.That(data.WrapEdges, Is.True);
             }
             finally
             {
@@ -822,6 +1104,74 @@ namespace SaltyGame.EditorTests
             {
                 Undo.ClearUndo(scenario);
                 AssetDatabase.DeleteAsset(path);
+            }
+        }
+
+        [TestCase(12, 12)]
+        [TestCase(2000, 400)]
+        public void FixedShapeUsesAuthoredDimensionsWithStalePreviewSettings(int savedPlants, int expectedPlants)
+        {
+            var keys = new[] { "v3", "v4", "v5" }
+                .Select(version => "SaltyGame.SpeciesSimulationPreview.DefaultSettings." + version).ToArray();
+            var previous = keys.ToDictionary(key => key, key => PlayerPrefs.HasKey(key) ? PlayerPrefs.GetString(key) : null);
+            var scenario = Object.Instantiate(AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath));
+            var root = new GameObject("Fixed layout settings test");
+            root.SetActive(false);
+            try
+            {
+                var serialized = new SerializedObject(scenario);
+                serialized.FindProperty("mapLayout.shape").intValue = (int)MapTopologyDefinition.FixedShape.Cross;
+                serialized.FindProperty("height").intValue = 40;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                var data = scenario.CreateRuntimeData();
+                foreach (var key in keys)
+                {
+                    PlayerPrefs.DeleteKey(key);
+                }
+                var preview = root.AddComponent<SpeciesSimulationPreview>();
+                preview.ConfigureScenarioOptions(new[] { scenario });
+                typeof(SpeciesSimulationPreview).GetMethod("Awake", PrivateInstance).Invoke(preview, null);
+                typeof(SpeciesSimulationPreview).GetField("width", PrivateInstance).SetValue(preview, 36);
+                typeof(SpeciesSimulationPreview).GetField("height", PrivateInstance).SetValue(preview, 20);
+                typeof(SpeciesSimulationPreview).GetField("plantStartingPopulation", PrivateInstance).SetValue(preview, savedPlants);
+                typeof(SpeciesSimulationPreview).GetField("startingPopulationOverrideEnabled", PrivateInstance).SetValue(preview, true);
+                preview.SaveCurrentSettingsAsDefault();
+                typeof(SpeciesSimulationPreview).GetMethod("ApplySelectedScenario", PrivateInstance).Invoke(preview, null);
+                typeof(SpeciesSimulationPreview).GetMethod("LoadSavedSettings", PrivateInstance).Invoke(preview, null);
+                preview.ResetToStart();
+
+                Assert.That(preview.GridWidth, Is.EqualTo(data.Width));
+                Assert.That(preview.GridHeight, Is.EqualTo(data.Height));
+                Assert.That(preview.Run.Cells.Topology.Fingerprint, Is.EqualTo(data.Topology.Fingerprint));
+                Assert.That(preview.PlantStartingPopulation, Is.EqualTo(expectedPlants));
+
+                var resized = preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                    "36", "20", "17", "0", "0", "20", "0.5", "0", "0", "0", false,
+                    "12", "0", "0", out var resizeMessage);
+                Assert.That(resized, Is.False);
+                Assert.That(resizeMessage, Does.Contain("fixed dimensions"));
+                var overCapacity = preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                    "40", "40", "17", "0", "0", "20", "0.5", "0", "0", "0", false,
+                    "1500", "0", "0", out var populationMessage);
+                Assert.That(overCapacity, Is.False);
+                Assert.That(populationMessage, Does.Contain("grid capacity"));
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                Object.DestroyImmediate(scenario);
+                foreach (var entry in previous)
+                {
+                    if (entry.Value == null)
+                    {
+                        PlayerPrefs.DeleteKey(entry.Key);
+                    }
+                    else
+                    {
+                        PlayerPrefs.SetString(entry.Key, entry.Value);
+                    }
+                }
+                PlayerPrefs.Save();
             }
         }
     }

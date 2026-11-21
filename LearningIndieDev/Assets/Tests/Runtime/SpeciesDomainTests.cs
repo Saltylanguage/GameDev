@@ -269,6 +269,7 @@ namespace SaltyGame.Tests
 
             Assert.That(first.SpeciesRules.Count, Is.EqualTo(3));
             Assert.That(first.SpeciesRules.ContainsKey(SpeciesIds.Herbivore), Is.True);
+            Assert.That(first.WrapEdges, Is.True);
             Assert.That(second, Is.Not.SameAs(first));
             Assert.That(second.Fingerprint, Is.EqualTo(first.Fingerprint));
 
@@ -298,6 +299,8 @@ namespace SaltyGame.Tests
             Assert.That(dense.TryGetStartingProbability(species.Id, out var denseProbability), Is.True);
             Assert.That(sparseProbability, Is.EqualTo(0.1f));
             Assert.That(denseProbability, Is.EqualTo(0.7f));
+            Assert.That(sparse.WrapEdges, Is.True);
+            Assert.That(dense.WrapEdges, Is.True);
 
             Object.DestroyImmediate(sparseScenario);
             Object.DestroyImmediate(denseScenario);

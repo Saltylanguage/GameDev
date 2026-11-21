@@ -23,6 +23,7 @@ namespace SaltyGame
             Append(canonical, data.Width);
             Append(canonical, data.Height);
             Append(canonical, data.WrapEdges);
+            Append(canonical, data.Topology.Fingerprint);
             Append(canonical, data.RunDurationSeconds);
             Append(canonical, data.StepInterval);
             Append(canonical, data.MaxPopulation);

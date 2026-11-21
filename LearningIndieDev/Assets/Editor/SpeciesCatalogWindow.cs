@@ -627,7 +627,7 @@ namespace SaltyGame.EditorTools
         {
             if (role == SpeciesRole.Plant)
             {
-                DrawSectionLabel("ADDITIONAL SHARED STATS");
+                DrawSectionLabel("ADDITIONAL SRABBITD STATS");
                 DrawProperty(Find(serializedObject, "movementSpeed"), "Movement Speed");
                 DrawProperty(Find(serializedObject, "visionRange"), "Vision Range");
                 DrawProperty(Find(serializedObject, "maximumEnergy"), "Maximum Energy");

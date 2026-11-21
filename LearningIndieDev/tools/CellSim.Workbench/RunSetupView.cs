@@ -98,7 +98,7 @@ internal sealed partial class RunPage
         basics.Controls.Add(Description("Placed at tick 0. Each animal/Plant occupies a cell; starting totals must fit every requested map."));
         foreach (var control in new[] { plants, rabbits, foxes }) Explain(control, "Initial population. Use Compare values to test multiple totals with matched seeds.");
         basics.Controls.Add(Row("Map size", width, TextLabel("×"), height, wrap));
-        Explain(width, "Map columns (1–4096)."); Explain(height, "Map rows (1–4096)."); Explain(wrap, "When enabled, movement/perception can cross the map boundary to the opposite side.");
+        Explain(width, "Map columns (1–4096)."); Explain(height, "Map rows (1–4096)."); Explain(wrap, "Every map connects opposite edges for movement, perception, and interactions.");
         basics.Controls.Add(Description("Width × height determines available cells and population density. Wrapping connects opposite map edges."));
         Field(basics, "Ticks per round", phase, "Six rounds, with five Mutation/purchase decisions after rounds 1–5. Increasing this changes time between decisions and the final horizon.");
         basics.Controls.Add(Flow(statOverrides)); basics.Controls.Add(Row("Rabbit vision", vision, TextLabel("Fox energy"), energy));

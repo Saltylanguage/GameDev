@@ -84,18 +84,25 @@ namespace SaltyGame
         public string NodeOffer(string id) => id == "rabbit.warren-network" && IsOwned(id)
             ? genome.PopulationReservesRank >= FieldDataPermanentProgressionDefinition.PopulationReservesMaximumRank
                 ? "RANK 5 / 5 · MAXIMUM" : $"RESEARCH RANK {genome.PopulationReservesRank + 1} / 5 · {FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(genome.PopulationReservesRank + 1)} RABBIT DATA"
+            : (id == FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId || id == FieldDataPermanentProgressionDefinition.FoundingRabbitsNodeId) && IsOwned(id)
+                ? RankedOffer(id)
             : IsOwned(id) ? "PERMANENTLY OWNED"
             : HasUnappliedReset ? "APPLY REPLACEMENT FIRST"
-            : CapacityUsed >= definition.ActiveCapacity ? $"RESEARCH · {FieldDataPermanentProgressionDefinition.NodePrice} DATA"
-            : FieldDataPermanentProgressionDefinition.HasProvisionalResearchPrice(id) ? $"BUY · {FieldDataPermanentProgressionDefinition.NodePrice} DATA (TEST)"
-            : $"BUY + EQUIP · {FieldDataPermanentProgressionDefinition.NodePrice} RABBIT DATA";
+            : !definition.RabbitMap.TryGetNode(id ?? string.Empty, out var offerNode) ? "SELECT A GENE"
+            : !offerNode.IsPurchasable ? "LEGACY · NOT RESEARCHABLE"
+            : CapacityUsed >= definition.ActiveCapacity ? $"RESEARCH · {offerNode.RabbitDataPrice} RABBIT DATA"
+            : FieldDataPermanentProgressionDefinition.HasProvisionalResearchPrice(id) ? $"RESEARCH · PRICE TBD"
+            : $"BUY + EQUIP · {offerNode.RabbitDataPrice} RABBIT DATA";
         public string NodeReason(string id)
         {
             if (OwnerReason != null) return OwnerReason;
             if (!HasLicense) return "Unlock the Rabbit path first.";
             if (!definition.RabbitMap.TryGetNode(id ?? string.Empty, out var node)) return "Select a Rabbit Genome node.";
+            if (!node.IsPurchasable) return "Legacy research entry; new profiles use the Litter Upgrade node.";
             if (id == "rabbit.warren-network" && IsOwned(id))
                 return $"Rank {genome.PopulationReservesRank} / 5 · {FieldDataPermanentProgressionDefinition.RabbitPurchaseAllowance(genome.PopulationReservesRank)} purchased Rabbits per simulation node. One active capacity point at any rank.";
+            if ((id == FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId || id == FieldDataPermanentProgressionDefinition.FoundingRabbitsNodeId)
+                && IsOwned(id)) return RankedReason(id);
             if (IsOwned(id)) return genome.ActiveNodeIds.Count == 0
                 ? "Permanently owned. Add or remove it in the selection below; applying is free."
                 : "Permanently owned. Change the active loadout through a paid reset.";
@@ -112,11 +119,30 @@ namespace SaltyGame
                 + (CapacityUsed >= definition.ActiveCapacity ? " Loadout full: research is owned but not equipped." : " Buying also equips this Genome node.")
                 + (FieldDataPermanentProgressionDefinition.HasProvisionalResearchPrice(id) ? " Price and path are provisional." : string.Empty);
         }
+        int RankedResearchRank(string id) => id == FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId
+            ? genome?.LitterUpgradeRank ?? 0 : genome?.FoundingRabbitsRank ?? 0;
+        string RankedOffer(string id)
+        {
+            var node = definition.RabbitMap.GetNode(id);
+            var rank = RankedResearchRank(id);
+            return rank >= node.MaximumRanks ? $"RANK {rank} / {node.MaximumRanks} · MAXIMUM"
+                : $"RESEARCH RANK {rank + 1} / {node.MaximumRanks} · {node.RabbitDataPrice} RABBIT DATA";
+        }
+        string RankedReason(string id)
+        {
+            var node = definition.RabbitMap.GetNode(id);
+            var rank = RankedResearchRank(id);
+            return rank >= node.MaximumRanks ? $"Rank {rank} / {node.MaximumRanks}. Maximum research reached."
+                : $"Rank {rank} / {node.MaximumRanks}. Next rank costs {node.RabbitDataPrice} Rabbit Data.";
+        }
         public bool CanBuyNode(string id) => OwnerReason == null && HasLicense &&
             ((id == "rabbit.warren-network" && IsOwned(id) && genome.PopulationReservesRank < FieldDataPermanentProgressionDefinition.PopulationReservesMaximumRank
                 && RabbitData >= FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(genome.PopulationReservesRank + 1))
+            || ((id == FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId || id == FieldDataPermanentProgressionDefinition.FoundingRabbitsNodeId)
+                && IsOwned(id) && RankedResearchRank(id) < definition.RabbitMap.GetNode(id).MaximumRanks
+                && RabbitData >= definition.RabbitMap.GetNode(id).RabbitDataPrice)
             || (!IsOwned(id) && !HasUnappliedReset
-            && definition.RabbitMap.TryGetNode(id ?? string.Empty, out var node) && RabbitData >= node.RabbitDataPrice
+            && definition.RabbitMap.TryGetNode(id ?? string.Empty, out var node) && node.IsPurchasable && RabbitData >= node.RabbitDataPrice
             && node.PrerequisiteNodeIds.All(IsOwned)));
         public string ArrangementReason => OwnerReason ?? (!HasLicense ? "Unlock the Rabbit path first."
             : genome == null || genome.ActiveNodeIds.Count > 0 ? "Pay for a reset before choosing a replacement loadout."
@@ -141,7 +167,7 @@ namespace SaltyGame
         public bool BuyNode(string id)
         {
             if (!CanBuyNode(id)) return Reject(NodeReason(id));
-            var message = IsOwned(id) ? "Population Reserves rank saved."
+            var message = IsOwned(id) ? "Gene Lab rank saved."
                 : CapacityUsed >= definition.ActiveCapacity ? "Research saved. Loadout full, so the Genome node was not equipped."
                 : "Purchase saved. Genome node equipped for the next journey.";
             return Complete(session.TryPurchaseRabbitGenomeNode(profileId, id, out var error), error, message);

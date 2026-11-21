@@ -9,6 +9,7 @@ namespace SaltyGame
     [CreateAssetMenu(menuName = "Salty Game/Cellular Simulation Data", fileName = "CellularSimData")]
     public sealed class CellularSimDataAsset : ScriptableObject
     {
+        [SerializeField] MapTopologyDefinition mapLayout = new MapTopologyDefinition();
         [SerializeField, Min(1)] int width = 32;
         [SerializeField, Min(1)] int height = 20;
         [SerializeField, Min(0.01f)] float runDurationSeconds = 20f;
@@ -53,16 +54,18 @@ namespace SaltyGame
             var effectiveRunDurationSeconds = runTicks > 0
                 ? (float)(runTicks * (double)stepInterval)
                 : runDurationSeconds;
+            var topology = (mapLayout ?? new MapTopologyDefinition()).Create(width, height);
             return new CellularSimData(
-                width,
-                height,
+                topology.Width,
+                topology.Height,
                 probabilities,
                 rules,
                 effectiveRunDurationSeconds,
                 stepInterval,
                 maxPopulation,
                 minPopulation,
-                alphaOffspringRules: alphaRules);
+                alphaOffspringRules: alphaRules,
+                wrapEdges: true, topology: topology);
         }
 
         void Reset()

@@ -70,12 +70,6 @@ namespace SaltyGame.EditorTools
             EditorGUILayout.HelpBox("S4 developer fixture: Forest Edge, Rabbit, 36x20, 400/20/10, 0.1-second steps, six 100-tick phases. Coupled responses off. Does not save a preset or change scenario assets.", MessageType.Info);
             using (new EditorGUI.DisabledScope(!preview.SettingsEditable))
             {
-                var wrapEdges = EditorGUILayout.Toggle(new GUIContent("Wrap Edges", "Connect top/bottom and left/right for all species."), preview.WrapEdges);
-                if (wrapEdges != preview.WrapEdges)
-                {
-                    Undo.RecordObject(preview, "Change simulation wrapping");
-                    preview.TryApplyWrapEdges(wrapEdges, out runtimeMessage);
-                }
                 fixtureSeed = EditorGUILayout.IntField("Fixture Seed", fixtureSeed);
                 if (GUILayout.Button("Apply S4 Fixture"))
                 {
@@ -86,7 +80,7 @@ namespace SaltyGame.EditorTools
             var run = preview.Run;
             EditorGUILayout.LabelField("Scenario / Species", $"{preview.SelectedScenario?.name ?? "Legacy defaults"} / {preview.PlayerSpecies.Value}");
             EditorGUILayout.LabelField("Seed / Randomization", $"{run?.Seed ?? preview.BaseSeed} / {preview.RandomizeSeedOnStart}");
-            EditorGUILayout.LabelField("Grid Edges", preview.WrapEdges ? "Wrapping" : "Bounded");
+            EditorGUILayout.LabelField("Grid Edges", "Wrapping");
             EditorGUILayout.LabelField("Grid / Step", $"{preview.GridWidth}x{preview.GridHeight} / {preview.StepInterval.ToString("0.###", CultureInfo.InvariantCulture)} seconds");
             EditorGUILayout.LabelField("Phase Length / Total Phases", $"{preview.PhaseLengthTicks} / {preview.ContinuousPhaseCount}");
             EditorGUILayout.LabelField("Experimental / Coupled Responses", $"{preview.BevExperimentalFeaturesEnabled} / {preview.CoupledSpeciesResponsesEnabled}");
@@ -152,8 +146,7 @@ namespace SaltyGame.EditorTools
                     "54", "32", seed.ToString(CultureInfo.InvariantCulture), "0", "0", "600", "0.1",
                     "0", "0", "0", false, "325", "30", "15", out message)
                 || !preview.TryApplyExperimentalFeatures(true, false, "0", out message)
-                || !preview.TryApplyContinuousPhases(true, "100", out message)
-                || !preview.TryApplyWrapEdges(true, out message)) return false;
+                || !preview.TryApplyContinuousPhases(true, "100", out message)) return false;
             preview.ResetToStart();
             message = $"D5 visual review ready at seed {seed}. Verify 325 / 30 / 15, then press Start.";
             return true;

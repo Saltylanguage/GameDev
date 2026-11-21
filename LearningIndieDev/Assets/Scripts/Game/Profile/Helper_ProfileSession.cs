@@ -24,6 +24,8 @@ namespace SaltyGame
             public List<GenomeAllocationRecord> allocations = new List<GenomeAllocationRecord>();
             public long? resetGeneration;
             public int? populationReservesRank;
+            public int? litterUpgradeRank;
+            public int? foundingHaresRank;
         }
 
         [Serializable]
@@ -605,6 +607,11 @@ namespace SaltyGame
                 error = "The node must belong to the FD2 Rabbit Genome catalog.";
                 return false;
             }
+            if (!node.IsPurchasable)
+            {
+                error = "This legacy Genome entry is retained for existing profiles and cannot be researched.";
+                return false;
+            }
             Current.TryGetGenomeProfile(rabbit, out var profile);
             if (node.Id == "rabbit.warren-network" && profile?.IsNodeUnlocked(node.Id) == true)
             {
@@ -617,9 +624,27 @@ namespace SaltyGame
                 var cost = FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(nextRank);
                 if (Current.RabbitData < cost) { error = "Not enough Rabbit Data for this rank."; return false; }
                 var rankedProfile = new SpeciesGenomeProfile(rabbit, profile.UnlockedNodeIds, profile.ActiveNodeIds,
-                    profile.Allocations, profile.ResetGeneration, nextRank);
+                    profile.Allocations, profile.ResetGeneration, nextRank, profile.LitterUpgradeRank, profile.FoundingRabbitsRank);
                 committingProgression = true;
                 try { return TryCommitProfile(Current.WithGenomeEconomy(Current.RabbitData - cost,
+                    Current.ResearchData, Current.CompletedRuns, rankedProfile), out error); }
+                finally { committingProgression = false; }
+            }
+            if (profile?.IsNodeUnlocked(node.Id) == true
+                && (node.Id == FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId
+                    || node.Id == FieldDataPermanentProgressionDefinition.FoundingRabbitsNodeId))
+            {
+                var currentRank = node.Id == FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId
+                    ? profile.LitterUpgradeRank : profile.FoundingRabbitsRank;
+                if (currentRank >= node.MaximumRanks || profile.Allocations.Count != 0)
+                { error = $"{node.DisplayName} is already at maximum rank or uses a legacy loadout."; return false; }
+                if (Current.RabbitData < node.RabbitDataPrice) { error = "Not enough Rabbit Data for this rank."; return false; }
+                var rankedProfile = new SpeciesGenomeProfile(rabbit, profile.UnlockedNodeIds, profile.ActiveNodeIds,
+                    profile.Allocations, profile.ResetGeneration, profile.PopulationReservesRank,
+                    node.Id == FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId ? currentRank + 1 : profile.LitterUpgradeRank,
+                    node.Id == FieldDataPermanentProgressionDefinition.FoundingRabbitsNodeId ? currentRank + 1 : profile.FoundingRabbitsRank);
+                committingProgression = true;
+                try { return TryCommitProfile(Current.WithGenomeEconomy(Current.RabbitData - node.RabbitDataPrice,
                     Current.ResearchData, Current.CompletedRuns, rankedProfile), out error); }
                 finally { committingProgression = false; }
             }
@@ -627,6 +652,14 @@ namespace SaltyGame
             {
                 error = "The Rabbit Genome node is already owned or allocated.";
                 return false;
+            }
+            foreach (var prerequisite in node.PrerequisiteNodeIds)
+            {
+                if (profile == null || !profile.IsNodeUnlocked(prerequisite))
+                {
+                    error = $"Research prerequisite '{prerequisite}' must be owned first.";
+                    return false;
+                }
             }
             Current.SpeciesDataWallets.TryGetValue(rabbit, out var balance);
             if (balance < node.RabbitDataPrice)
@@ -643,7 +676,9 @@ namespace SaltyGame
             try
             {
                 nextProfile = new SpeciesGenomeProfile(rabbit, unlocked, active, profile?.Allocations,
-                    profile?.ResetGeneration ?? 0, node.Id == "rabbit.warren-network" ? 1 : profile?.PopulationReservesRank ?? 0);
+                    profile?.ResetGeneration ?? 0, node.Id == "rabbit.warren-network" ? 1 : profile?.PopulationReservesRank ?? 0,
+                    node.Id == FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId ? 1 : profile?.LitterUpgradeRank ?? 0,
+                    node.Id == FieldDataPermanentProgressionDefinition.FoundingRabbitsNodeId ? 1 : profile?.FoundingRabbitsRank ?? 0);
                 // FD2 uses owned prerequisites and catalog capacity, not the POC's active-parent/one-point fallback.
                 definition.FreezeOwnedLoadout(nextProfile);
             }
@@ -689,7 +724,8 @@ namespace SaltyGame
                 return false;
             }
             var nextProfile = new SpeciesGenomeProfile(speciesId, profile.UnlockedNodeIds,
-                resetGeneration: profile.ResetGeneration + 1, populationReservesRank: profile.PopulationReservesRank);
+                resetGeneration: profile.ResetGeneration + 1, populationReservesRank: profile.PopulationReservesRank,
+                litterUpgradeRank: profile.LitterUpgradeRank, foundingRabbitsRank: profile.FoundingRabbitsRank);
             committingProgression = true;
             try
             {
@@ -718,7 +754,8 @@ namespace SaltyGame
             {
                 if (activeNodeIds == null) throw new ArgumentException("Choose the owned Genome nodes to activate.");
                 nextProfile = new SpeciesGenomeProfile(speciesId, profile.UnlockedNodeIds,
-                    activeNodeIds, resetGeneration: profile.ResetGeneration, populationReservesRank: profile.PopulationReservesRank);
+                    activeNodeIds, resetGeneration: profile.ResetGeneration, populationReservesRank: profile.PopulationReservesRank,
+                    litterUpgradeRank: profile.LitterUpgradeRank, foundingRabbitsRank: profile.FoundingRabbitsRank);
                 definition.FreezeOwnedLoadout(nextProfile);
             }
             catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException)
@@ -834,7 +871,8 @@ namespace SaltyGame
             active.Add(node.Id);
             allocations.Add(new GenomeNodeAllocation(node.Id, rabbitDataPrice, capacityPoints));
             var nextProfile = new SpeciesGenomeProfile(rabbit, profile?.UnlockedNodeIds, active, allocations,
-                profile?.ResetGeneration ?? 0, profile?.PopulationReservesRank ?? -1);
+                profile?.ResetGeneration ?? 0, profile?.PopulationReservesRank ?? -1,
+                profile?.LitterUpgradeRank ?? -1, profile?.FoundingRabbitsRank ?? -1);
             Flush();
             CommitCurrent(Current.WithGenomeEconomy(Current.RabbitData - rabbitDataPrice,
                 Current.ResearchData, Current.CompletedRuns, nextProfile));
@@ -882,7 +920,8 @@ namespace SaltyGame
                 }
             }
             var nextProfile = new SpeciesGenomeProfile(rabbit, profile.UnlockedNodeIds,
-                profile.ActiveNodeIds, allocations, profile.ResetGeneration, profile.PopulationReservesRank);
+                profile.ActiveNodeIds, allocations, profile.ResetGeneration, profile.PopulationReservesRank,
+                profile.LitterUpgradeRank, profile.FoundingRabbitsRank);
             Flush();
             CommitCurrent(Current.WithGenomeEconomy(Current.RabbitData - node.RabbitDataPrice, Current.ResearchData,
                 Current.CompletedRuns, nextProfile));
@@ -926,7 +965,8 @@ namespace SaltyGame
             }
 
             var nextProfile = new SpeciesGenomeProfile(rabbit, profile.UnlockedNodeIds,
-                resetGeneration: profile.ResetGeneration, populationReservesRank: profile.PopulationReservesRank);
+                resetGeneration: profile.ResetGeneration, populationReservesRank: profile.PopulationReservesRank,
+                litterUpgradeRank: profile.LitterUpgradeRank, foundingRabbitsRank: profile.FoundingRabbitsRank);
             Flush();
             CommitCurrent(Current.WithGenomeEconomy(rabbitData,
                 Current.ResearchData - researchDataFee, Current.CompletedRuns, nextProfile));
@@ -1052,12 +1092,17 @@ namespace SaltyGame
                             }
                             if (store.version >= 8 && !genomeRecord.populationReservesRank.HasValue)
                                 throw new ArgumentException("Population Reserves rank is missing.");
+                            if (store.version >= 10 && (!genomeRecord.litterUpgradeRank.HasValue
+                                || !genomeRecord.foundingHaresRank.HasValue))
+                                throw new ArgumentException("Ranked Gene Lab research state is missing.");
                             genomeProfiles.Add(new SpeciesGenomeProfile(
                                 genomeSpeciesId,
                                 genomeRecord.unlockedNodeIds,
                                 genomeRecord.activeNodeIds,
                                 allocations, store.version < 7 ? 0 : genomeRecord.resetGeneration.Value,
-                                store.version < 8 ? -1 : genomeRecord.populationReservesRank.Value));
+                store.version < 8 ? -1 : genomeRecord.populationReservesRank.Value,
+                store.version < 10 ? -1 : genomeRecord.litterUpgradeRank.GetValueOrDefault(-1),
+                store.version < 10 ? -1 : genomeRecord.foundingHaresRank.GetValueOrDefault(-1)));
                         }
                         catch (ArgumentException)
                         {
@@ -1257,6 +1302,8 @@ namespace SaltyGame
                         activeNodeIds = new List<string>(genomeProfile.ActiveNodeIds),
                         resetGeneration = genomeProfile.ResetGeneration,
                         populationReservesRank = genomeProfile.PopulationReservesRank,
+                        litterUpgradeRank = genomeProfile.LitterUpgradeRank,
+                        foundingHaresRank = genomeProfile.FoundingRabbitsRank,
                     });
                     var genomeRecord = record.genomeProfiles[record.genomeProfiles.Count - 1];
                     foreach (var allocation in genomeProfile.Allocations)

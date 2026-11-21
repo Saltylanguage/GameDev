@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <SharedSource Include="../../Assets/Scripts/Game/Grid/Grid.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Grid/MapTopology.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Grid/GridPattern.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Grid/GridPatternTemplates.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Grid/GridSimulation.cs" />

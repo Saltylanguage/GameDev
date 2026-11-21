@@ -17,8 +17,8 @@ MonoBehaviour:
   description: Unlocks Faster Movement as a journey Mutation.
   targetSpeciesId: rabbit
   prerequisiteNodeIds:
-  - rabbit.guarded-burrow
-  rabbitDataPrice: 5
+  - rabbit.keen-hearing
+  rabbitDataPrice: 20
   capacityPoints: 1
   branchName: FD2
   modifiers: []

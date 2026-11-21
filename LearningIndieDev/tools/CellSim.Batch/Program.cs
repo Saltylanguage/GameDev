@@ -872,6 +872,16 @@ internal static class Program
     static void SelfTest()
     {
         VerifyCarcassFeeding();
+        var shapeCells = new[] { new UnityEngine.Vector2Int(0, 1), new UnityEngine.Vector2Int(1, 1), new UnityEngine.Vector2Int(2, 1) };
+        var shape = new MapTopology(3, 3, shapeCells,
+            new[] { new MapBoundaryConnection(shapeCells[0], UnityEngine.Vector2Int.left, shapeCells[2]) }, "test-shape;seed=17");
+        var shapeData = new CellularSimData(3, 3, new Dictionary<SpeciesId, float>(), SpeciesRuleDefaults.Create(), 6f, .1f, topology: shape);
+        var shapeSnapshot = UnityEngine.JsonUtility.FromJson<PortableSnapshot>(UnityEngine.JsonUtility.ToJson(PortableSnapshot.Create(shapeData)));
+        var restoredShape = shapeSnapshot.Restore();
+        if (restoredShape.Topology.Fingerprint != shape.Fingerprint || !restoredShape.Topology.TryResolveOffset(0, 1, UnityEngine.Vector2Int.left, out var shapeTarget)
+            || shapeTarget.x != 2 || shapeTarget.y != 1 || restoredShape.Topology.IsPlayableCell(1, 0))
+            throw new Exception("Shape topology and generation-input snapshot round-trip failed.");
+        Console.WriteLine("PASS: shape cells, reciprocal seams, gaps and generation inputs survive portable JSON.");
         var gestationPattern = new GridPattern(new[] { UnityEngine.Vector2Int.left, UnityEngine.Vector2Int.right });
         var gestationRules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create());
         gestationRules[SpeciesIds.Carnivore] = new SpeciesRules(

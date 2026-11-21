@@ -156,7 +156,7 @@ internal static class RunTools
     internal static object Specification(SetupOptions options)
     {
         var overridden = options.Comparisons.Select(a => SetupParameters.Find(a.Key)).ToArray();
-        var baseline = new List<string> { "-phaseLengthTicks", options.PhaseTicks.ToString(), "-wrapEdges", options.Wrap ? "true" : "false" };
+        var baseline = new List<string> { "-phaseLengthTicks", options.PhaseTicks.ToString(), "-wrapEdges", "true" };
         if (!overridden.Any(p => p.Argument == "-gridWidth")) baseline.AddRange(["-gridWidth", options.Width.ToString()]);
         if (!overridden.Any(p => p.Argument == "-gridHeight")) baseline.AddRange(["-gridHeight", options.Height.ToString()]);
         var populations = new Dictionary<string, int> { ["plant"] = options.Plants, ["rabbit"] = options.Rabbits, ["fox"] = options.Foxes };

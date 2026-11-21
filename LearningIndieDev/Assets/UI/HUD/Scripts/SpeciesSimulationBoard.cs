@@ -145,8 +145,10 @@ namespace SaltyGame
         bool panMoved;
         int selectedX = -1;
         int selectedY = -1;
+        private bool isTrackingCreature;
         readonly Pen selectionShadow = new Pen { Brush = Brushes.Black, Thickness = 3f };
         readonly Pen selectionOutline = new Pen { Brush = Brushes.White, Thickness = 1.5f };
+        private readonly Pen trackedCreatureOutline = new Pen { Brush = Brushes.Cyan, Thickness = 2f };
         SolidColorBrush foxHuntShadowBrush;
         SolidColorBrush foxHuntAccentBrush;
         SolidColorBrush heartShadowBrush;
@@ -418,11 +420,12 @@ namespace SaltyGame
             InvalidateVisual();
         }
 
-        public void SetSelectedCell(int x, int y)
+        public void SetSelectedCell(int x, int y, bool trackCreature)
         {
-            if (selectedX == x && selectedY == y) return;
+            if (selectedX == x && selectedY == y && isTrackingCreature == trackCreature) return;
             selectedX = x;
             selectedY = y;
+            isTrackingCreature = trackCreature;
             InvalidateVisual();
         }
 
@@ -494,20 +497,44 @@ namespace SaltyGame
         void OnBoardKeyDown(object sender, KeyEventArgs e)
         {
             if (snapshot == null) return;
+            if (e.Key is not (Key.Left or Key.Right or Key.Up or Key.Down)) return;
+            e.Handled = true;
+
             var x = Mathf.Clamp(selectedX, 0, snapshot.Width - 1);
             var y = selectedY >= 0
                 ? Mathf.Clamp(selectedY, 0, snapshot.Height - 1) : snapshot.Height - 1;
+            if (!snapshot.TryGetCell(x, y, out _))
+            {
+                SelectFirstPlayableCell();
+                return;
+            }
+
             switch (e.Key)
             {
                 case Key.Left: x = Math.Max(0, x - 1); break;
                 case Key.Right: x = Math.Min(snapshot.Width - 1, x + 1); break;
                 case Key.Up: y = Math.Min(snapshot.Height - 1, y + 1); break;
                 case Key.Down: y = Math.Max(0, y - 1); break;
-                default: return;
             }
-            Debug.Assert(snapshot.TryGetCell(x, y, out _));
-            CellSelected?.Invoke(x, y);
-            e.Handled = true;
+            if (snapshot.TryGetCell(x, y, out _))
+            {
+                CellSelected?.Invoke(x, y);
+            }
+        }
+
+        private void SelectFirstPlayableCell()
+        {
+            for (var y = snapshot.Height - 1; y >= 0; y--)
+            {
+                for (var x = 0; x < snapshot.Width; x++)
+                {
+                    if (snapshot.TryGetCell(x, y, out _))
+                    {
+                        CellSelected?.Invoke(x, y);
+                        return;
+                    }
+                }
+            }
         }
 
         bool TryGetCellAt(Point position, out int x, out int y)
@@ -697,7 +724,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < snapshot.Width; x++)
                 {
-                    var cell = snapshot.GetCell(x, y);
+                    if (!snapshot.TryGetCell(x, y, out var cell)) continue;
                     var cellRect = GetCellRect(columns, rows, x, snapshot.Height - 1 - y);
 
                     if (!cell.IsPassable) context.DrawRectangle(Brushes.Black, null, cellRect);
@@ -718,7 +745,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < snapshot.Width; x++)
                 {
-                    var cell = snapshot.GetCell(x, y);
+                    if (!snapshot.TryGetCell(x, y, out var cell)) continue;
                     var cellRect = GetCellRect(columns, rows, x, snapshot.Height - 1 - y);
                     if (matingCueActive && IsBirthCueCell(x, y))
                     {
@@ -752,8 +779,17 @@ namespace SaltyGame
             if (snapshot.TryGetCell(selectedX, selectedY, out _))
             {
                 var selected = GetCellRect(columns, rows, selectedX, snapshot.Height - 1 - selectedY);
-                context.DrawRectangle(null, selectionShadow, selected);
-                context.DrawRectangle(null, selectionOutline, selected);
+                if (isTrackingCreature)
+                {
+                    var center = new Point(selected.X + selected.Width * 0.5f, selected.Y + selected.Height * 0.5f);
+                    context.DrawEllipse(null, selectionShadow, center, selected.Width * 0.62f, selected.Height * 0.62f);
+                    context.DrawEllipse(null, trackedCreatureOutline, center, selected.Width * 0.62f, selected.Height * 0.62f);
+                }
+                else
+                {
+                    context.DrawRectangle(null, selectionShadow, selected);
+                    context.DrawRectangle(null, selectionOutline, selected);
+                }
             }
         }
 
@@ -841,7 +877,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < snapshot.Width; x++)
                 {
-                    var cell = snapshot.GetCell(x, y);
+                    if (!snapshot.TryGetCell(x, y, out var cell)) continue;
                     var hash = unchecked((x * 73856093) ^ (y * 19349663));
                     var centerX = left + (x + 0.5f) * cellSize;
                     var centerY = top + (snapshot.Height - y - 0.5f) * cellSize;
@@ -1192,16 +1228,52 @@ namespace SaltyGame
         void DrawTerrain(DrawingContext context, float[] columns, float[] rows, float left, float top, float cellSize)
         {
             var bounds = new NoesisRect(columns[0], rows[0], columns[snapshot.Width] - columns[0], rows[snapshot.Height] - rows[0]);
-            context.DrawRectangle(Brushes.SaddleBrown, null, bounds);
             var terrainColumns = GetPixelAlignedEdges(left - cellSize * 0.5f, cellSize, snapshot.Width + 1, true);
             var terrainRows = GetPixelAlignedEdges(top - cellSize * 0.5f, cellSize, snapshot.Height + 1, false);
-            context.PushClip(new RectangleGeometry(bounds));
+            var clip = snapshot.PlayableCellCount == snapshot.Width * snapshot.Height
+                ? (Noesis.Geometry)new RectangleGeometry(bounds)
+                : CreatePlayableTerrainClip(columns, rows);
+            context.PushClip(clip);
             try
             {
+                context.DrawRectangle(Brushes.SaddleBrown, null, bounds);
                 DrawTerrainFamily(context, grassTerrainTiles, TerrainVisualFamily.Grass, terrainColumns, terrainRows);
                 DrawTerrainFamily(context, desertTerrainTiles, TerrainVisualFamily.Desert, terrainColumns, terrainRows);
             }
             finally { context.Pop(); }
+        }
+
+        private Noesis.Geometry CreatePlayableTerrainClip(float[] columns, float[] rows)
+        {
+            // Terrain sprites straddle cell edges. Clip the entire layer to contiguous runs of cells.
+            var geometry = new StreamGeometry();
+            using var path = geometry.Open();
+            for (var row = 0; row < snapshot.Height; row++)
+            {
+                var y = snapshot.Height - 1 - row;
+                var x = 0;
+                while (x < snapshot.Width)
+                {
+                    if (!snapshot.TryGetCell(x, y, out _))
+                    {
+                        x++;
+                        continue;
+                    }
+
+                    var start = x++;
+                    while (x < snapshot.Width && snapshot.TryGetCell(x, y, out _))
+                    {
+                        x++;
+                    }
+
+                    path.BeginFigure(new Point(columns[start], rows[row]), isFilled: true, isClosed: true);
+                    path.LineTo(new Point(columns[x], rows[row]), isStroked: true, isSmoothJoin: false);
+                    path.LineTo(new Point(columns[x], rows[row + 1]), isStroked: true, isSmoothJoin: false);
+                    path.LineTo(new Point(columns[start], rows[row + 1]), isStroked: true, isSmoothJoin: false);
+                }
+            }
+
+            return geometry;
         }
 
         void DrawTerrainFamily(DrawingContext context, CroppedBitmap[] tiles, TerrainVisualFamily family, float[] columns, float[] rows)
