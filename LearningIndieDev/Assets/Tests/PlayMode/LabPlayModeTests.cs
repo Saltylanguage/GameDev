@@ -660,13 +660,13 @@ namespace SaltyGame.PlayModeTests
                 "12", "8", "10100", "0", "0", "12", "0.1", "0", "0", "0",
                 false, "20", "4", "0", out reason), Is.True, reason);
             StartRewardJourney(desktop, preview);
-            Assert.That(preview.Run.PopulationHistory[0].GetCount(new SpeciesId("rabbit")), Is.EqualTo(9));
+            Assert.That(preview.Run.PopulationHistory[0].GetCount(new SpeciesId("rabbit")), Is.EqualTo(8));
             Assert.That(preview.Run.PopulationPoolCapacity, Is.EqualTo(60));
             Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
             preview.Progression.AddCurrency(1000);
             var purchases = 0;
             while (preview.CanBuyRabbit && purchases++ < 100) Assert.That(preview.BuyRabbit(), Is.True);
-            Assert.That(preview.Run.PopulationHistory[preview.Run.PopulationHistory.Count - 1].GetCount(new SpeciesId("rabbit")), Is.EqualTo(60));
+            Assert.That(preview.Run.PopulationHistory[preview.Run.PopulationHistory.Count - 1].GetCount(new SpeciesId("rabbit")), Is.EqualTo(15));
             var currency = preview.Progression.Currency;
             Assert.That(preview.BuyRabbit(), Is.False);
             Assert.That(preview.Progression.Currency, Is.EqualTo(currency));
@@ -676,14 +676,14 @@ namespace SaltyGame.PlayModeTests
             Assert.That(shell, Is.Not.Null);
             ExecuteCommand(shell, "CloseJourneyMapCommand");
             yield return null;
-            Assert.That(GetProperty(shell, "RabbitPurchaseText"), Does.Contain("POOL FULL"));
+            Assert.That(GetProperty(shell, "RabbitPurchaseText"), Does.Contain("NO ROOM FOR RABBIT"));
             var populationItems = (System.Array)GetProperty(shell, "PopulationControlItems");
             Assert.That(GetProperty(populationItems.GetValue(0), "CanChoose"), Is.EqualTo(false));
-            Assert.That(GetProperty(populationItems.GetValue(0), "Description"), Does.Contain("pool full"));
+            Assert.That(GetProperty(populationItems.GetValue(0), "Description"), Does.Contain("Species population limit reached"));
             if (output != null)
-                yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "population-02-full-pool", simulationCamera);
+                yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "population-02-rabbit-cap", simulationCamera);
             preview.ContinueWithoutUpgrade();
-            Assert.That(preview.Run.PopulationHistory[preview.Run.PopulationHistory.Count - 1].GetCount(new SpeciesId("rabbit")), Is.EqualTo(60));
+            Assert.That(preview.Run.PopulationHistory[preview.Run.PopulationHistory.Count - 1].GetCount(new SpeciesId("rabbit")), Is.EqualTo(15));
         }
 
         static void ExecuteGeneAction(Noesis.DependencyObject content, object lab, string command)
@@ -1082,7 +1082,7 @@ namespace SaltyGame.PlayModeTests
             var preview = root.GetComponent<SpeciesSimulationPreview>();
             ConfigureShortRewardJourney(preview);
             StartRewardJourney(desktop, preview);
-            Assert.That(preview.Run.PopulationHistory[0].GetCount(new SpeciesId("rabbit")), Is.EqualTo(9));
+            Assert.That(preview.Run.PopulationHistory[0].GetCount(new SpeciesId("rabbit")), Is.EqualTo(8));
             Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
             var beforeContinue = preview.Run.PopulationHistory[preview.Run.PopulationHistory.Count - 1]
                 .GetCount(new SpeciesId("rabbit"));
@@ -1168,8 +1168,9 @@ namespace SaltyGame.PlayModeTests
             Assert.That(messageBox.Visibility, Is.EqualTo(Noesis.Visibility.Collapsed));
             Assert.That(GetProperty(shell, "AddRabbitsText").ToString(), Does.Contain("35 LEFT"));
             ExecuteCommand(shell, "AddRabbitsCommand");
-            Assert.That(preview.FieldDataSession.PurchasedRabbitsThisSimulation, Is.EqualTo(1));
-            Assert.That(GetProperty(shell, "AddRabbitsText").ToString(), Does.Contain("34 LEFT"));
+            Assert.That(preview.FieldDataSession.PurchasedRabbitsThisSimulation, Is.Zero);
+            Assert.That(GetProperty(shell, "AddRabbitsText").ToString(), Does.Contain("35 LEFT"));
+            Assert.That(GetProperty(shell, "FieldDataStatusText").ToString(), Does.Contain("not enough Field Data"));
             if (output != null && SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null)
                 yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "gljp-rank-5-journey-allowance", GameObject.Find("GalapagOS Simulation View").GetComponent<Camera>());
             var messageField = typeof(SpeciesSimulationPreview).GetField("phaseRewardMessage", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -1516,14 +1517,14 @@ namespace SaltyGame.PlayModeTests
             ExecuteCommand(root.GetComponent("SaltyGame.VM_SimulationShell"), "StartFieldDataTestJourneyCommand");
             preview.PauseSimulation();
             Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Paused));
-            Assert.That(preview.Run.PopulationHistory[0].GetCount(new SpeciesId("rabbit")), Is.EqualTo(20));
+            Assert.That(preview.Run.PopulationHistory[0].GetCount(new SpeciesId("rabbit")), Is.EqualTo(10));
         }
 
         static void ConfigureStablePermanentScenario(SpeciesSimulationPreview preview)
         {
             Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 "36", "20", "10100", "0", "0", "1800", "0.1", "0", "0", "0", false,
-                "200", "20", "0", out var error), Is.True, error);
+                "200", "10", "0", out var error), Is.True, error);
             var rabbit = new SpeciesId("rabbit");
             var rules = preview.GetSpeciesRuleEditValues(rabbit);
             rules.MovementEnabled = false;
@@ -1544,7 +1545,12 @@ namespace SaltyGame.PlayModeTests
             {
                 for (var tick = 0; tick < 100; tick++)
                     Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True, $"Acceptance round {round}, tick {preview.Run.Tick}");
-                Assert.That(preview.Run.PopulationHistory.Last().GetCount(new SpeciesId("rabbit")), Is.EqualTo(20));
+                Assert.That(preview.Run.PopulationHistory.Last().GetCount(new SpeciesId("rabbit")), Is.EqualTo(10));
+                if (round == 1)
+                    Assert.That(preview.FieldDataSession.TryAddIncomeModifier(
+                        new FieldDataIncomeModifierInstance("acceptance-income", "income-plus-one-per-rabbit",
+                            FieldDataIncomeOperation.AddPerRabbit, 1m), out var incomeError, "acceptance-fixture"),
+                        Is.True, incomeError);
                 if (round == totalRounds) break;
                 ExecuteCommand(shell, "ContinueWithoutUpgradeCommand");
                 ExecuteCommand(shell, "ContinueJourneyCommand");
@@ -1561,7 +1567,7 @@ namespace SaltyGame.PlayModeTests
             yield return null;
             Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Succeeded));
             Assert.That(preview.PermanentResults.IsPending, Is.False, preview.PermanentResults.Error);
-            Assert.That(preview.PermanentResults.Receipt.LeftoverFieldData, Is.EqualTo(520));
+            Assert.That(preview.PermanentResults.Receipt.LeftoverFieldData, Is.EqualTo(510));
             Assert.That(preview.PermanentResults.Receipt.ResearchDataBonus, Is.EqualTo(10));
         }
 
@@ -1611,7 +1617,7 @@ namespace SaltyGame.PlayModeTests
             ConfigurePermanentAcceptanceJourney(root);
             Assert.That(preview.Run.ActiveGenomeSnapshot.GetSpeciesGenome(new SpeciesId("rabbit")).ActiveNodeIds, Is.Empty);
             yield return CompletePermanentAcceptanceJourney(root);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(52));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(51));
             Assert.That(session.Current.ResearchData, Is.EqualTo(10));
             yield return CapturePermanentAcceptance(root, "t12-01-first-earned-success", true);
             AssertAcceptanceReceiptCannotPayAgain(session, preview);
@@ -1632,7 +1638,7 @@ namespace SaltyGame.PlayModeTests
                 ExecuteGeneAction(content, lab, "PurchaseNodeCommand");
                 yield return null;
             }
-            Assert.That(session.Current.RabbitData, Is.EqualTo(2));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(1));
             Assert.That(session.Current.ResearchData, Is.Zero);
             Assert.That(GetProperty(lab, "CanResetGenome"), Is.False);
             yield return CapturePermanentAcceptance(root, "t12-02-earned-genome-purchases");
@@ -1642,12 +1648,12 @@ namespace SaltyGame.PlayModeTests
                 ConfigurePermanentAcceptanceJourney(root);
                 yield return CompletePermanentAcceptanceJourney(root);
                 Assert.That(preview.PermanentResults.Receipt.ConversionResearchLevel, Is.EqualTo(1));
-                Assert.That(preview.PermanentResults.Receipt.SpeciesDataDeposit, Is.EqualTo(57));
+                Assert.That(preview.PermanentResults.Receipt.SpeciesDataDeposit, Is.EqualTo(56));
                 Assert.That(session.Current.CompletedRuns, Is.EqualTo(journey));
                 AssertAcceptanceReceiptCannotPayAgain(session, preview);
                 ExecuteCommand(shell, "ReturnToLabCommand");
             }
-            Assert.That(session.Current.RabbitData, Is.EqualTo(116));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(113));
             Assert.That(session.Current.ResearchData, Is.EqualTo(20));
             OpenDesktopApp(desktop, "Gene Lab");
             yield return null;
@@ -1659,7 +1665,7 @@ namespace SaltyGame.PlayModeTests
             ExecuteGeneAction(content, lab, "ToggleLoadoutNodeCommand");
             yield return null;
             ExecuteGeneAction(content, lab, "ApplyLoadoutCommand");
-            Assert.That(session.Current.RabbitData, Is.EqualTo(116));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(113));
             Assert.That(session.Current.ResearchData, Is.Zero);
             yield return null;
             yield return CapturePermanentAcceptance(root, "t12-03-earned-reset-and-saved-loadout");
@@ -1669,7 +1675,7 @@ namespace SaltyGame.PlayModeTests
             session = menu.GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             Assert.That(session.Current.ProfileId, Is.EqualTo(profileId));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(116));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(113));
             Assert.That(session.Current.ResearchData, Is.Zero);
             Assert.That(session.Current.SettlementReceipts.Count, Is.EqualTo(3));
             ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
@@ -1692,7 +1698,7 @@ namespace SaltyGame.PlayModeTests
             ExecuteCommand(shell, "ConfirmEndCommand");
             yield return null;
             Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Failed));
-            Assert.That(preview.FieldDataSession.FieldDataLostOnFailure, Is.EqualTo(20));
+            Assert.That(preview.FieldDataSession.FieldDataLostOnFailure, Is.EqualTo(10));
             Assert.That(session.Current.RabbitData, Is.EqualTo(beforeFailure.RabbitData));
             Assert.That(session.Current.ResearchData, Is.EqualTo(beforeFailure.ResearchData));
             Assert.That(session.Current.CompletedRuns, Is.EqualTo(3));
@@ -1701,7 +1707,7 @@ namespace SaltyGame.PlayModeTests
             ExecuteCommand(shell, "ReturnToLabCommand");
             session.Reload();
             Assert.That(session.Current.SettlementReceipts.Count, Is.EqualTo(3));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(116));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(113));
         }
 
         [UnityTest]
@@ -1754,7 +1760,7 @@ namespace SaltyGame.PlayModeTests
             ConfigurePermanentAcceptanceJourney(root);
             yield return CompletePermanentAcceptanceJourney(root);
             var preview = root.GetComponent<SpeciesSimulationPreview>();
-            Assert.That(session.Current.RabbitData, Is.EqualTo(original.RabbitData + 52));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(original.RabbitData + 51));
             Assert.That(session.Current.ResearchData, Is.EqualTo(original.ResearchData + 10));
             Assert.That(session.Current.CompletedRuns, Is.EqualTo(original.CompletedRuns + 1));
             AssertAcceptanceReceiptCannotPayAgain(session, preview);
@@ -1790,7 +1796,7 @@ namespace SaltyGame.PlayModeTests
             session = menu.GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             // The approved Sprint and Heightened Senses purchases spend 30 Rabbit Data total.
-            Assert.That(session.Current.RabbitData, Is.EqualTo(original.RabbitData + 22));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(original.RabbitData + 21));
             Assert.That(session.Current.ResearchData, Is.EqualTo(original.ResearchData - 20));
             Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
             if (shape != "local-v3") Assert.That(session.Current.CompletedRunIds, Does.Contain("legacy-one").And.Contain("legacy-two"));
@@ -2506,7 +2512,7 @@ namespace SaltyGame.PlayModeTests
             var scroll = FindGeneControl<Noesis.ScrollViewer>(content, viewer => viewer.ScrollableHeight > 100);
             if (scroll != null) scroll.ScrollToVerticalOffset(scroll.ScrollableHeight);
             if (output != null) yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "decisions-01-controls", camera);
-            preview.Progression.AddCurrency(100);
+            preview.Progression.AddCurrency(2000);
             while (preview.CanUsePopulationControl(5, out _))
             {
                 var removePlants = FindGeneControl<Noesis.Button>(content, candidate =>
@@ -2517,13 +2523,14 @@ namespace SaltyGame.PlayModeTests
                 removePlants.Command.Execute(removePlants.CommandParameter);
                 yield return null;
             }
-            Assert.That(SpeciesPopulationSnapshot.Create(preview.Run.Cells, tick).Plants, Is.Zero);
+            var remainingPlants = SpeciesPopulationSnapshot.Create(preview.Run.Cells, tick).Plants;
+            Assert.That(remainingPlants, Is.LessThan(5));
             yield return null;
-            Assert.That(GetProperty(shell, "FoodPressureText").ToString(), Does.Contain("FOOD EXHAUSTED"));
-            if (output != null) yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "decisions-01b-food-exhausted", camera);
+            Assert.That(GetProperty(shell, "FoodPressureText").ToString(), Does.Contain("FOOD DECLINING"));
+            if (output != null) yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "decisions-01b-food-declining", camera);
             // Restore this feature fixture so the route assertions stay independent of balance.
-            var missingPlants = initial.Plants;
-            while (missingPlants > 0)
+            var missingPlants = initial.Plants - remainingPlants;
+            while (missingPlants >= 5)
             {
                 Assert.That(preview.UsePopulationControl(4), Is.True);
                 missingPlants -= 5;

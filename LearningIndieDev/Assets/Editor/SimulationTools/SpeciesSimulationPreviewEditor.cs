@@ -67,11 +67,11 @@ namespace SaltyGame.EditorTools
                     TryResetD5VisualReview(preview, visualReviewSeed, out runtimeMessage);
                 }
             }
-            EditorGUILayout.HelpBox("S4 developer fixture: Forest Edge, Rabbit, 36x20, 400/20/10, 0.1-second steps, six 100-tick phases. Coupled responses off. Does not save a preset or change scenario assets.", MessageType.Info);
+            EditorGUILayout.HelpBox("S4-style developer fixture: Forest Edge, Rabbit, 36x20, 400/15/10, 0.1-second steps, six 100-tick phases. Coupled responses off. Does not save a preset or change scenario assets.", MessageType.Info);
             using (new EditorGUI.DisabledScope(!preview.SettingsEditable))
             {
                 fixtureSeed = EditorGUILayout.IntField("Fixture Seed", fixtureSeed);
-                if (GUILayout.Button("Apply S4 Fixture"))
+                if (GUILayout.Button("Apply S4-Style Fixture"))
                 {
                     TryApplyS4Fixture(preview, fixtureSeed, out runtimeMessage);
                 }
@@ -80,7 +80,7 @@ namespace SaltyGame.EditorTools
             var run = preview.Run;
             EditorGUILayout.LabelField("Scenario / Species", $"{preview.SelectedScenario?.name ?? "Legacy defaults"} / {preview.PlayerSpecies.Value}");
             EditorGUILayout.LabelField("Seed / Randomization", $"{run?.Seed ?? preview.BaseSeed} / {preview.RandomizeSeedOnStart}");
-            EditorGUILayout.LabelField("Grid Edges", "Wrapping");
+            EditorGUILayout.LabelField("Grid Edges", preview.WrapEdges ? "Wrapping" : "Bounded");
             EditorGUILayout.LabelField("Grid / Step", $"{preview.GridWidth}x{preview.GridHeight} / {preview.StepInterval.ToString("0.###", CultureInfo.InvariantCulture)} seconds");
             EditorGUILayout.LabelField("Phase Length / Total Phases", $"{preview.PhaseLengthTicks} / {preview.ContinuousPhaseCount}");
             EditorGUILayout.LabelField("Experimental / Coupled Responses", $"{preview.BevExperimentalFeaturesEnabled} / {preview.CoupledSpeciesResponsesEnabled}");
@@ -174,7 +174,7 @@ namespace SaltyGame.EditorTools
                 && preview.TrySetPlayerSpecies("rabbit", out message)
                 && preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                     "36", "20", seed.ToString(CultureInfo.InvariantCulture), "720", "0", "600", "0.1",
-                    "0", "0", "0", false, "400", "20", "10", out message)
+                    "0", "0", "0", false, "400", "15", "10", out message)
                 && preview.TryApplyExperimentalFeatures(true, false, "0", out message)
                 && preview.TryApplyContinuousPhases(true, "100", out message)
                 && preview.TryApplyWrapEdges(false, out message);

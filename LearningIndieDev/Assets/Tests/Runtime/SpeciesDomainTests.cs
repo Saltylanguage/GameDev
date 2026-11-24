@@ -291,6 +291,7 @@ namespace SaltyGame.Tests
             {
                 new ScenarioDefinitionAsset.SpeciesEntry(species, 0.7f),
             });
+            SetPrivateField(denseScenario, "wrapEdges", true);
 
             var sparse = sparseScenario.CreateRuntimeData();
             var dense = denseScenario.CreateRuntimeData();
@@ -299,7 +300,7 @@ namespace SaltyGame.Tests
             Assert.That(dense.TryGetStartingProbability(species.Id, out var denseProbability), Is.True);
             Assert.That(sparseProbability, Is.EqualTo(0.1f));
             Assert.That(denseProbability, Is.EqualTo(0.7f));
-            Assert.That(sparse.WrapEdges, Is.True);
+            Assert.That(sparse.WrapEdges, Is.False);
             Assert.That(dense.WrapEdges, Is.True);
 
             Object.DestroyImmediate(sparseScenario);

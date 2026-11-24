@@ -61,7 +61,12 @@ namespace SaltyGame.EditorTests
                 }
                 foreach (var startingPopulation in data.StartingPopulations)
                 {
-                    Assert.That(playable.Count(position => grid.GetCell(position.x, position.y).SpeciesId == startingPopulation.Key),
+                    Assert.That(playable.Count(position =>
+                    {
+                        var cell = grid.GetCell(position.x, position.y);
+                        return (cell.IsCreature && cell.SpeciesId == startingPopulation.Key)
+                            || (cell.IsPlantResource && cell.ResourceSpeciesId == startingPopulation.Key);
+                    }),
                         Is.EqualTo(startingPopulation.Value));
                 }
                 for (var y = 0; y < data.Height; y++)
@@ -73,6 +78,20 @@ namespace SaltyGame.EditorTests
                         Assert.That(board.TryGetCell(x, y, out _), Is.EqualTo(isPlayable));
                     }
                 }
+                run.ConfigureContinuousPhases(1);
+                run.Start();
+                run.Advance(grid.Copy(), data.StepInterval);
+                var runner = new SpeciesSimulationRunner(run, data.SpeciesRules, data.StepInterval);
+                Assert.That(runner.CanChangeBoundaryPopulation(rabbit, 1, out _, out var reason), Is.True, reason);
+                Assert.That(runner.CanChangeBoundaryPopulation(rabbit, 13, out _, out reason), Is.False);
+                Assert.That(reason, Does.Contain("Species population limit"));
+
+                var npcRun = new SimulationRunState(grid.Copy(), new SpeciesId("fox"), 17, data.RunDurationSeconds);
+                npcRun.ConfigureContinuousPhases(1);
+                npcRun.Start();
+                npcRun.Advance(npcRun.Cells.Copy(), data.StepInterval);
+                var npcRunner = new SpeciesSimulationRunner(npcRun, data.SpeciesRules, data.StepInterval);
+                Assert.That(npcRunner.CanChangeBoundaryPopulation(rabbit, 1, out _, out reason), Is.True, reason);
             }
             finally
             {
@@ -693,9 +712,9 @@ namespace SaltyGame.EditorTests
         public void WrappingOverridesSurviveDataCopiesAndCheckpointsWithMatchedInitialCells()
         {
             var bounded = ApplyOverrides("-wrapEdges", "false", "-gridWidth", "36", "-gridHeight", "20", "-runTicks", "600",
-                "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=20,fox=10");
+                "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=15,fox=10");
             var wrapped = ApplyOverrides("-wrapEdges", "true", "-gridWidth", "36", "-gridHeight", "20",
-                "-runTicks", "600", "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=20,fox=10");
+                "-runTicks", "600", "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=15,fox=10");
             Assert.That(bounded.WrapEdges, Is.False);
             Assert.That(wrapped.WrapEdges, Is.True);
             Assert.That(wrapped.Fingerprint, Is.Not.EqualTo(bounded.Fingerprint));
@@ -752,7 +771,7 @@ namespace SaltyGame.EditorTests
                 preview.StartSimulation();
                 var initial = preview.Run.PopulationHistory[0];
                 Assert.That(initial.GetCount(new SpeciesId("plant")), Is.EqualTo(400));
-                Assert.That(initial.GetCount(new SpeciesId("rabbit")), Is.EqualTo(20));
+                Assert.That(initial.GetCount(new SpeciesId("rabbit")), Is.EqualTo(15));
                 Assert.That(initial.GetCount(new SpeciesId("fox")), Is.EqualTo(10));
                 preview.PauseSimulation();
                 Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
@@ -772,7 +791,7 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
-        public void PreviewAlwaysBuildsWrappingSimulationData()
+        public void PreviewBuildsSimulationDataWithScenarioWrapping()
         {
             var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath);
             var previewObject = new GameObject("Wrapping Preview Test");
@@ -781,8 +800,7 @@ namespace SaltyGame.EditorTests
             {
                 var preview = previewObject.AddComponent<SpeciesSimulationPreview>();
                 preview.ConfigureScenarioOptions(new[] { scenario });
-                typeof(SpeciesSimulationPreview).GetField("rules", PrivateInstance)
-                    .SetValue(preview, scenario.CreateRuntimeData().SpeciesRules);
+                typeof(SpeciesSimulationPreview).GetMethod("Awake", PrivateInstance).Invoke(preview, null);
 
                 var data = (CellularSimData)typeof(SpeciesSimulationPreview)
                     .GetMethod("CreateSimulationData", PrivateInstance)

@@ -3930,20 +3930,17 @@ namespace SaltyGame
             int hiddenRabbits = 0)
         {
             var counts = new Dictionary<SpeciesId, int>();
-            for (var y = 0; y < grid.Height; y++)
+            foreach (var position in grid.Topology.PlayableCoordinates)
             {
-                for (var x = 0; x < grid.Width; x++)
+                var cell = grid.GetCell(position.x, position.y);
+                if (cell.IsCreature)
                 {
-                    var cell = grid.GetCell(x, y);
-                    if (cell.IsCreature)
-                    {
-                        AddSpeciesPopulation(counts, cell.SpeciesId,
-                            1 + (includePendingLitters ? cell.PendingLitterSize : 0));
-                    }
-                    else if (cell.IsPlantResource)
-                    {
-                        AddSpeciesPopulation(counts, GetResourceSpeciesId(cell), 1);
-                    }
+                    AddSpeciesPopulation(counts, cell.SpeciesId,
+                        1 + (includePendingLitters ? cell.PendingLitterSize : 0));
+                }
+                else if (cell.IsPlantResource)
+                {
+                    AddSpeciesPopulation(counts, GetResourceSpeciesId(cell), 1);
                 }
             }
 

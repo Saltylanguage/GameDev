@@ -660,7 +660,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator FieldDataRoundCapturesMutationAndRemainingRabbitPurchases()
+        public IEnumerator FieldDataRoundCapturesMutationAndUnspentRabbitAllowance()
         {
             var backup = ProfilePlayerPrefsBackup.Capture();
             try
@@ -701,8 +701,10 @@ namespace SaltyGame.PlayModeTests
                 ExecuteCommand(GetProperty(shell, "ContinueWithoutUpgradeCommand"));
                 Assert.That(GetProperty(shell, "AddRabbitsText").ToString(), Does.Contain("10 LEFT"));
                 ExecuteCommand(GetProperty(shell, "AddRabbitsCommand"));
-                Assert.That(GetProperty(shell, "AddRabbitsText").ToString(), Does.Contain("9 LEFT"));
-                Assert.That(preview.FieldDataSession.PurchasedRabbitsThisSimulation, Is.EqualTo(1));
+                yield return null;
+                Assert.That(GetProperty(shell, "AddRabbitsText").ToString(), Does.Contain("10 LEFT"));
+                Assert.That(preview.FieldDataSession.PurchasedRabbitsThisSimulation, Is.Zero);
+                Assert.That(GetProperty(shell, "FieldDataStatusText").ToString(), Does.Contain("not enough Field Data"));
                 if (output != null)
                 {
                     yield return BringFieldDataElementIntoView(camera, "FieldDataIncomePanel");
@@ -1134,6 +1136,8 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(((UnityEngine.Object)GetProperty(preview, "SelectedScenario")).name, Is.EqualTo("ForestEdge"));
 
                 preview.SaveCurrentSettingsAsDefault();
+                var expectedWidth = preview.GridWidth;
+                var expectedHeight = preview.GridHeight;
                 var authoredSettings = PlayerPrefs.GetString(CurrentDefaultSettingsKey);
                 var legacySettings = authoredSettings
                     .Replace($"\"width\":{(int)GetProperty(preview, "GridWidth")}", "\"width\":64")
@@ -1150,11 +1154,11 @@ namespace SaltyGame.PlayModeTests
 
                 desktopRoot = GameObject.Find(DesktopCameraName);
                 preview = desktopRoot.GetComponent<SpeciesSimulationPreview>();
-                Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(36));
-                Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(20));
+                Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(expectedWidth));
+                Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(expectedHeight));
                 var migratedSettings = PlayerPrefs.GetString(CurrentDefaultSettingsKey);
-                StringAssert.Contains("\"width\":36", migratedSettings);
-                StringAssert.Contains("\"height\":20", migratedSettings);
+                StringAssert.Contains($"\"width\":{expectedWidth}", migratedSettings);
+                StringAssert.Contains($"\"height\":{expectedHeight}", migratedSettings);
             }
             finally
             {

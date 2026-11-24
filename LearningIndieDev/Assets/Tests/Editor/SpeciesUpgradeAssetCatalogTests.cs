@@ -79,7 +79,7 @@ namespace SaltyGame.EditorTests
 
             var rules = rabbitAsset.CreateRules();
             Assert.That(rules.ReproductionChance, Is.EqualTo(0.5f).Within(0.0001f));
-            Assert.That(rules.StartingEnergy, Is.EqualTo(12));
+            Assert.That(rules.StartingEnergy, Is.EqualTo(24));
             Assert.That(rules.MaximumEnergy, Is.EqualTo(48));
             Assert.That(rules.EnergyValue, Is.EqualTo(96));
             Assert.That(rules.ReproductionChance, Is.EqualTo(0.5f).Within(0.0001f));
