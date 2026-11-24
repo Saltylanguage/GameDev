@@ -566,7 +566,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeCatalogProvider
   speciesMaps:
   - {fileID: 11400000, guid: 367d3fdd2236f7e46a386289af2c9e55, type: 2}
-  - {fileID: 11400000, guid: 7a1f8c2e4d6b90f3a5c7e9b1d2f4086c, type: 2}
+  - {fileID: 11400000, guid: 7b2e9d3f5a1c6048b6e8f0d2c4a7159e, type: 2}
   - {fileID: 11400000, guid: 4b7644c3899e49f69f97c0dbddf42733, type: 2}
   - {fileID: 11400000, guid: 82ab3dd5b9a94de494564ab35c76cbfd, type: 2}
   - {fileID: 11400000, guid: 31a4972f052345ba9b101055dc7dbb4c, type: 2}

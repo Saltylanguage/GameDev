@@ -1,5 +1,11 @@
 # Working state
 
+**November 24 Rabbit/M2 integration:** The normal checkout tracks the Rabbit
+branch. The five M2 corrections are integrated locally alongside the existing
+ProjectMain map and Gene Lab work. The Forest Edge playtest edit is in a
+verified stash. See the [integration handoff](handoffs/2026-11-24-1105-codex-rabbit-and-m2-integration.md)
+for the map and Genome catalog fixes, validation, and open M2 work.
+
 **November 21 Rabbit/ProjectMain integration:** `codex/rabbit-identity-rename` now includes the accepted GLJP prices, ranks and equipment gates plus Bev's fixed and irregular map layouts. Rabbit remains the canonical species ID; legacy Hare profile fields and IDs remain readable. Forest Edge and the D5 visual review scenario wrap by their authored setting; other scenarios can remain bounded. The portable Batch and Workbench builds, Runtime and Runtime Tests compilation, and Batch self-test passed. Unity test execution remains pending: `CellSim.ps1 Doctor` found a project lock with no reachable Editor. See the [integration handoff](handoffs/2026-11-21-codex-rabbit-projectmain-integration.md).
 
 **November 19 irregular map shapes:** Bev-Ticket-3 adds the seeded Irregular Land layout, optional interior hole, and optional detached island. Each landmass wraps independently. The existing LearningIndieDev entry in Unity Hub opens `F:/ForkBin/GameDev/LearningIndieDev`. See the [detached-island handoff](handoffs/2026-11-19-1604-codex-bev-ticket-3-detached-islands-and-same-island-seams.md) for Inspector settings and validation.
@@ -21,6 +27,38 @@ scenarios stay bounded. Focused code and asset checks passed, but Unity tests
 could not start because a project lock exists with no reachable Pipeline Editor.
 See the [wrapping handoff](handoffs/2026-11-19-codex-forest-edge-wrapping.md).
 
+**November 18 independent M2 review comparison:** Josh and Sim's latest
+responses have been compared without treating Sim's startup-fix history as a
+disagreement. Josh deferred Q1 profile visibility to Track B, retired Q5 and
+1280×720 from the active M2 target, adopted Sim's Q14 board-event readability
+finding, clarified that Reduced Motion showed no apparent effect to him, and
+requested investigation of the Field Data test-route return path. Josh then
+chose to hide that test route from normal players; its map button is now gated
+by Developer Mode, with a fresh-profile player check still pending. The
+[comparison record](Reviews/M2-Comparison-20261118.md) preserves the original
+responses and source-backed Q20/Q21 findings. The [Q20 handoff](handoffs/2026-11-18-1236-codex-m2-q20-reduced-motion-explanation.md)
+records the Settings explanation and unverified equivalence; the [Q21 handoff](handoffs/2026-11-18-1215-codex-m2-q21-test-route-visibility.md)
+records the route change and player check. M2 and balance decisions remain
+open; Track A work is not gated on this comparison.
+
+**November 16 vertical-slice meeting direction (recorded November 17):** Josh
+listed Track A technical foundations before balance work: wrapping,
+water, Trinket skeleton, Mutation cards, terrain upgrades, creature-scale feel
+and additional playable species. Track B defers the all-screen UI treatment,
+important-event visuals, Field Report presentation and audio until Josh finishes
+helping Sim with Track A. The reward prototype is the screen-polish benchmark.
+New and existing Trello homes, scope conflicts and open decisions are in the
+[meeting handoff](handoffs/2026-11-17-0741-codex-m2-vertical-slice-meeting-tracks.md).
+No M2 outcome or balance value was approved by this planning update.
+
+**November 16 M2 corrections, integrated locally November 24:** The Desktop
+Simulation shortcut introduces the authored Rabbit selection before Journey.
+The Expedition Planner continues to launch its selected scenario and species
+directly. A Desktop listener takes over after the menu's temporary chime
+listener ends. The [original correction handoff](handoffs/2026-11-16-1939-codex-m2-selection-audio-listener.md)
+records focused PlayMode and visual checks on the sibling branch. Human
+listening checks remain open.
+
 **November 18 Rabbit identity:** Josh confirmed Rabbit, Fox, Owl, Deer, and
 Wolf as the planned playable test roster. Rabbit is the canonical gameplay
 species name and ID; the former `hare` identity is retained only for profile
@@ -36,8 +74,6 @@ The November 18 clean Unity check passed 779 EditMode tests (one skipped) and
 101 PlayMode tests (seven skipped). The sole PlayMode failure is the previously
 recorded authored Forest Edge seed 10101 route, which loses the player species
 before the first shop; the rename did not close that M2 blocker.
-
-**M2 independent manual review:** Josh and Sim can use the same [questionnaire](M2_MANUAL_REVIEW_QUESTIONNAIRE.md), [run packet](M2_INDEPENDENT_REVIEW_PACKET.md), and separate copies of the [response template](M2_MANUAL_REVIEW_RESPONSE_TEMPLATE.md). They answer before comparing results; no human answers are recorded yet. A failed authored Rabbit route is blocked evidence, not a completed journey. Josh retains the factual-report and M2 closeout decisions.
 
 **November 16 M2 art review and sharing:** Chrono's latest Hero and Rabbit originals now occupy the existing runtime art paths, with the Rabbit 32/64/128 and atlas-compatible exports rebuilt in Unity. The remaining delivered UI and animal PNGs are packaged as source candidates for Josh and Sim. Focused Desktop/board visual tests passed and were inspected at 1280×720 and 1920×1080. All M2 items remain open pending human validation; the known Rabbit route blocker and M2-04 report review remain separate. See the [M2 review handoff](handoffs/2026-11-16-1055-codex-m2-05-art-and-m2-review-handoff.md).
 

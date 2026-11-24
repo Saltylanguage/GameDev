@@ -6,8 +6,8 @@ Use this packet with the [same numbered questionnaire](M2_MANUAL_REVIEW_QUESTION
 
 1. Check out `codex/s6-predator-first` at the questionnaire publication commit shared with both reviewers. The gameplay baseline is `71c0c7b7`; the questionnaire commit adds documentation only. Record the **exact** Git HEAD or build ID in Q0. If gameplay changes before both reviews finish, use the same pinned revision for both or restart the affected checks.
 2. Use separate fresh profiles. Start from the normal menu and authored **Forest Edge / Rabbit** route. Use seed `10100` where the player flow exposes a seed choice; otherwise record the seed displayed by the run. Record any difference in scenario, profile state, input device, build type, or operating system. Do not share save data.
-3. Check 1280×720 and 1920×1080, keyboard and pointer input, 1× and 4× speed, and reduced motion where the question asks. A real process exit/relaunch requires a built game; if testing only in the Editor, mark that part **Blocked**. Keep fixtures or debug shortcuts out of the legitimate route result.
-4. Answer Q0–Q23 in order using a separate copy of the [response template](M2_MANUAL_REVIEW_RESPONSE_TEMPLATE.md), or have an assistant ask one question at a time and record the answers. Do not read or discuss the other reviewer's answers until both copies are complete. A one-sentence observation is enough; attach a seed or screenshot for a failure when convenient. **Blocked** means the state was unreachable, not that it passed.
+3. Check 1920×1080, keyboard and pointer input, 1× and 4× speed, and reduced motion where the question asks. Q5's 1280×720 check was retired from M2 acceptance on November 18, 2026; preserve the original answers as historical evidence. A real process exit/relaunch requires a built game; if testing only in the Editor, mark that part **Blocked**. Keep fixtures or debug shortcuts out of the legitimate route result.
+4. Answer Q0–Q23 in order, skipping retired Q5 in any new review, using a separate copy of the [response template](M2_MANUAL_REVIEW_RESPONSE_TEMPLATE.md), or have an assistant ask one question at a time and record the answers. Do not read or discuss the other reviewer's answers until both copies are complete. A one-sentence observation is enough; attach a seed or screenshot for a failure when convenient. **Blocked** means the state was unreachable, not that it passed.
 
 Both reviewers are project insiders. Their independent answers are useful for alignment, but they do not replace the first-time external-player evidence required by M2-10. Josh remains the M2 and M2-04 factual-report decision owner; Sim's Q23 answer is an independent accuracy review.
 
@@ -18,7 +18,6 @@ Run these from `LearningIndieDev` with the host Unity permissions required by `A
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Doctor
 powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Test -Mode All -Execution Clean
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 -Execution Clean -TestFilter 'SaltyGame.PlayModeTests.GalapagOSVisualAcceptanceTests.GalapagOSDesktopAndSimulationCaptureGameViewEvidence' -ScreenWidth 1280 -ScreenHeight 720
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 -Execution Clean -TestFilter 'SaltyGame.PlayModeTests.GalapagOSVisualAcceptanceTests.GalapagOSDesktopAndSimulationCaptureGameViewEvidence' -ScreenWidth 1920 -ScreenHeight 1080
 ```
 

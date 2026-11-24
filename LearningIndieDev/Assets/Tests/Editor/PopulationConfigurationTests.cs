@@ -61,7 +61,12 @@ namespace SaltyGame.EditorTests
                 }
                 foreach (var startingPopulation in data.StartingPopulations)
                 {
-                    Assert.That(playable.Count(position => grid.GetCell(position.x, position.y).SpeciesId == startingPopulation.Key),
+                    Assert.That(playable.Count(position =>
+                    {
+                        var cell = grid.GetCell(position.x, position.y);
+                        return cell.SpeciesId == startingPopulation.Key
+                            || (cell.IsPlantResource && cell.ResourceSpeciesId == startingPopulation.Key);
+                    }),
                         Is.EqualTo(startingPopulation.Value));
                 }
                 for (var y = 0; y < data.Height; y++)
@@ -693,9 +698,9 @@ namespace SaltyGame.EditorTests
         public void WrappingOverridesSurviveDataCopiesAndCheckpointsWithMatchedInitialCells()
         {
             var bounded = ApplyOverrides("-wrapEdges", "false", "-gridWidth", "36", "-gridHeight", "20", "-runTicks", "600",
-                "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=20,fox=10");
+                "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=15,fox=10");
             var wrapped = ApplyOverrides("-wrapEdges", "true", "-gridWidth", "36", "-gridHeight", "20",
-                "-runTicks", "600", "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=20,fox=10");
+                "-runTicks", "600", "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=15,fox=10");
             Assert.That(bounded.WrapEdges, Is.False);
             Assert.That(wrapped.WrapEdges, Is.True);
             Assert.That(wrapped.Fingerprint, Is.Not.EqualTo(bounded.Fingerprint));
@@ -772,24 +777,21 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
-        public void PreviewAlwaysBuildsWrappingSimulationData()
+        public void PreviewWithoutAnAuthoredScenarioDefaultsToBoundedSimulationData()
         {
-            var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath);
             var previewObject = new GameObject("Wrapping Preview Test");
             previewObject.SetActive(false);
             try
             {
                 var preview = previewObject.AddComponent<SpeciesSimulationPreview>();
-                preview.ConfigureScenarioOptions(new[] { scenario });
-                typeof(SpeciesSimulationPreview).GetField("rules", PrivateInstance)
-                    .SetValue(preview, scenario.CreateRuntimeData().SpeciesRules);
+                typeof(SpeciesSimulationPreview).GetMethod("Awake", PrivateInstance).Invoke(preview, null);
 
                 var data = (CellularSimData)typeof(SpeciesSimulationPreview)
                     .GetMethod("CreateSimulationData", PrivateInstance)
                     .Invoke(preview, null);
 
-                Assert.That(preview.WrapEdges, Is.True);
-                Assert.That(data.WrapEdges, Is.True);
+                Assert.That(preview.WrapEdges, Is.False);
+                Assert.That(data.WrapEdges, Is.False);
             }
             finally
             {

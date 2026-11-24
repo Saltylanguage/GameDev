@@ -50,8 +50,11 @@ poorly.
 ## Player experience and agency
 
 The player enters the curated Forest Edge/Rabbit journey through the Desktop
-profile and launch flow. The scenario and species choice may be constrained,
-but the player must understand that choice and the opening Fox pressure. During
+profile and launch flow. Clicking Simulation opens Species & Scenario Selection:
+Rabbit and Forest Edge are selected, Rabbit is the only available
+player species, and the other shown species are locked silhouettes. Continue
+opens the Journey map, then the first reward, then the first simulation. The
+screen explains the opening Fox pressure. During
 simulation nodes, the player observes the live board, pauses or changes speed,
 and inspects cells and species. The player does not directly move individual
 cells or edit raw parameters.

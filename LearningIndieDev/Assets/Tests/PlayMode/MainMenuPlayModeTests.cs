@@ -112,9 +112,7 @@ namespace SaltyGame.PlayModeTests
             var openSimulation = GetCommand(desktopViewModel, "OpenDesktopIconCommand");
             openSimulation.GetType().GetMethod("Execute")?.Invoke(
                 openSimulation, new object[] { "Simulation" });
-            Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
-            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
-            Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
+            GalapagOSVisualAcceptanceTests.ChooseFirstForestEdgeCycle(desktopRoot.GetComponent("SaltyGame.VM_SimulationShell"));
             var tickDeadline = Time.realtimeSinceStartup + 3f;
             while (preview.Run.Tick < 2 && Time.realtimeSinceStartup < tickDeadline)
             {

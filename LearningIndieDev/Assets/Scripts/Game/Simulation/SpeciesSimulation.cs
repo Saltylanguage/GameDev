@@ -3934,6 +3934,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < grid.Width; x++)
                 {
+                    if (!grid.IsPlayableCell(x, y)) continue;
                     var cell = grid.GetCell(x, y);
                     if (cell.IsCreature)
                     {

@@ -107,6 +107,16 @@ uncertainty or regression risk.
   nonplayed-species persistence unchanged pending a separate decision. See the
   [S6 design record](Sprints/S6-control-record.md#november-18-cozy-individual-led-simulation-direction).
 
+- **November 16 vertical-slice planning (recorded November 17):** Josh listed
+  wrapping, ponds/rivers, a verifiable ScriptableObject Trinket skeleton,
+  Mutation cards, terrain upgrades, a cozier creature-scale simulation and
+  additional playable species into Track A before balance work. Josh will help
+  Sim on that track. Track B defers the all-screen UI, VFX, Field Report and
+  audio treatment; the reward-screen prototype sets its polish benchmark.
+  The existing M2 gate and M3 content boundary need explicit reconciliation,
+  especially the new playable-species scope and the conflict between mandatory
+  wrapping and bounded island maps. See the [meeting handoff](handoffs/2026-11-17-0741-codex-m2-vertical-slice-meeting-tracks.md).
+
 - **November 11–13, 2026 carcass feeding and Fox energy first pass:** A lethal
   attack now leaves the prey's authored energy as a shareable meat resource;
   each eater consumes only enough to fill its stomach, with any remainder
@@ -291,7 +301,10 @@ uncertainty or regression risk.
   S6 plan above supersedes that forecast. The
   October 16 [FD-T01 entry decision](FIELD_DATA_ENTRY_REVIEW.md) retains the
   larger map as the Desktop Simulation entry; the five-node Field Data test
-  is selected from that map. Bevin accepted the composition boundary and waived further review on October 16.
+  was selected from that map. Bevin accepted the composition boundary and waived further review on October 16.
+  The November 18 M2 Q21 decision narrows that entry: normal players see the
+  authored Journey, while the Field Data test-route button is visible only in
+  Developer Mode. This preserves developer test access.
   The October 17 route correction adds a five-node preview and explicit Start
   action after selection; income modifiers are shop-only, while free round and
   node choices contain species upgrades.
@@ -458,6 +471,12 @@ uncertainty or regression risk.
   flow. The standalone Lab and `CellularAutomataPrototype` remain a separate
   legacy/developer test route; their composition and tests must not depend on
   the retired Island Survivor runtime.
+- **November 16 M2 launch correction:** Desktop Simulation opens a constrained
+  Species & Scenario Selection screen before the Journey map. Rabbit/Hare and
+  Forest Edge are selected; Rabbit/Hare is the only available player species,
+  while the other shown species appear as locked silhouettes. The sequence is
+  selection → Journey → first reward → first simulation. This is a player-facing
+  route change, not a new playable-species or scenario unlock.
 
 ## Cellular-automata roguelike concept
 
