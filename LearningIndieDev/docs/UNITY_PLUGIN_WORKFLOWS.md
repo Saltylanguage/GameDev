@@ -107,16 +107,16 @@ The live lane calls the project-owned `cellsim_run` Pipeline command. The clean
 lane uses the established Editor batch method through `unity run`. Both execute
 the same experiment implementation and produce the same report bundle.
 
-For graphics acceptance, use the project visual runner with a focused test. Its
-default output is 1280x720. `Auto` can reuse a ready graphics-capable Editor or
-start a clean graphics-capable run when the project is closed:
+For graphics diagnostics, use the project visual runner with a focused test.
+Its default output is 1280x720, which is no longer an M2 acceptance target.
+`Auto` can reuse a ready graphics-capable Editor or start a clean graphics-capable
+run when the project is closed:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Visuals -TestFilter 'SaltyGame.PlayModeTests.GalapagOSVisualAcceptanceTests.GalapagOSDesktopAndSimulationCaptureGameViewEvidence'
 ```
 
-To verify another resolution, call the underlying runner directly. The current
-acceptance targets are 1280x720 and 1920x1080:
+For current M2 graphics acceptance, call the underlying runner at 1920x1080:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 -TestFilter 'SaltyGame.PlayModeTests.GalapagOSVisualAcceptanceTests.GalapagOSDesktopAndSimulationCaptureGameViewEvidence' -ScreenWidth 1920 -ScreenHeight 1080

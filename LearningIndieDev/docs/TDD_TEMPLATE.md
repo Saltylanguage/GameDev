@@ -38,7 +38,7 @@ This is the engineering source of truth for runtime ownership, data contracts, d
 | Engine | Unity 6000.4.6f1 | **Current** |
 | Player presentation | Noesis/XAML plus Unity composition and a custom board renderer | **Implemented foundation** |
 | Target platform | Windows 64-bit Steam, keyboard/mouse | **Committed slice target** |
-| Resolution | 1920×1080 target; 1280×720 functional | **Graphics acceptance recorded** |
+| Resolution | 1920×1080 target; 1280×720 outside the current supported target; lower bound TBD | **Graphics acceptance recorded at the target** |
 | Determinism | Seeded run; deterministic for a fixed scenario/ruleset/version/schedule | **Implemented within recorded evidence bounds** |
 | Player schedule | 6 rounds × 10 seconds of simulation time; 5 Mutation choices after rounds 1–5 | **Committed product contract** |
 | Tick conversion | At a 0.1-second step interval, one 10-second round is 100 completed ticks; simulation time is authoritative | **Runtime/configuration acceptance pending** |

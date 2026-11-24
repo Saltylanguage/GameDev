@@ -1,6 +1,6 @@
-# Cellular Automata Roguelike Roadmap v2.7
+# Cellular Automata Roguelike Roadmap v2.8
 
-> **Status:** Active production roadmap | **Version:** 2.7 | **Updated:**
+> **Status:** Active production roadmap | **Version:** 2.8 | **Updated:**
 > 2026-11-18 | **Cadence:** Two weeks, approximately 20 hours per developer |
 > **Product owner:** Josh
 
@@ -8,6 +8,22 @@ This is the product-level source of truth for what the team is trying to make,
 what comes next, and what must be true before work moves forward. Feature briefs,
 sprint control records, Trello cards, and technical plans provide execution
 detail; they do not silently expand this roadmap.
+
+**November 18 visual target decision:** Josh removed 1280×720 from the supported
+M2 acceptance target and retired questionnaire Q5. Review the current player
+route at 1920×1080; no replacement minimum resolution has been specified.
+Earlier 1280×720 captures remain historical evidence, not a current gate.
+
+**November 16 meeting direction, recorded November 17:** Josh listed
+wrapping, ponds/rivers, a verifiable ScriptableObject Trinket skeleton,
+Mutation cards, terrain upgrades, a cozier creature-scale simulation and
+additional playable species into technical Track A before balance work. Josh
+will help Sim with Track A. Visual polish and player feedback across UI, VFX,
+Field Report and audio form deferred Track B; the reward-screen prototype is
+the polish benchmark for all screens. The [meeting handoff](docs/handoffs/2026-11-17-0741-codex-m2-vertical-slice-meeting-tracks.md)
+links the Trello work and open decisions. Reconcile this added scope with the
+ten-outcome M2 gate below and the M3 content boundary before marking new work
+accepted. No balance value or milestone closeout was approved by this update.
 
 **Sprint transition:** [S5](docs/Sprints/S5-control-record.md) remains active
 through November 15; its Field Data tickets closed October 21, while current
@@ -24,9 +40,11 @@ the need to preserve permanent progression already developed elsewhere.
 Deliver a run-based game built around **cellular automata as a roguelike**. The
 player guides one species through a journey of simulation nodes and decisions
 on a map. Each simulation node has six ten-second rounds in one continuing
-ecosystem; only the played species' population count carries into the next
-simulation node, where all individuals and other populations start fresh from
-authored data. Temporary **Mutations** shape the journey. Successful settlement
+ecosystem. The current implementation carries the played species' population
+count into the next simulation node and recreates individuals. The November 18
+design target is to carry surviving Rabbits' identity, state, and event history
+across nodes. Nonplayed populations still reset from authored data. Temporary
+**Mutations** shape the journey. Successful settlement
 can fund permanent Gene Lab research and **Genome Upgrades** for future
 journeys. The long-term objective is a diverse, resilient ecosystem rather
 than one dominant species.
@@ -159,11 +177,11 @@ sprint commitments.
 
 | Required outcome | Current foundation / open acceptance | Planned gate |
 | --- | --- | --- |
-| Main menu, profile/new/continue, scenario/species selection, run introduction | Menu and versioned profiles exist; canonical Desktop freezes Forest Edge/Rabbit. Make the constrained scenario/species choice and first-run purpose clear; verify real exit/relaunch and launch inputs. | S7 integration |
-| Complete live-run UI: readable board, inspection, objectives, upgrades, feedback | Board, Field Ledger, controls, choices, and map exist. A player must find the Fox pressure, inspect relevant state, understand the current objective and next action at 1280×720 and 1920×1080. | S6 comprehension, S7 visual acceptance |
+| Main menu, profile/new/continue, scenario/species selection, run introduction | Menu and versioned profiles exist. Desktop Simulation must open Species & Scenario Selection with Rabbit and Forest Edge selected, Rabbit alone available, and other shown species as locked silhouettes; Continue then opens Journey, first reward, and first simulation. Verify real exit/relaunch and launch inputs. | S7 integration |
+| Complete live-run UI: readable board, inspection, objectives, upgrades, feedback | Board, Field Ledger, controls, choices, and map exist. A player must find the Fox pressure, inspect relevant state, understand the current objective and next action at 1920×1080. | S6 comprehension, S7 visual acceptance |
 | One curated scenario and small visually distinct species roster | Forest Edge with Rabbit, Fox, and Plant resources is authored. Keep Fern as a resource, not a promised playable species; validate the chosen route and visual identities rather than expanding content. | S6 route review, S7 visual acceptance |
 | Three understandable strategies using the proven upgrade grammar | Current introductory answers are avoidance, survival, and faster reproduction. Verify each is available to a fresh profile, has an observable effect and tradeoff, and can be described after legitimate play. Preserve older Trailblazer/Warren/Gardeners research as history. | S6 core gate |
-| Selected art direction on board and core UI | Pastel eco-OS and board-first direction are approved; production art and event cues are partial. Review actual board, menu, choices, results, and imported art at both target resolutions; do not substitute concept images for runtime art. | S7 presentation gate |
+| Selected art direction on board and core UI | Pastel eco-OS and board-first direction are approved; production art and event cues are partial. Review actual board, menu, choices, results, and imported art at 1920×1080; do not substitute concept images for runtime art. | S7 presentation gate |
 | Initial UI, upgrade, danger, outcome, ambience, and music audio language | Menu and birth chimes exist; the wider palette and sourced ambience/music remain open. Validate distinct, restrained cues, mute/volume behavior, and 4× fatigue without requiring final-volume production. | S7 presentation gate |
 | Aggregated, rate-limited dense-activity feedback | Birth grouping, a chime limit, and prioritized reactions are partial. Test crowded and 4× play for truthful, bounded visual/audio cues and a readable summary of suppressed routine events. | S6 feedback, S7 acceptance |
 | Results identify primary causes and upgrade contributions | Settlement, population, stat lines, and loadouts exist. Explain leading observed causes and show directly measured Mutation effects or a clearly identified matched comparison; do not claim causal contribution from a loadout list alone. | S6 causal read, S7 result gate |
@@ -294,7 +312,7 @@ before M2.
 | F11 | Scenario pressure | Next | Make Forest Edge support multiple readable responses | L | not selected in Field Data S5 kickoff | Josh / Sim | Proposed / horizon |
 | F12 | Collection and Field Notes | Next | Define seen, discovered, owned, researched, and secret states | L | taxonomy unscheduled; full surface post-M2 | Josh / UI reviewer | Horizon |
 | F13 | Expedition setup and home-base context | Next | Verify canonical profile/menu-to-Desktop-to-journey-to-results-to-next-journey route, constrained selection, and real exit/relaunch | L | S3/S4 foundation; S7 integration | Josh / Sim for launch inputs | Foundation published; full route acceptance open |
-| F14 | Readable visual language | Next | Apply approved pastel eco-OS and board-first direction to menu, board, choices, and results at both target resolutions | L | Current exploration; S7 presentation | Josh / art reviewer | Partial production assets and visual evidence; review open |
+| F14 | Readable visual language | Next | Apply approved pastel eco-OS and board-first direction to menu, board, choices, and results at the 1920×1080 acceptance target | L | Current exploration; S7 presentation | Josh / art reviewer | Partial production assets and visual evidence; review open |
 | F15 | Audio and simulation feedback | Next | Initial UI, upgrade, danger, outcome, ambience, and music palette with truthful dense-event limits and mute/reduced-motion equivalents | M | S6 feedback; S7 presentation | Josh / audio reviewer TBD | Chime/reaction pilots; full palette and acceptance open |
 | F16 | Species Genome progression | Now → Later | Preserve the integrated Gene Lab research, owned/equipped distinction, journey eligibility, and permanent settlement; prove one earned unlock applies on a later journey | XL | S5 GLJP review; S7 persistence gate | Josh / Sim | Functional paths and focused tests exist; final catalog choices, player review, and relaunch acceptance open |
 | F17 | Profile, save/load, and cloud sync | Now → Later | Local versioned multi-profile save/restore and recovery copy exist; verify real exit/relaunch and the earned-unlock loop. Active-run resume and cloud remain separate. | XL | Local foundation published; S7 acceptance; cloud post-M2 | Josh / platform reviewer TBD | Foundation ready for real relaunch review |

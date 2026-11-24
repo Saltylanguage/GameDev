@@ -138,7 +138,7 @@ rewards are possible but not decided.
 ### Input and accessibility target
 
 - **Required input:** keyboard and mouse for Windows 64-bit Steam.
-- **Target resolution:** 1920×1080; 1280×720 must remain functional.
+- **Target resolution:** 1920×1080; 1280×720 is outside the current supported target. The lower bound is not yet specified.
 - **Current accessibility direction:** pauseable observation, readable state changes, redundant text/icon/color cues, and controls that do not depend on rapid input.
 - **Open accessibility scope:** color-vision modes, dyslexia-oriented font options, photosensitivity treatment, remapping, and peripheral support require an explicit accessibility pass before commitment.
 

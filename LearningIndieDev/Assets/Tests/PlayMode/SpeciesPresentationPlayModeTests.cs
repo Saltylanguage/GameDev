@@ -295,7 +295,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator DesktopSimulationIconOpensTheJourneyMap()
+        public IEnumerator DesktopSimulationIconIntroducesTheRabbitJourneyBeforeOpeningTheMap()
         {
             yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
             yield return null;
@@ -317,6 +317,9 @@ namespace SaltyGame.PlayModeTests
             Assert.That(open, Is.Not.Null);
             open.GetType().GetMethod("Execute")?.Invoke(open, new object[] { "Simulation" });
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            Assert.That(simulationViewModel.GetType().GetProperty("LaunchSelectionVisibility")
+                ?.GetValue(simulationViewModel)?.ToString(), Is.EqualTo("Visible"));
+            ExecuteShellCommand(simulationViewModel, "ContinueLaunchSelectionCommand");
             Assert.That(preview.FieldDataSession, Is.Null,
                 "Opening the map must preserve the existing route until the Field Data test route is explicitly selected.");
             Assert.That(simulationViewModel.GetType().GetProperty("JourneyMapVisibility")
@@ -327,6 +330,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GameObject.Find("GalapagOS Desktop Test Camera")?.GetComponent<Camera>()?.enabled,
                 Is.True);
             open.GetType().GetMethod("Execute")?.Invoke(open, new object[] { "Simulation" });
+            ExecuteShellCommand(simulationViewModel, "ContinueLaunchSelectionCommand");
             Assert.That(simulationViewModel.GetType().GetProperty("JourneyMapVisibility")
                 ?.GetValue(simulationViewModel)?.ToString(), Is.EqualTo("Visible"));
             Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
@@ -335,6 +339,23 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(preview.FieldDataSession, Is.Null,
                 "Selecting a legacy simulation node must continue through the existing route composition.");
+        }
+
+        [UnityTest]
+        public IEnumerator FieldDataTestRouteOnlyAppearsInDeveloperModeBeforeFirstSimulation()
+        {
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var shell = GameObject.Find("GalapagOS Desktop Test Camera")
+                ?.GetComponent("SaltyGame.VM_SimulationShell") as MonoBehaviour;
+            Assert.That(shell, Is.Not.Null);
+            ExecuteShellCommand(shell, "OpenJourneyMapCommand");
+            var visibility = shell.GetType().GetProperty("FieldDataTestRouteVisibility");
+            Assert.That(visibility?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
+            shell.GetType().GetProperty("DeveloperMode")?.SetValue(shell, true);
+            Assert.That(visibility?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
         }
 
         [UnityTest]
@@ -367,6 +388,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(openMap, Is.Not.Null);
             openMap.GetType().GetMethod("Execute")?.Invoke(openMap, new object[] { null });
             Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            shellType.GetProperty("DeveloperMode")?.SetValue(shell, true);
             Assert.That(shellType.GetProperty("FieldDataTestRouteVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
 
             var startRoute = shellType.GetProperty("StartFieldDataTestJourneyCommand")?.GetValue(shell);

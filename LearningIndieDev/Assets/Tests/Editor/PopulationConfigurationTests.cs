@@ -816,6 +816,29 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
+        public void PreviewWithoutAnAuthoredScenarioDefaultsToBoundedSimulationData()
+        {
+            var previewObject = new GameObject("Bounded Preview Test");
+            previewObject.SetActive(false);
+            try
+            {
+                var preview = previewObject.AddComponent<SpeciesSimulationPreview>();
+                typeof(SpeciesSimulationPreview).GetMethod("Awake", PrivateInstance).Invoke(preview, null);
+
+                var data = (CellularSimData)typeof(SpeciesSimulationPreview)
+                    .GetMethod("CreateSimulationData", PrivateInstance)
+                    .Invoke(preview, null);
+
+                Assert.That(preview.WrapEdges, Is.False);
+                Assert.That(data.WrapEdges, Is.False);
+            }
+            finally
+            {
+                Object.DestroyImmediate(previewObject);
+            }
+        }
+
+        [Test]
         public void ScheduledAvoidanceOptionsFollowTheActiveSnapshots()
         {
             var runner = AppDomain.CurrentDomain.GetAssemblies()
