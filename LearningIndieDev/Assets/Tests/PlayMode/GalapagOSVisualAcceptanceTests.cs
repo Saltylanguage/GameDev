@@ -335,6 +335,7 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(loops.Length, Is.EqualTo(2));
                 Assert.That(loops.All(source => source.loop && source.clip != null), Is.True);
                 Assert.That(loops[0].clip, Is.Not.SameAs(loops[1].clip));
+                Assert.That(loops[1].clip.name, Is.EqualTo("CozyPond"));
                 var createCue = palette.GetMethod("CreateCue", BindingFlags.NonPublic | BindingFlags.Static);
                 var names = new[] { "Selection", "Upgrade", "Danger", "Success", "Failure" };
                 for (var index = 0; index < names.Length; index++)

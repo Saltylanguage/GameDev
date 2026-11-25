@@ -87,6 +87,9 @@ namespace SaltyGame.PlayModeTests
 
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(DesktopScene));
             var desktopRoot = GameObject.Find("GalapagOS Desktop Test Camera");
+            Assert.That(desktopRoot?.GetComponent<AudioListener>(), Is.Not.Null);
+            Assert.That(Object.FindObjectsByType<AudioListener>().Count(listener => listener.enabled),
+                Is.EqualTo(1));
             var desktopProfile = desktopRoot?.GetComponent<Helper_ProfileSession>();
             var preview = Object.FindAnyObjectByType<SpeciesSimulationPreview>();
             Assert.That(desktopProfile?.Current.ProfileId, Is.EqualTo(profileId));
@@ -537,6 +540,10 @@ namespace SaltyGame.PlayModeTests
                 deadline = Time.realtimeSinceStartup + 4f;
                 while (preview.Run.Tick < 2 && Time.realtimeSinceStartup < deadline) yield return null;
                 Assert.That(preview.Run.Tick, Is.GreaterThanOrEqualTo(2));
+                var audioBed = desktop.transform.Find("Simulation Audio Bed");
+                Assert.That(audioBed, Is.Not.Null);
+                Assert.That(audioBed.GetComponents<AudioSource>().Any(source =>
+                    source.isPlaying && source.clip != null && source.clip.name == "CozyPond"), Is.True);
                 Assert.That(session.Current.UnlockedGenomeSpeciesIds, Is.Empty);
 
                 if (authored != null)

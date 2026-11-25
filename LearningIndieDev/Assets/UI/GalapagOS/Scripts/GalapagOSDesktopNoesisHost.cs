@@ -53,6 +53,16 @@ namespace SaltyGame
                 return;
             }
 
+            if (GetComponent<AudioListener>() == null)
+            {
+                gameObject.AddComponent<AudioListener>();
+            }
+            var transitionListener = GameObject.Find("GalapagOS Desktop Chime")?.GetComponent<AudioListener>();
+            if (transitionListener != null)
+            {
+                transitionListener.enabled = false;
+            }
+
             desktopCamera.enabled = true;
             view.enabled = true;
             if (simulationCamera != null)
