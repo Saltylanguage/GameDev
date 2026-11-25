@@ -22,6 +22,7 @@ namespace SaltyGame
         PopulationReinforcement,
         LitterMinimum,
         LitterMaximum,
+        GestationReductionPercent,
         PreContactAvoidanceChance,
         CrowdingEnergyReduction,
         SeedDropChance,
@@ -123,6 +124,7 @@ namespace SaltyGame
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.PredatorDetectionRangeBonus, Value));
                     break;
                 case SpeciesUpgradeType.PopulationReinforcement:
+                case SpeciesUpgradeType.GestationReductionPercent:
                 case SpeciesUpgradeType.PreContactAvoidanceChance:
                     break;
                 case SpeciesUpgradeType.LitterMinimum:
@@ -137,14 +139,14 @@ namespace SaltyGame
 
             return new SpeciesUpgradeSnapshot(
                 Id,
-                targetSpecies.Value == "hare" && Id == SpeciesUpgradeCatalog.FasterMovementId
+                targetSpecies.Value == "rabbit" && Id == SpeciesUpgradeCatalog.FasterMovementId
                     ? "LONG STRIDE" : SpeciesUpgradeCatalog.GetDisplayName(Id),
                 Type == SpeciesUpgradeType.SeedDropChance
                     ? $"Add {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points of planting chance per eligible step. Spend one stored food only on success."
                     : Type == SpeciesUpgradeType.BlockAmount
                     ? $"Increase block by {(int)Value} for this journey."
                     : Type == SpeciesUpgradeType.MaximumHealth
-                    ? $"Gain {(int)Value} health. A Hare can survive one basic Fox attack."
+                    ? $"Gain {(int)Value} health. A Rabbit can survive one basic Fox attack."
                     : Type == SpeciesUpgradeType.MovementSpeed
                     ? $"Increase movement speed by {Value.ToString("0.##", CultureInfo.InvariantCulture)} for this journey."
                     : Type == SpeciesUpgradeType.DigestionEnergyBonus
@@ -169,6 +171,8 @@ namespace SaltyGame
                         ? $"Increase the minimum litter size by {(int)Value}."
                         : Type == SpeciesUpgradeType.LitterMaximum
                             ? $"Increase the maximum litter size by {(int)Value}; rank 3 also raises the minimum to 2."
+                    : Type == SpeciesUpgradeType.GestationReductionPercent
+                        ? $"Reduce Rabbit gestation time by {(int)Value}% per rank, up to three ranks."
                     : "Legacy upgrade converted to the run upgrade contract.",
                 targetSpecies,
                 Cost,
@@ -188,6 +192,13 @@ namespace SaltyGame
             if (Type == SpeciesUpgradeType.PreContactAvoidanceChance)
             {
                 return rules;
+            }
+            if (Type == SpeciesUpgradeType.GestationReductionPercent)
+            {
+                var adjustedTicks = SpeciesUpgradeCatalog.GetGestationTicksAfterReduction(rules.GestationTicks, (int)Value);
+                if (adjustedTicks == rules.GestationTicks) return rules;
+                return SpeciesAttributeRegistry.Apply(rules, new SpeciesUpgradeModifier(
+                    SpeciesAttributeIds.GestationTicks, adjustedTicks - rules.GestationTicks));
             }
 
             var movementSpeed = rules.MovementSpeed;
@@ -315,15 +326,16 @@ namespace SaltyGame
                 distributeMatingEnergyToOffspring: rules.DistributeMatingEnergyToOffspring,
                 crowdingEnergyReduction: crowdingEnergyReduction,
                 gestationTicks: rules.GestationTicks,
-                maximumHealth: maximumHealth);
+                maximumHealth: maximumHealth,
+                maximumPopulation: rules.MaximumPopulation);
         }
     }
 
     public static class SpeciesUpgradeCatalog
     {
-        static readonly string[] FieldDataHareSkillIds =
+        static readonly string[] FieldDataRabbitSkillIds =
         {
-            ToughHideId, EfficientDigestionId, SeedDispersalId,
+            ToughHideId, EfficientDigestionId, SeedDispersalId, FasterGestationId, OpenGroundSprintId,
             CrowdingToleranceId, ReproductiveDriveId, KeenSensesId, LongVisionId, FasterMovementId,
             ThreatExposureId, QuickEscapeId, LargerMaximumLitterId, LargerMinimumLitterId,
         };
@@ -334,13 +346,13 @@ namespace SaltyGame
         public const int ExpandedBurrowsMaxLevel = 5;
         static readonly string[] BurrowMutationIds = { BurrowingId, SharedBurrowsId, ExpandedBurrowsId };
 
-        internal static bool IsHareBurrowMutation(SpeciesId species, string id) =>
-            species.Value == "hare" && Array.IndexOf(BurrowMutationIds, id) >= 0;
+        internal static bool IsRabbitBurrowMutation(SpeciesId species, string id) =>
+            species.Value == "rabbit" && Array.IndexOf(BurrowMutationIds, id) >= 0;
 
         public static int GetFieldDataRewardMaxLevel(SpeciesId species, string upgradeId)
         {
-            if (species.Value == "hare" && upgradeId == ExpandedBurrowsId) return ExpandedBurrowsMaxLevel;
-            return species.Value == "hare" && Array.IndexOf(FieldDataHareSkillIds, upgradeId) >= 0
+            if (species.Value == "rabbit" && upgradeId == ExpandedBurrowsId) return ExpandedBurrowsMaxLevel;
+            return species.Value == "rabbit" && Array.IndexOf(FieldDataRabbitSkillIds, upgradeId) >= 0
                 ? GetMaxLevel(upgradeId) : 1;
         }
 
@@ -364,9 +376,9 @@ namespace SaltyGame
             SpeciesId species, IEnumerable<SpeciesUpgradeSnapshot> authored, Func<string, bool> burrowResearch = null)
         {
             var pool = new List<SpeciesUpgradeSnapshot>();
-            if (species.Value == "hare")
+            if (species.Value == "rabbit")
             {
-                foreach (var id in FieldDataHareSkillIds)
+                foreach (var id in FieldDataRabbitSkillIds)
                 {
                     SpeciesUpgradeSnapshot selected = null;
                     foreach (var upgrade in authored ?? Array.Empty<SpeciesUpgradeSnapshot>())
@@ -403,13 +415,19 @@ namespace SaltyGame
         {
             var name = id == BurrowingId ? "Burrowing" : id == SharedBurrowsId ? "Shared Burrows" : "Expanded Burrows";
             var description = id == BurrowingId
-                ? "Hares can dig burrows and hide with their descendants. Each burrow holds three Hares and lasts 200 steps."
-                : id == SharedBurrowsId ? "Unrelated Hares can shelter in burrows with room."
+                ? "Rabbits can dig burrows and hide with their descendants. Each burrow holds three Rabbits and lasts 200 steps."
+                : id == SharedBurrowsId ? "Unrelated Rabbits can shelter in burrows with room."
                 : "Adds one place to every burrow for this journey, up to eight places.";
             return new SpeciesUpgradeSnapshot(id, name, description, species, 0, Array.Empty<SpeciesUpgradeModifier>());
         }
 
         public const string FasterMovementId = "faster-movement";
+        public const string FasterGestationId = GenomeContract.FastGestationNodeId;
+        public const int FasterGestationMaxLevel = 3;
+        public const int FasterGestationReductionPercentPerLevel = 15;
+        public const string OpenGroundSprintId = "open-ground-sprint";
+        public const int OpenGroundSprintMaxLevel = 1;
+        public const float OpenGroundSprintMovementSpeedBonus = 0.5f;
         public const int FasterMovementMaxLevel = 10;
         public const string QuickEscapeId = "quick-escape";
         public const int QuickEscapeMaxLevel = 5;
@@ -455,13 +473,23 @@ namespace SaltyGame
         public const int PopulationReinforcementCount = 1;
         public const int PopulationReinforcementMaxLevel = int.MaxValue;
         public const string LargerMinimumLitterId = "larger-minimum-litter";
+        public const int LargerMinimumLitterMaxLevel = 3;
         public const string LargerMaximumLitterId = "larger-maximum-litter";
         public const int LargerMaximumLitterMaxLevel = 3;
         public const int LitterSizeIncreasePerLevel = 1;
 
+        internal static int GetGestationTicksAfterReduction(int baselineTicks, int mutationLevel)
+        {
+            if (baselineTicks <= 0) return baselineTicks;
+            var reductionPercent = Math.Min(100, FasterGestationReductionPercentPerLevel * mutationLevel);
+            return (int)Math.Max(1L, ((long)baselineTicks * (100 - reductionPercent) + 50) / 100);
+        }
+
         public static int GetMaxLevel(string upgradeId)
         {
             return upgradeId == FasterMovementId ? FasterMovementMaxLevel
+                : upgradeId == OpenGroundSprintId ? OpenGroundSprintMaxLevel
+                : upgradeId == FasterGestationId ? FasterGestationMaxLevel
                 : upgradeId == QuickEscapeId ? QuickEscapeMaxLevel
                 : upgradeId == ToughHideId ? ToughHideMaxLevel
                 : upgradeId == EfficientDigestionId ? EfficientDigestionMaxLevel
@@ -474,6 +502,7 @@ namespace SaltyGame
                 : upgradeId == PiercingBiteId ? PiercingBiteMaxLevel
                 : upgradeId == HuntUrgencyId ? HuntUrgencyMaxLevel
                 : upgradeId == BroodDriveId ? BroodDriveMaxLevel
+                : upgradeId == LargerMinimumLitterId ? LargerMinimumLitterMaxLevel
                 : upgradeId == LargerMaximumLitterId ? LargerMaximumLitterMaxLevel
                 : upgradeId == PopulationReinforcementId ? PopulationReinforcementMaxLevel
                 : IsThreatExposureId(upgradeId) ? ThreatExposureMaxLevel : int.MaxValue;
@@ -507,6 +536,8 @@ namespace SaltyGame
             ThreatExposureId,
             QuickEscapeId,
             FasterMovementId,
+            OpenGroundSprintId,
+            FasterGestationId,
             SeedDispersalId,
             KeenSensesId,
             LongVisionId,
@@ -519,7 +550,7 @@ namespace SaltyGame
             new[] { EfficientDigestionId, SeedDispersalId },
         };
 
-        static readonly string[][] IntroductoryHarePathStarterIds =
+        static readonly string[][] IntroductoryRabbitPathStarterIds =
         {
             new[] { ThreatExposureId },
             new[] { ToughHideId },
@@ -558,7 +589,7 @@ namespace SaltyGame
             int rotation,
             int seed,
             Func<SpeciesUpgrade, bool> canOffer = null,
-            bool introductoryHareMutations = false)
+            bool introductoryRabbitMutations = false)
         {
             if (rotation < 0)
             {
@@ -580,7 +611,7 @@ namespace SaltyGame
             if (!hasContinuingUpgrade && rotation == 0)
             {
                 return CreatePhasePathStarterOffer(seededValue, canOffer,
-                    introductoryHareMutations ? IntroductoryHarePathStarterIds : PhaseHerbivorePathStarterIds);
+                    introductoryRabbitMutations ? IntroductoryRabbitPathStarterIds : PhaseHerbivorePathStarterIds);
             }
 
             var offer = new List<SpeciesUpgrade>(3);
@@ -676,6 +707,12 @@ namespace SaltyGame
                         QuickEscapeMaxLevel,
                         SpeciesUpgradeType.FleeMovementSpeedBonus,
                         QuickEscapeFleeSpeedPerLevel);
+                case OpenGroundSprintId:
+                    return new SpeciesUpgrade(OpenGroundSprintId, 5, SpeciesUpgradeType.MovementSpeed,
+                        OpenGroundSprintMovementSpeedBonus);
+                case FasterGestationId:
+                    return new SpeciesUpgrade(FasterGestationId, 5,
+                        SpeciesUpgradeType.GestationReductionPercent, FasterGestationReductionPercentPerLevel);
                 case StrongerAttackId:
                     return new SpeciesUpgrade(StrongerAttackId, 5, SpeciesUpgradeType.AttackAmount, 1f);
                 case StrongerAttackModifierId:
@@ -831,6 +868,10 @@ namespace SaltyGame
                     return "GENERAL MOVEMENT";
                 case QuickEscapeId:
                     return "QUICK ESCAPE";
+                case OpenGroundSprintId:
+                    return "OPEN-GROUND SPRINT";
+                case FasterGestationId:
+                    return "FASTER GESTATION";
                 case StrongerAttackId:
                     return "ATTACK";
                 case StrongerBlockId:
@@ -898,13 +939,13 @@ namespace SaltyGame
         {
             responderSpecies = default;
             responderUpgradeId = string.Empty;
-            var isHare = selectedSpecies == SpeciesIds.Herbivore
-                || string.Equals(selectedSpecies.Value, "hare", StringComparison.Ordinal);
+            var isRabbit = selectedSpecies == SpeciesIds.Herbivore
+                || string.Equals(selectedSpecies.Value, "rabbit", StringComparison.Ordinal);
             var isFox = selectedSpecies == SpeciesIds.Carnivore
                 || string.Equals(selectedSpecies.Value, "fox", StringComparison.Ordinal);
-            if (isHare)
+            if (isRabbit)
             {
-                responderSpecies = string.Equals(selectedSpecies.Value, "hare", StringComparison.Ordinal)
+                responderSpecies = string.Equals(selectedSpecies.Value, "rabbit", StringComparison.Ordinal)
                     ? new SpeciesId("fox")
                     : SpeciesIds.Carnivore;
                 switch (selectedUpgradeId)
@@ -928,7 +969,7 @@ namespace SaltyGame
             else if (isFox)
             {
                 responderSpecies = string.Equals(selectedSpecies.Value, "fox", StringComparison.Ordinal)
-                    ? new SpeciesId("hare")
+                    ? new SpeciesId("rabbit")
                     : SpeciesIds.Herbivore;
                 switch (selectedUpgradeId)
                 {

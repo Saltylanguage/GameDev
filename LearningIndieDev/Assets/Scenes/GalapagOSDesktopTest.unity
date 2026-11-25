@@ -279,7 +279,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.VM_GalapagOS_Desktop
   genomeCatalogProvider: {fileID: 100018}
-  genomeSpeciesId: hare
+  genomeSpeciesId: rabbit
 --- !u!114 &100006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -308,6 +308,18 @@ MonoBehaviour:
   terrainAtlas: {fileID: 100100200, guid: c97b93d070e278c44be95a371f6c3bc6, type: 3}
   foxSprite: {fileID: 21300000, guid: b9588baa12e33ea48a287a04e48229a8, type: 3}
   rabbitSprite: {fileID: 21300000, guid: 105ab43c2f5048f478cac4a1ae7b3cac, type: 3}
+  plannerTestMutations:
+  - {fileID: 11400000, guid: 3973db89e8634f779e37b7aa370553bd, type: 2}
+  - {fileID: 11400000, guid: a565f7026b1648b8bbe808767027be46, type: 2}
+  - {fileID: 11400000, guid: a73f1ef7796d48289fe3e6da4f8a134b, type: 2}
+  - {fileID: 11400000, guid: d2d9341274c842e7b19d953f4fa96aa4, type: 2}
+  - {fileID: 11400000, guid: d8db94cfe7324d4b9938936379699ea9, type: 2}
+  plannerTestGenomeNodes:
+  - {fileID: 11400000, guid: dbcd39d29b0a436fb56700236c542b25, type: 2}
+  - {fileID: 11400000, guid: af67e36c3dbe472fbdb4fd7accf31974, type: 2}
+  - {fileID: 11400000, guid: b51060b46bb7487ba2ceffbdbdb1e6a7, type: 2}
+  - {fileID: 11400000, guid: 5b22b4b1f3e14c6a9179f300822a4cec, type: 2}
+  - {fileID: 11400000, guid: fb64c57bc7cf47938659ec4124cdfaac, type: 2}
 --- !u!1 &100012
 GameObject:
   m_ObjectHideFlags: 0
@@ -460,6 +472,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c3d4e5f6071849ab8cdef0123456789a, type: 2}
   - {fileID: 11400000, guid: d4e5f60718294abc9def0123456789ab, type: 2}
   - {fileID: 11400000, guid: e5f60718293a4bcd9ef0123456789abc, type: 2}
+  - {fileID: 11400000, guid: 3973db89e8634f779e37b7aa370553bd, type: 2}
+  - {fileID: 11400000, guid: a565f7026b1648b8bbe808767027be46, type: 2}
+  - {fileID: 11400000, guid: a73f1ef7796d48289fe3e6da4f8a134b, type: 2}
+  - {fileID: 11400000, guid: d2d9341274c842e7b19d953f4fa96aa4, type: 2}
+  - {fileID: 11400000, guid: d8db94cfe7324d4b9938936379699ea9, type: 2}
 --- !u!114 &100009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -504,6 +521,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 206fce3dc4215ca4ea82745886382948, type: 2}
   - {fileID: 11400000, guid: 413061eae5fbb7245aef3a3f7e9be293, type: 2}
   - {fileID: 11400000, guid: 1e7a1d0d79a389e419c9ace023b1de9d, type: 2}
+  - {fileID: 11400000, guid: 6eb0b139648548f19dfa42a804076eba, type: 2}
   selectedScenarioIndex: 0
 --- !u!114 &100016
 MonoBehaviour:
@@ -548,6 +566,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeCatalogProvider
   speciesMaps:
   - {fileID: 11400000, guid: 367d3fdd2236f7e46a386289af2c9e55, type: 2}
+  - {fileID: 11400000, guid: 7b2e9d3f5a1c6048b6e8f0d2c4a7159e, type: 2}
+  - {fileID: 11400000, guid: 4b7644c3899e49f69f97c0dbddf42733, type: 2}
+  - {fileID: 11400000, guid: 82ab3dd5b9a94de494564ab35c76cbfd, type: 2}
+  - {fileID: 11400000, guid: 31a4972f052345ba9b101055dc7dbb4c, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

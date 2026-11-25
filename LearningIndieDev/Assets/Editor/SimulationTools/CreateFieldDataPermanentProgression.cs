@@ -16,16 +16,16 @@ namespace SaltyGame.EditorTools
         {
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             var map = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(
-                FieldDataPermanentProgressionDefinition.HareMapPath);
+                FieldDataPermanentProgressionDefinition.RabbitMapPath);
             if (map == null)
             {
-                throw new InvalidOperationException("The existing FD2 Hare map is required.");
+                throw new InvalidOperationException("The existing FD2 Rabbit map is required.");
             }
 
             var assets = new List<GenomeUpgradeAsset>();
             for (var index = 0; index < NodeFiles.Length; index++)
             {
-                var path = "Assets/Data/TestData/Genome/HareGenome/" + NodeFiles[index] + ".asset";
+                var path = "Assets/Data/TestData/Genome/RabbitGenome/" + NodeFiles[index] + ".asset";
                 var asset = AssetDatabase.LoadAssetAtPath<GenomeUpgradeAsset>(path);
                 if (asset == null) throw new InvalidOperationException("Missing existing FD2 node: " + path);
                 assets.Add(asset);
@@ -35,7 +35,7 @@ namespace SaltyGame.EditorTools
             Undo.RecordObject(map, "Apply approved FD2 catalog");
             for (var index = 0; index < assets.Count; index++)
             {
-                var node = definition.HareMap.GetNode(assets[index].UpgradeId);
+                var node = definition.RabbitMap.GetNode(assets[index].UpgradeId);
                 var serialized = new SerializedObject(assets[index]);
                 serialized.FindProperty("upgradeId").stringValue = node.Id;
                 serialized.FindProperty("displayName").stringValue = node.DisplayName;
@@ -62,7 +62,7 @@ namespace SaltyGame.EditorTools
             }
 
             var serializedMap = new SerializedObject(map);
-            serializedMap.FindProperty("speciesId").stringValue = definition.HareMap.SpeciesId.Value;
+            serializedMap.FindProperty("speciesId").stringValue = definition.RabbitMap.SpeciesId.Value;
             var upgrades = serializedMap.FindProperty("upgrades");
             upgrades.arraySize = assets.Count;
             for (var index = 0; index < assets.Count; index++)

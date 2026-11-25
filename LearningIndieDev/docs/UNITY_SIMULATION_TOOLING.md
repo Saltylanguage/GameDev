@@ -15,7 +15,7 @@ Species, Mutation, Genome, matchup, and balance-tooling work follows
 ## Rabbit Genome build input (October 20)
 
 `-RabbitGenomeNodeIds` takes comma-separated IDs in allocation order. The
-default catalog is the production `Assets/Data/Genome/HareGenome.asset` map.
+default catalog is the production `Assets/Data/Genome/RabbitGenome.asset` map.
 Use `-RabbitGenomeCatalogPath` to opt into a different explicit map, including
 the separate Gene Lab POC catalog. Research validates species identity,
 uniqueness, implemented/purchasable offers, prerequisites before dependents,
@@ -26,16 +26,16 @@ player profile, spend currency, or grant tree access.
 $pocCatalog = 'Assets/Data/TestData/Genome/RabbitSelectionPOC/RabbitSelectionPOC.asset'
 .\CellSim.ps1 -Command Run -Execution Auto `
     -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -RabbitGenomeCatalogPath $pocCatalog `
-    -RabbitGenomeNodeIds 'fertile-droppings,poc.hare.efficient-digestion' `
+    -RabbitGenomeNodeIds 'fertile-droppings,poc.rabbit.efficient-digestion' `
     -SeedStart 10100 -SeedCount 2 -GridWidth 8 -GridHeight 8 `
-    -StartingPopulations 'plant=20,hare=4,fox=0' -RunTicks 20 -StepIntervalSeconds 0.1
+    -StartingPopulations 'plant=20,rabbit=4,fox=0' -RunTicks 20 -StepIntervalSeconds 0.1
 ```
 
 Omit `-RabbitGenomeNodeIds` for a natural-rules baseline. Do not pass placeholder
 nodes such as Burrows Preview. Genome effects apply before initial population
-seeding and ordered Mutations, including when Hare is a background species.
+seeding and ordered Mutations, including when Rabbit is a background species.
 Generic continued-phase schedules and Mutation policies preserve that frozen
 Genome. Paired-lockstep diagnostics use a separate runner and reject Genome
 allocations explicitly. This does not export the full Desktop journey's shop,
@@ -107,7 +107,7 @@ Mutation animal-stat overrides. Headless purchase policies use the same pool
 gate and report `population-pool-full`. Historical schema-39 reports predate
 this rule. See the [population contract](Research/2026-10-21-Hare-population-pool-and-Genome-nodes.md).
 
-`CellSim Run -SpeciesStats 'hare:energy.forage-threshold=25'` exposes the existing
+`CellSim Run -SpeciesStats 'rabbit:energy.forage-threshold=25'` exposes the existing
 registry-backed research override. It resolves an isolated natural-rule input
 before Genome and Mutations; production assets are not edited. The same flag
 works in frozen portable exports/replays.
@@ -125,18 +125,18 @@ Foxes plus eight later introductions means ten Foxes introduced in total,
 regardless of births and deaths. Placement uses open passable tiles, rather
 than a new edge-entry migration mechanic.
 
-Schema **39** adds requested stat overrides, resolved Hare feeding threshold,
+Schema **39** adds requested stat overrides, resolved Rabbit feeding threshold,
 and the introduction schedule to the header/provenance. Each scheduled run
 records actual arrival tick/count and before/after/cumulative populations,
-plus exact first successful Hare feeding, mating and birth ticks (`-1` if not
+plus exact first successful Rabbit feeding, mating and birth ticks (`-1` if not
 observed). Arrival events also appear in the runtime log with the same seed,
 tick and population values. Portable compact and detailed outputs retain these
 records. Introductory population counts must be included in mortality/birth
 accounting; a temporary zero-Fox gap is not irreversible extinction while more
 arrivals are scheduled.
 
-Scheduled ecology reports without a Hare purchase policy now observe their full
-declared tick window even after Hare extinction. The default runtime runner,
+Scheduled ecology reports without a Rabbit purchase policy now observe their full
+declared tick window even after Rabbit extinction. The default runtime runner,
 gameplay and purchase-policy journey failure still stop as before. This is
 necessary to observe predator starvation and later introductions. The first
 October 21 baseline attempt inherited the journey stop and is explicitly
@@ -168,7 +168,7 @@ Select the `SpeciesSimulationPreview` component while in Play Mode. Its Inspecto
 now has **Reset to Start**, **Apply S4 Fixture**, **Start**, **Pause**,
 **Advance One Simulation Tick**, and **Resume** controls. Reset an auto-started
 preview before applying the fixture. The fixture uses the production Forest
-Edge scenario already assigned to that preview, Hare, 36x20, 400/20/10,
+Edge scenario already assigned to that preview, Rabbit, 36x20, 400/20/10,
 0.1-second steps, six 100-tick phases, no active Genome and coupled responses
 OFF. It changes in-memory setup, not the scenario asset or saved default preset.
 Verify the actual tick-zero counts and fingerprints shown in the Inspector.
@@ -180,7 +180,7 @@ Movement initially offered. Initial offers still depend on the seed. Following
 a Movement/Avoidance pick, its uncapped Trailblazer partner stays available and
 the third skill rotates. These are mechanics checks, not balance evidence.
 
-General Movement now has a level-10 cap and is in both Hare offer pools. Threat
+General Movement now has a level-10 cap and is in both Rabbit offer pools. Threat
 Avoidance keeps the stable `threat-exposure` ID and `threat-response` alias,
 adds eight percentage points of pre-contact avoidance per level, and grants
 no flee speed. Snapshot contract v2 records the avoidance ability explicitly;
@@ -205,7 +205,7 @@ normal grass plant on success, and spends one stored food only after creation.
 The Inspector and reports expose `seedDropAttempts`, `seedDropSuccesses`,
 `seedDropFoodCreated`, and `seedDropReserveSpent`; ordinary plant births remain
 in the existing `Births` counter. Efficient Digestion and Seed Dispersal remain
-paired in the normal Hare offers for the Gardeners path.
+paired in the normal Rabbit offers for the Gardeners path.
 
 The `CellSim` lane helpers were restored on 2026-10-14. `Doctor`, a focused
 Clean EditMode test, and a one-seed Clean experiment produced retained results;
@@ -220,8 +220,8 @@ the production scenario. For example, the proposed S4 fixture can be launched as
 ```powershell
 .\CellSim.ps1 -Command Run -Execution Auto -SeedStart 10100 -SeedCount 1 `
     -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset `
-    -StartingPopulations 'plant=400,hare=20,fox=10' `
-    -PlayerSpeciesId hare -RunTicks 600 -StepIntervalSeconds 0.1
+    -StartingPopulations 'plant=400,rabbit=20,fox=10' `
+    -PlayerSpeciesId rabbit -RunTicks 600 -StepIntervalSeconds 0.1
 ```
 
 This is a fixture example, not the complete S4 upgrade schedule or an approved
@@ -310,11 +310,11 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Run -SeedCount 50
 .\CellSim.cmd Run -RunTicks 100
 .\CellSim.cmd Run -RunDurationSeconds 60 -StepIntervalSeconds 0.1
-.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId tough-hide
-.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeSequence tough-hide,tough-hide
-.\CellSim.cmd Run -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure
-.\CellSim.cmd Run -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure -PreContactAvoidanceChance 0.10
-.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -PhaseLengthTicks 40 -PhaseUpgradeSchedule 'none;none;none'
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId rabbit -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId tough-hide
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId rabbit -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeSequence tough-hide,tough-hide
+.\CellSim.cmd Run -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId rabbit -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure
+.\CellSim.cmd Run -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId rabbit -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure -PreContactAvoidanceChance 0.10
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId rabbit -PhaseLengthTicks 40 -PhaseUpgradeSchedule 'none;none;none'
 .\CellSim.cmd Report
 .\CellSim.cmd Baseline -SeedCount 20
 .\CellSim.cmd Compare -BaselinePath artifacts\cellular-experiment-...\report.json -ReportPath artifacts\cellular-experiment-...\report.json
@@ -343,7 +343,7 @@ an explicit cumulative loadout schedule:
 ```powershell
 .\CellSim.cmd Run `
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -RunTicks 120 `
     -PhaseLengthTicks 40 `
     -PhaseUpgradeSchedule 'none;stronger-block;stronger-block-2'
@@ -363,7 +363,7 @@ species must be omitted because its count carries over; all other species and
 resources reset from the scenario, then the supplied node map overrides any
 listed counts. Example: `-PhasesPerNode 6 -NodeStartingPopulations
 'fox=4;fox=16'` uses four Foxes in node one and sixteen in node two while
-carrying the Hare count forward. An empty map or `none` keeps that node's
+carrying the Rabbit count forward. An empty map or `none` keeps that node's
 authored nonplayer counts. The report records the schedule and opening
 population history.
 
@@ -376,7 +376,7 @@ commands below when their full options are needed:
 | `CellSim Doctor` | Run fast Unity CLI and licensing diagnostics without launching a full Editor. |
 | `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite, and use `-Execution Auto`, `Live`, or `Clean`. Test name, assembly, and category filters are supported. |
 | `CellSim Visuals` | Run graphics-capable PlayMode evidence in the selected execution lane and capture settings, late-running, rewards, and results PNGs; use `-TestFilter` to focus it. Add `-ReplayReportPath ... -ReplaySeed ...` to replay one headless report result with its scenario, player species, seed, and grid settings. |
-| `CellSim Run` | Generate a JSON report for a seed range in the selected execution lane; `-RunTicks` sets an explicit tick count, while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. ForestEdge/Hare runs with `-ExperimentalFeatures bev-experimental` also emit and validate `statline.csv` before returning. Add both `-PhaseLengthTicks` and `-PhaseUpgradeSchedule` (semicolon-separated cumulative loadouts, with `none` for an empty phase) to opt into a deterministic continuation schedule; `-PhasesPerNode` enables fresh-node boundaries, with optional `-NodeStartingPopulations` for fixed per-node nonplayer counts. The wrapper waits briefly for the report file to become readable before parsing it. |
+| `CellSim Run` | Generate a JSON report for a seed range in the selected execution lane; `-RunTicks` sets an explicit tick count, while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. ForestEdge/Rabbit runs with `-ExperimentalFeatures bev-experimental` also emit and validate `statline.csv` before returning. Add both `-PhaseLengthTicks` and `-PhaseUpgradeSchedule` (semicolon-separated cumulative loadouts, with `none` for an empty phase) to opt into a deterministic continuation schedule; `-PhasesPerNode` enables fresh-node boundaries, with optional `-NodeStartingPopulations` for fixed per-node nonplayer counts. The wrapper waits briefly for the report file to become readable before parsing it. |
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
 | `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |
@@ -425,7 +425,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -SeedCount 1000 `
     -GridWidth 64 `
     -GridHeight 64 `
-    -PlayerSpeciesId hare
+    -PlayerSpeciesId rabbit
 
 # Compare an authored scenario over a controlled seed range.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
@@ -442,14 +442,14 @@ comparing outcomes:
 
 | Scenario | Starting setup | Use |
 | --- | --- | --- |
-| `Assets/Data/TestData/ForestEdgeNoFoxDiagnostic.asset` | 22 Hares using the production Hare asset; 40% plant start; no Foxes | No-Fox reference using the currently authored Hare rules. |
-| `Assets/Data/TestData/ForestEdgeNoFoxRepro10Diagnostic.asset` | 22 Hares using `HareRepro10Diagnostic`; 40% plant start; no Foxes | Compare against the first fixture to explore a 10% Hare reproduction setting without Foxes. |
-| `Assets/Data/TestData/ForestEdgeRepro10Diagnostic.asset` | 22 `HareRepro10Diagnostic` Hares; 40% plant start; six production Foxes | Compare against the second fixture to explore adding the starting Fox population. |
+| `Assets/Data/TestData/ForestEdgeNoFoxDiagnostic.asset` | 22 Rabbits using the production Rabbit asset; 40% plant start; no Foxes | No-Fox reference using the currently authored Rabbit rules. |
+| `Assets/Data/TestData/ForestEdgeNoFoxRepro10Diagnostic.asset` | 22 Rabbits using `RabbitRepro10Diagnostic`; 40% plant start; no Foxes | Compare against the first fixture to explore a 10% Rabbit reproduction setting without Foxes. |
+| `Assets/Data/TestData/ForestEdgeRepro10Diagnostic.asset` | 22 `RabbitRepro10Diagnostic` Rabbits; 40% plant start; six production Foxes | Compare against the second fixture to explore adding the starting Fox population. |
 
-`HareRepro10Diagnostic.asset` is a species-definition fixture referenced by
+`RabbitRepro10Diagnostic.asset` is a species-definition fixture referenced by
 the two 10%-reproduction scenarios; it is not a scenario to pass directly.
-The first scenario follows the production Hare asset through its Unity GUID,
-so its rules change when that production asset changes. The 10% Hare fixture
+The first scenario follows the production Rabbit asset through its Unity GUID,
+so its rules change when that production asset changes. The 10% Rabbit fixture
 contains its own copied rules and may drift from production in other fields.
 Check both species definitions before treating a comparison as a one-variable
 experiment. These runs are diagnostic only; they do not approve production
@@ -470,7 +470,7 @@ foreach ($scenario in $scenarios) {
         -SeedStart 10100 `
         -SeedCount 20 `
         -RunTicks 600 `
-        -PlayerSpeciesId hare
+        -PlayerSpeciesId rabbit
 }
 ```
 
@@ -479,7 +479,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
     -SeedStart 10100 `
     -SeedCount 20 `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -UpgradeId faster-movement
 
 # Diagnostic protection arm; use the same seeds for control and trial.
@@ -487,7 +487,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
     -SeedStart 10100 `
     -SeedCount 20 `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -UpgradeId stronger-block-2
 
 # Experimental herbivore upgrade arm.
@@ -495,18 +495,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
     -SeedStart 10100 `
     -SeedCount 20 `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -ExperimentalFeatures bev-experimental `
     -CombatMode opposed-roll `
     -UpgradeId tough-hide
 
-# Default-off coupled Hare/Fox response arm. The bundle is required and the
+# Default-off coupled Rabbit/Fox response arm. The bundle is required and the
 # report records the response flag plus both species' immutable snapshots.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
     -SeedStart 10100 `
     -SeedCount 20 `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -ExperimentalFeatures bev-experimental `
     -CombatMode opposed-roll `
     -UpgradeId tough-hide `
@@ -517,7 +517,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
     -SeedStart 10100 `
     -SeedCount 20 `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -ExperimentalFeatures bev-experimental `
     -CombatMode opposed-roll `
     -UpgradeSequence tough-hide,tough-hide
@@ -529,7 +529,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
     -SeedStart 10100 `
     -SeedCount 20 `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -UpgradeAssetSequence trailblazer-long-stride,warren-guarded-burrow
 
 # Opposed-roll combat is the default. Legacy fixed damage remains available
@@ -538,7 +538,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
     -SeedStart 10100 `
     -SeedCount 20 `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -CombatMode opposed-roll
 ```
 

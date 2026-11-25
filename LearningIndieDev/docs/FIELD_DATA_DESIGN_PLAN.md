@@ -43,7 +43,7 @@ until the work and required evidence exist.
 - [x] **1.01** Start each new journey with **0 Field Data**. Bevin confirmed 2026-10-15.
 - [x] **1.02** Allow population purchases **only between rounds**. Bevin selected option 1 on 2026-10-15.
 - [x] **1.03** Apply purchased population changes **immediately upon purchase**, while paused between rounds. Bevin selected option 1 on 2026-10-15.
-- [x] **1.04** Make **Add/Remove Hares, Add/Remove Foxes and Add/Remove Plants** available from the start of a journey **for now**, subject to Field Data and valid targets/space. Bevin confirmed 2026-10-15.
+- [x] **1.04** Make **Add/Remove Rabbits, Add/Remove Foxes and Add/Remove Plants** available from the start of a journey **for now**, subject to Field Data and valid targets/space. Bevin confirmed 2026-10-15.
 - [x] **1.05** Require **no unlocks for the current six controls for now**, as established by Bevin's decision that all six are available from journey start. Future controls or restrictions remain undecided.
 - [x] **1.06** Automatically remove random individuals; reject overlarge removals and block removal of the final selected-species individual.
 - [x] **1.07** Place additions at random valid available locations; reject the entire purchase without charge if the full addition cannot fit.
@@ -59,8 +59,8 @@ until the work and required evidence exist.
 - [x] **1.17** Stack income multipliers by multiplying their effects together for compounding growth. Example: ×1.5 and ×2 produce ×3 when applied consecutively. Bevin confirmed 2026-10-15; example strengths are illustrative.
 - [x] **1.18** Execute income operations in acquisition order until a paid shop reorder changes it. Keep the exact order; do not regroup operations by type. Reorder rules and prices are defined in R.01–R.09.
 - [x] **1.19** Round down once at the end of each Field Data payout, after applying its full modifier sequence. Do not round intermediate upgrade operations; discard any fractional remainder after awarding that payout. Bevin confirmed 2026-10-15.
-- [x] **1.20** Ordinary example: after a 100-tick round, 20 living Hares with no income upgrades award 20 FD; a starting wallet of 0 becomes 20.
-- [x] **1.21** Example, upgraded payout: 20 Hares start at 1 Field Data each; a +1-per-Hare bonus gives 20 + 20 = 40, then ×1.5 gives 60 Field Data. Round down once after the full sequence; result is 60. Upgrade strengths are illustrative, not balance decisions.
+- [x] **1.20** Ordinary example: after a 100-tick round, 20 living Rabbits with no income upgrades award 20 FD; a starting wallet of 0 becomes 20.
+- [x] **1.21** Example, upgraded payout: 20 Rabbits start at 1 Field Data each; a +1-per-Rabbit bonus gives 20 + 20 = 40, then ×1.5 gives 60 Field Data. Round down once after the full sequence; result is 60. Upgrade strengths are illustrative, not balance decisions.
 - [x] **1.22** Successful-node example: final-round payout 20 plus the provisional 10-FD clear bonus adds 30 FD in total. More varied node rewards remain deferred.
 - [x] **1.23** Example: a journey holds 30 Field Data and the Desktop already has 50 banked permanent currency. Failure clears the journey's 30 Field Data and gives no cash-out; the 50 already banked on the Desktop remains. Values are illustrative. Bevin confirmed 2026-10-15.
 
@@ -79,31 +79,31 @@ until the work and required evidence exist.
 
 ## Step 2 — Starter purchases and rewards
 
-- [x] **2.01** Source review: the current phase-decision control buys one Hare for a fixed 10 Currency per click, only while a Hare player is awaiting a phase decision; it requires enough balance and valid population space, adds the Hare immediately, then charges. The UI says it can be bought again while Data and space remain. This is existing prototype behavior, not an approved future Field Data price or quantity decision. Bevin reviewed 2026-10-15.
-- [x] **2.02** Start with one Hare per purchase for now. Bevin confirmed 2026-10-15. Future idea: seed-deterministic purchase variations could add/remove Hares or Foxes, or multiply/divide their counts; exact operations and when they apply remain open.
-- [x] **2.03** Start with a provisional price of **10 Field Data per Hare**. Bevin confirmed 2026-10-15. Current price is fixed; seed-deterministic sliding-scale pricing is deferred future work.
+- [x] **2.01** Source review: the current phase-decision control buys one Rabbit for a fixed 10 Currency per click, only while a Rabbit player is awaiting a phase decision; it requires enough balance and valid population space, adds the Rabbit immediately, then charges. The UI says it can be bought again while Data and space remain. This is existing prototype behavior, not an approved future Field Data price or quantity decision. Bevin reviewed 2026-10-15.
+- [x] **2.02** Start with one Rabbit per purchase for now. Bevin confirmed 2026-10-15. Future idea: seed-deterministic purchase variations could add/remove Rabbits or Foxes, or multiply/divide their counts; exact operations and when they apply remain open.
+- [x] **2.03** Start with a provisional price of **10 Field Data per Rabbit**. Bevin confirmed 2026-10-15. Current price is fixed; seed-deterministic sliding-scale pricing is deferred future work.
 - [x] **2.04** Include both **Remove Fox** and **Add Plants** as ecological interventions in the first comparison. Bevin confirmed 2026-10-15.
 - [x] **2.05** Test removing 1 random Fox or adding 5 Plants at random valid locations. These are initial quantities/effects for comparison, not final balance. Bevin confirmed 2026-10-15.
 - [x] **2.06** Start both ecological interventions at a provisional **10 Field Data per purchase**. Bevin confirmed 2026-10-15. Future tuning or seed-determined sliding-scale prices remain an idea, not a settled rule.
-- [x] **2.07** Use a provisional **+1 Field Data per Hare per payout** income upgrade. Bevin confirmed 2026-10-15; the value is a starting test value, not approved balance.
+- [x] **2.07** Use a provisional **+1 Field Data per Rabbit per payout** income upgrade. Bevin confirmed 2026-10-15; the value is a starting test value, not approved balance.
 - [x] **2.08** Use a provisional ×1.5 income upgrade that affects future population payouts. Bevin confirmed 2026-10-15; the value is a starting test value, not approved balance.
 - [x] **2.09** Include a larger journey upgrade that multiplies future population payouts by ×2, as an initial save-worthy comparison. Bevin confirmed 2026-10-15; effect strength is provisional.
 - [x] **2.10** Price the larger ×2 upgrade at a provisional 50 Field Data for the first comparison. Bevin confirmed 2026-10-15; revisit with the budget examples.
 - [x] **2.11** Allow repeat purchases of population interventions while funds and valid targets/space remain. Bevin confirmed 2026-10-15.
 - [x] **2.12** Limit each distinct income-upgrade offer to one purchase; allow the same upgrade to stack when presented as a later distinct offer, including from a different reward source. Bevin confirmed 2026-10-15.
 - [x] **2.13a** Offer five randomized, non-duplicated items at each shop, using equal weighting among eligible items; let players buy multiple distinct offers in one visit; make the ×2 income upgrade eligible starting at the second shop. Bevin confirmed 2026-10-15.
-- [x] **2.13b** Define the first-playtest journey-persistent shop pool: six existing Hare-skill families with positive and negative versions, plus Field Data modifiers. Defer Fox/Plant-targeted and multispecies offers, and new effect types, until after testing the existing-skill variants. Population controls are not shop items. Additional content is later work. Bevin confirmed 2026-10-15.
-- [x] **2.13c** Price +1 Field Data per Hare at 20 FD and ×1.5 population income at 30 FD; keep the ×2 upgrade at provisional 50 FD. These are comparison prices, not balanced values. Bevin confirmed 2026-10-15.
-- [x] **2.13d** Use roughly 3× the original effect for stronger shop variants, keep the proposed names, and make negative versions reverse the same amount, respecting valid floors/caps. Include all six existing Hare-skill variations, each with a negative counterpart, in the first-playtest pool; Bevin confirmed on 2026-10-15. Values remain unbalanced sketches.
+- [x] **2.13b** Define the first-playtest journey-persistent shop pool: six existing Rabbit-skill families with positive and negative versions, plus Field Data modifiers. Defer Fox/Plant-targeted and multispecies offers, and new effect types, until after testing the existing-skill variants. Population controls are not shop items. Additional content is later work. Bevin confirmed 2026-10-15.
+- [x] **2.13c** Price +1 Field Data per Rabbit at 20 FD and ×1.5 population income at 30 FD; keep the ×2 upgrade at provisional 50 FD. These are comparison prices, not balanced values. Bevin confirmed 2026-10-15.
+- [x] **2.13d** Use roughly 3× the original effect for stronger shop variants, keep the proposed names, and make negative versions reverse the same amount, respecting valid floors/caps. Include all six existing Rabbit-skill variations, each with a negative counterpart, in the first-playtest pool; Bevin confirmed on 2026-10-15. Values remain unbalanced sketches.
 - [x] **2.13e** Let the same species-buff family stack additively up to 3 copies total across positive and negative versions; track this shared cap separately from the in-phase upgrade cap. Allow the opposite version to appear at a later shop, and apply both owned versions so their opposing amounts cancel. Do not offer both versions together in one visit; price them equally. If a capped version appears, allow a reroll. Bevin confirmed 2026-10-15.
 - [x] **2.13f** Price each initial single-species buff at a provisional 30 FD, keep the price fixed across repeat purchases, and scale multispecies offers linearly by the number of targets. One multispecies purchase counts as one stack. Bevin confirmed 2026-10-15; these are comparison prices, not balanced values.
 - [x] **2.13g** Let the player choose to reroll a capped buff offer, for free, once per capped offer in that shop visit. Draw replacements only from currently eligible items, excluding capped items and same-visit positive/negative conflicts. If fewer than five items are eligible, show fewer shop offers. Bevin confirmed 2026-10-15.
-- [x] **2.13h** Make +1 FD per Hare and ×1.5 population-payout modifiers eligible in shops from the first visit. Keep ×2 shop-only, starting at the second visit. Field Data modifiers are positive-only in the first playtest and have no copy cap for now; the once-per-distinct-offer rule still applies. Bevin confirmed 2026-10-15.
-- [x] **2.14** Offer +1 Field Data per Hare per payout in shops only, from visit one at 20 FD. The October 17 correction supersedes the October 15 round-reward source.
+- [x] **2.13h** Make +1 FD per Rabbit and ×1.5 population-payout modifiers eligible in shops from the first visit. Keep ×2 shop-only, starting at the second visit. Field Data modifiers are positive-only in the first playtest and have no copy cap for now; the once-per-distinct-offer rule still applies. Bevin confirmed 2026-10-15.
+- [x] **2.14** Offer +1 Field Data per Rabbit per payout in shops only, from visit one at 20 FD. The October 17 correction supersedes the October 15 round-reward source.
 - [x] **2.15** Offer the ×1.5 population-payout multiplier in shops only, from visit one at 30 FD. The October 17 correction supersedes the October 15 node-reward source.
 - [x] **2.16** Free round/node choices contain species upgrades only, with Skip available. Income and species offers compete for the same shop wallet; this October 17 correction supersedes the original mixed free-reward pool.
 - [x] **2.17** Keep the complete six-control, income and signed species-offer catalogs in the standalone design, with effects, source, lifetime, repeatability and provisional prices.
-- [x] **2.18** Use add/remove 1 Hare, add/remove 1 Fox and add/remove 5 Plants, each for 10 FD. Reject invalid purchases without charge/partial effect; block removal of the final selected-species individual.
+- [x] **2.18** Use add/remove 1 Rabbit, add/remove 1 Fox and add/remove 5 Plants, each for 10 FD. Reject invalid purchases without charge/partial effect; block removal of the final selected-species individual.
 
 ## Step 3 — Paper journey budget
 
@@ -115,12 +115,12 @@ until the work and required evidence exist.
 - [x] **3.06** Include a growing-population path.
 - [x] **3.07** Compare early purchase of ×1.5 at the first shop.
 - [x] **3.08** Compare saving for ×2 at the second shop.
-- [x] **3.09** Compare buying +1 FD/Hare at the first shop and ×2 at the second.
+- [x] **3.09** Compare buying +1 FD/Rabbit at the first shop and ×2 at the second.
 - [x] **3.10** Check whether the struggling path can afford a useful 10-FD intervention after its first payout.
 - [x] **3.11** Check whether intervening still leaves a path to the 50-FD second-shop purchase.
 - [x] **3.12** Estimate payback periods for the three income modifiers.
 - [x] **3.13** Compare the same modifiers when offered at different remaining payout counts.
-- [x] **3.14** Flag the mixed +1/Hare then ×2 path as a potential dominant compound-income strategy in stable/growing paths.
+- [x] **3.14** Flag the mixed +1/Rabbit then ×2 path as a potential dominant compound-income strategy in stable/growing paths.
 - [x] **3.15** Keep current prices as comparison inputs for a playable test; this paper-only ledger is not sufficient evidence to rebalance them.
 
 ## Step 4 — Implementation and correctness requirements
@@ -133,7 +133,7 @@ until the work and required evidence exist.
 - [x] **4.06** Select a playable segment containing multiple payouts, intervention choices and a shop. Bevin selected the full five-node route in the standalone design for the first implementation slice on 2026-10-15.
 - [ ] **4.07** Implement the agreed payout and wallet corrections needed by that segment.
 - [ ] **4.08** Implement the six fixed-amount 10-FD population controls, random valid selection, atomic rejection and final-selected-individual guard.
-- [ ] **4.09** Implement +1 FD per Hare, ×1.5 population payout and ×2 population payout upgrades.
+- [ ] **4.09** Implement +1 FD per Rabbit, ×1.5 population payout and ×2 population payout upgrades.
 - [ ] **4.10** Restrict all income modifiers to randomized shop offers; free round and node rewards contain species upgrades only.
 - [ ] **4.11** Implement journey-persistent shop species buffs/nerfs so purchases take effect in the next simulation.
 - [ ] **4.12** Display population counts for all species on each payout summary.
@@ -165,7 +165,7 @@ until the work and required evidence exist.
 - [ ] **5.07** Record time between meaningful decision opportunities in real elapsed time and simulation ticks.
 - [x] **5.08** Defer asking external players why they spend or save; this first playtest is internal team testing.
 - [x] **5.09** Defer player teach-back interviews; assess payout and purchase clarity through internal self-play.
-- [x] **5.10** Defer external-player purchase-behavior tracking, including whether Hare purchases dominate, until that research is in scope.
+- [x] **5.10** Defer external-player purchase-behavior tracking, including whether Rabbit purchases dominate, until that research is in scope.
 - [ ] **5.11** During team self-play, note examples where an income upgrade leads us to pass on a species upgrade or population intervention; use as a qualitative signal without a preset threshold.
 - [ ] **5.12** Compare a 10-FD intervention path with saving toward the 50-FD ×2 upgrade on the same setup and seeds.
 - [ ] **5.13** Select the next adjustment from findings. Multiple related economy values may change together; record the bundle and do not claim isolated per-variable causality.

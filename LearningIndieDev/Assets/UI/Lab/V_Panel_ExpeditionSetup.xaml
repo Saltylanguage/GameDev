@@ -47,7 +47,7 @@
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource Chrono_Olive}"
                                    HorizontalAlignment="Right" />
-                        <TextBlock Text="FOREST EDGE · HARE"
+                        <TextBlock Text="FOREST EDGE · RABBIT"
                                    Margin="0,3,0,0"
                                    FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                    FontSize="12"
@@ -237,7 +237,7 @@
                                        Width="58" Height="58" Stretch="Uniform"
                                        VerticalAlignment="Center" />
                                 <StackPanel Margin="72,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="HARE"
+                                    <TextBlock Text="RABBIT"
                                                FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                                                FontSize="21" FontWeight="Bold"
                                                Foreground="{DynamicResource Chrono_TreeBark}" />
@@ -271,7 +271,7 @@
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                                         <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.32}" Width="25" Height="25" Stretch="Uniform" />
                                         <StackPanel Margin="5,0,0,0">
-                                            <TextBlock Text="HARE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                                            <TextBlock Text="RABBIT" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
                                             <TextBlock Text="22 · YOU" Margin="0,2,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                                         </StackPanel>
                                     </StackPanel>
@@ -328,7 +328,7 @@
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                                        FontSize="18" FontWeight="Bold"
                                        Foreground="{DynamicResource Chrono_TreeBark}" />
-                            <TextBlock Text="HARE · DAYLIGHT STUDY"
+                            <TextBlock Text="RABBIT · DAYLIGHT STUDY"
                                        Margin="0,4,0,0"
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                        FontSize="10" FontWeight="Bold"
@@ -350,7 +350,7 @@
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                        FontSize="10" FontWeight="Bold"
                                        Foreground="{DynamicResource Chrono_Olive}" />
-                            <TextBlock Text="Watch the hare population closely as the forest edge settles."
+                            <TextBlock Text="Watch the rabbit population closely as the forest edge settles."
                                        Margin="0,6,0,0"
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                                        FontSize="12" TextWrapping="Wrap"

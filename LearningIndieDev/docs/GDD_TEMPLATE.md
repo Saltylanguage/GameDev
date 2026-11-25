@@ -38,12 +38,12 @@ The player can understand why an ecosystem changed, choose how to respond, and s
 The current slice centers on:
 
 - the **Forest Edge** scenario;
-- **Hare** as the player species and **Fox** as opposition; playable plant species are on hold;
-- three intended Hare Mutation paths: **Trailblazer**, **Warren**, and **Gardeners**;
+- **Rabbit** as the player species and **Fox** as opposition; playable plant species are on hold;
+- three intended Rabbit Mutation paths: **Trailblazer**, **Warren**, and **Gardeners**;
 - one six-round expedition on the same evolving board, with 10 seconds of simulation time per round;
 - five Mutation decision moments: none at the start of Round 1, one after each of Rounds 1–5, and none after Round 6;
 - a final outcome, results review, and return to the GalapagOS Desktop;
-- later permanent Hare Genome effects and persistence; the identity and launch-snapshot foundation is already in place.
+- later permanent Rabbit Genome effects and persistence; the identity and launch-snapshot foundation is already in place.
 
 ### Non-goals for the slice
 
@@ -87,7 +87,7 @@ Main Menu -> profile ID/name -> Desktop -> embedded local simulation
 
 The Desktop simulation host creates and starts its own local preview. It does not yet receive the selected profile or an expedition-planning launch request. The standalone Lab-to-simulation route can pass an immutable launch request, but it is a legacy/developer path rather than the canonical player flow. These routes must be reconciled before the target journey is complete.
 
-**Test-contract decision, 2026-09-17:** opening Simulation from the GalapagOS Desktop is expected to start the current Forest Edge/Hare experience directly. This decision preserves the Bev/Sim simulation and Mutation setup; it does not resolve the missing profile and launch-request handoff described above. The causes of the recorded PlayMode failures have not been verified from individual test results.
+**Test-contract decision, 2026-09-17:** opening Simulation from the GalapagOS Desktop is expected to start the current Forest Edge/Rabbit experience directly. This decision preserves the Bev/Sim simulation and Mutation setup; it does not resolve the missing profile and launch-request handoff described above. The causes of the recorded PlayMode failures have not been verified from individual test results.
 
 ### Expedition cadence
 
@@ -138,7 +138,7 @@ rewards are possible but not decided.
 ### Input and accessibility target
 
 - **Required input:** keyboard and mouse for Windows 64-bit Steam.
-- **Target resolution:** 1920×1080; 1280×720 must remain functional.
+- **Target resolution:** 1920×1080; 1280×720 is outside the current supported target. The lower bound is not yet specified.
 - **Current accessibility direction:** pauseable observation, readable state changes, redundant text/icon/color cues, and controls that do not depend on rapid input.
 - **Open accessibility scope:** color-vision modes, dyslexia-oriented font options, photosensitivity treatment, remapping, and peripheral support require an explicit accessibility pass before commitment.
 
@@ -156,8 +156,8 @@ must record the actual scenario dimensions used.
 
 | Species | Ecological role | Player-facing identity | Key pressure/relationship | Status |
 | --- | --- | --- | --- | --- |
-| Hare | Player herbivore | Mobile breeder and ecosystem shaper | Must find food, reproduce, and survive Fox pressure | **Implemented foundation** |
-| Fox | Predator/opposition | Creates spatial and survival pressure | Hunts Hare; should create counterplay rather than arbitrary collapse | **Implemented foundation; evidence refinement active** |
+| Rabbit | Player herbivore | Mobile breeder and ecosystem shaper | Must find food, reproduce, and survive Fox pressure | **Implemented foundation** |
+| Fox | Predator/opposition | Creates spatial and survival pressure | Hunts Rabbit; should create counterplay rather than arbitrary collapse | **Implemented foundation; evidence refinement active** |
 
 Playable plant species and Fern/Plant naming are on hold. Do not include a plant
 species in the current expedition contract; retain internal data identities as
@@ -167,7 +167,7 @@ implementation details until that work is resumed.
 
 At minimum, the slice should let the player relate changes to:
 
-- current and recent Hare and Fox populations;
+- current and recent Rabbit and Fox populations;
 - births, feeding, starvation, predation, and other meaningful deaths;
 - resource recovery and depletion;
 - the active ordered Mutation build and when each Mutation first became effective;
@@ -192,7 +192,7 @@ last only for the current run.
   currency is possible but undecided and non-blocking.
 - Mutations are exclusive to Species Simulations; Biome Simulations do not use them.
 
-Seven Hare upgrade assets currently exist, but the player UI exposes only three offer slots and the preview loads the catalog in asset order. In practice, only the first three entries are reachable through that route: **Long Stride**, **Large Litters**, and **Far Sight**. The Warren and Gardeners options later in the catalog are therefore authored but disconnected. Offer generation and build-path reachability must be designed and implemented before claiming three playable builds.
+Seven Rabbit upgrade assets currently exist, but the player UI exposes only three offer slots and the preview loads the catalog in asset order. In practice, only the first three entries are reachable through that route: **Long Stride**, **Large Litters**, and **Far Sight**. The Warren and Gardeners options later in the catalog are therefore authored but disconnected. Offer generation and build-path reachability must be designed and implemented before claiming three playable builds.
 
 Intended build identities:
 
@@ -226,7 +226,7 @@ Biome Simulations use:
 Natural species rules + frozen active Genome
 ```
 
-The first Genome foundation is implemented: stable per-species profile state, immutable launch/run/checkpoint/result snapshots, metadata-only node and map authoring types, an asset-free catalog, and generic Gene Lab display bindings. This foundation records which nodes are unlocked or active, but those nodes do not yet change simulation rules. The visualization-only Hare and Fox maps were removed from the player-home scene on 2026-09-17, so no dummy catalog is presented as production content. Production effects, node costs, buying and unlocking, player editing, versioned save migration and recovery, and the first approved production Genome map remain open. Named loadouts and node-reveal behavior remain deferred questions.
+The first Genome foundation is implemented: stable per-species profile state, immutable launch/run/checkpoint/result snapshots, metadata-only node and map authoring types, an asset-free catalog, and generic Gene Lab display bindings. This foundation records which nodes are unlocked or active, but those nodes do not yet change simulation rules. The visualization-only Rabbit and Fox maps were removed from the player-home scene on 2026-09-17, so no dummy catalog is presented as production content. Production effects, node costs, buying and unlocking, player editing, versioned save migration and recovery, and the first approved production Genome map remain open. Named loadouts and node-reveal behavior remain deferred questions.
 
 ### Scientific data and settlement
 
@@ -264,7 +264,7 @@ The Main Menu has an initial procedural chime. A systematic audio language for i
 - Players can complete the six-round route without developer-only fields.
 - Players understand that Continue preserves the same ecosystem.
 - Players can identify at least two distinct viable build strategies and explain their tradeoffs.
-- The UI communicates why the Hare population grew, struggled, or collapsed.
+- The UI communicates why the Rabbit population grew, struggled, or collapsed.
 - Mutation timing and effects are visible in phase and expedition evidence.
 - Actual session duration may be recorded for performance characterization, but
   there is no wall-clock pacing target or duration/memory closeout gate.
@@ -285,7 +285,7 @@ The Main Menu has an initial procedural chime. A systematic audio language for i
 | Final player-facing title | Menu branding and document naming currently differ in capitalization/history | Product owner review | **Open** |
 | Playable plant species and Fern/Plant naming | Playable plants are on hold | Revisit only when plant play returns to scope | **Deferred; non-blocking** |
 | Skip bonus | Skipping may earn Genome Upgrade currency; whether it does is undecided | Decide amount and limits only when needed | **Undecided; non-blocking** |
-| Expedition Planner interaction and launch payload | Current acceptance starts Forest Edge/Hare directly; selected-profile/request handoff is still unresolved | Define an immutable request boundary before making launch choices authoritative | **Planned; underspecified** |
+| Expedition Planner interaction and launch payload | Current acceptance starts Forest Edge/Rabbit directly; selected-profile/request handoff is still unresolved | Define an immutable request boundary before making launch choices authoritative | **Planned; underspecified** |
 | Profile ownership across Desktop and simulation | Profile selection currently stops at scene validation | Engineering contract; planned with flow/persistence work | **Disconnected** |
 | Desktop launch acceptance tests | Latest retained full suites pass, but direct-start acceptance does not prove selected-profile/request handoff | Add focused coverage when that handoff is implemented | **Current route verified; handoff remains open** |
 | Mutation offer generation and economy | Only the first three catalog entries are reachable; costs and rerolls are not settled | S3 route work and later balance evidence | **Partly planned** |
@@ -314,7 +314,7 @@ The Main Menu has an initial procedural chime. A systematic audio language for i
 | 2026-09-12 | Replaced the placeholder template with a current product baseline and explicit implemented/planned/open labels. | The old document mixed aspirations with implementation claims and did not expose disconnected player routes. |
 | 2026-09-12 | Recorded cadence, board-size, Fern/Plant, profile handoff, Mutation reachability, result, and simulation-control gaps. | These gaps affect the main flow or evidence validity and need visible ownership. |
 | 2026-09-12 | Aligned the slice with roadmap v2 while preserving its review status. | Prevent a proposed Sprint 3 plan from being mistaken for an approved commitment. |
-| 2026-09-17 | Recorded the implemented Genome foundation, removed visualization-only Genome fixtures from the player route, and accepted direct-start Forest Edge/Hare as the Desktop test contract. | Keep design claims aligned with the executable route without promoting dummy content or hiding disconnected profile/launch ownership. |
+| 2026-09-17 | Recorded the implemented Genome foundation, removed visualization-only Genome fixtures from the player route, and accepted direct-start Forest Edge/Rabbit as the Desktop test contract. | Keep design claims aligned with the executable route without promoting dummy content or hiding disconnected profile/launch ownership. |
 | 2026-09-17 | Recorded the verified S3 kickoff and committed sprint scope. | Keep product status aligned with the active sprint control record. |
 | 2026-09-17 | Replaced the old ten-phase/200-tick player contract with six 10-second simulation rounds and five Mutation choices; recorded current pause, End, victory, and failure rules. | Align product guidance to S3-02 while preserving historical research evidence. |
 | 2026-09-06 | Established continuous same-world phase continuation as the canonical runtime foundation. | CF-1–CF-5 and EX-010 verified the bounded lifecycle/evidence contract. |

@@ -221,10 +221,10 @@ marks. Settings should be the least decorative app in the suite.
 ├──────────────────────────────────────────────────────────────────────────┤
 │ ALL  PLANTS  HERBIVORES  CARNIVORES                 [Unlocked v] [☆]      │
 ├──────────────────┬──────────────────────────────┬────────────────────────┤
-│ specimen index   │ HARE                           │ QUICK FACTS             │
-│                  │        [large hare glyph]      │ Role       Herbivore    │
-│ [Hare]           │                                │ Biome      Forest Edge │
-│ [Fox]            │ HARE · HERBIVORE              │ Mastery     68%         │
+│ specimen index   │ RABBIT                           │ QUICK FACTS             │
+│                  │        [large rabbit glyph]      │ Role       Herbivore    │
+│ [Rabbit]           │                                │ Biome      Forest Edge │
+│ [Fox]            │ RABBIT · HERBIVORE              │ Mastery     68%         │
 │ [Grass]          │ A cautious grazer with sharp   │ First seen  Day 03      │
 │ [locked slot]    │ hearing and a growing record.  │                        │
 │                  │ [Open in Gene Lab] [History]  │ Known: grazing, flight  │
@@ -270,15 +270,15 @@ north star. The earlier v1 image remains preserved as the prior reference.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ GENE LAB · HARE                                                           │
+│ GENE LAB · RABBIT                                                           │
 ├──────────────────────────────────────────────────────────────────────────┤
-│ PLANT       HERBIVORE       CARNIVORE                    HARE              │
+│ PLANT       HERBIVORE       CARNIVORE                    RABBIT              │
 ├───────────────────────────────────────────────┬──────────────────────────┤
 │ RESEARCH TREE                                 │ SELECTED NODE             │
-│ Hare root · owned                             │ Quick Feet                │
+│ Rabbit root · owned                             │ Quick Feet                │
 │                                               │ Available                 │
 │ [owned]──[available]                          │ Cost · 180 data           │
-│       └──[locked]                              │ Prereq · Hare root        │
+│       └──[locked]                              │ Prereq · Rabbit root        │
 │                                               │ Preview in Expedition     │
 │                                               │ Setup                     │
 └───────────────────────────────────────────────┴──────────────────────────┘
@@ -400,7 +400,7 @@ streaming-service card grid.
 │ EXPEDITIONS   PHASE TIMELINE   SPECIES   BIOMES   ACHIEVEMENTS             │
 ├───────────────────┬─────────────────────────────┬──────────────────────────┤
 │ saved records     │ EXPEDITION 004              │ RECORD SUMMARY           │
-│                   │ Fernlight Valley · Hare    │ Final population   28    │
+│                   │ Fernlight Valley · Rabbit    │ Final population   28    │
 │ [004] latest      │ ──●────●────●────●──        │ Collected         28/40  │
 │ [003]             │ P1   P2   P3   P4           │ Rare genes          3/8  │
 │ [002]             │                              │ Duration        04:12   │
@@ -447,7 +447,7 @@ dashboard.
 │ Forest Edge      │                               │ Movement cost    Low    │
 │ Fernlight Valley │   water · grass · canopy      │ Food pressure     42%   │
 │ Tide Pools       │                               │ Risk              Mild   │
-│ [locked biome]   │   [inspect hotspot]            │ Compatible: Hare       │
+│ [locked biome]   │   [inspect hotspot]            │ Compatible: Rabbit       │
 │                  │                               │ [Open in Planner]       │
 ├──────────────────┴───────────────────────────────┴────────────────────────┤
 │ ecology research:  [owned]──[available]──[locked]    DATA  420             │
@@ -529,8 +529,8 @@ the implementation target until human review.
 │ 1 BIOME  →  2 SPECIES  →  3 OPTIONS  →  4 LAUNCH                          │
 ├──────────────────────┬──────────────────────┬────────────────────────────┤
 │ BIOME                 │ PLAYER SPECIES        │ LAUNCH PERMIT              │
-│ [Forest Edge]         │ [hare glyph]          │ Forest Edge                │
-│ terrain sample        │ Hare · Herbivore      │ Hare · Day 03              │
+│ [Forest Edge]         │ [rabbit glyph]          │ Forest Edge                │
+│ terrain sample        │ Rabbit · Herbivore      │ Rabbit · Day 03              │
 │ gentle pressure       │ starting traits       │ seed policy: randomized    │
 │ [Change Biome]        │ [Change Species]      │ permanent research: 2      │
 │                       │                       │ [Launch Expedition]        │
@@ -576,9 +576,9 @@ content rather than approved runtime data.
 ├──────────────────────────────────────────────────────────────────────────┤
 │ SPECIES   BIOMES   ECOLOGY TERMS   TUTORIALS                    [Search]   │
 ├──────────────────┬────────────────────────────────────────────────────────┤
-│ contents          │ HARE · GRAZER                                          │
+│ contents          │ RABBIT · GRAZER                                          │
 │                    │ [small illustration / glyph]                         │
-│ Getting Started    │ Hares prefer open grass and avoid sustained pressure. │
+│ Getting Started    │ Rabbits prefer open grass and avoid sustained pressure. │
 │ Species            │                                                        │
 │ Habitats           │ Known terms: forage · movement · reproduction          │
 │ Interactions       │ Related: Species Collection · Forest Edge              │
@@ -617,8 +617,8 @@ specimen marks, and generous cream space. This is a calm reading surface.
 │ ALL  NEW  SPECIES  RESEARCH  EXPEDITIONS  PERSONALIZATION     3 UNREAD    │
 ├──────────────────────────────────────────────────────┬────────────────────┤
 │ notice stack                                          │ NOTICE DETAIL      │
-│ [NEW] Hare record added                    2 min ago  │ NEW SPECIES        │
-│ [DATA] Expedition 004 complete             yesterday  │ Hare is now in your │
+│ [NEW] Rabbit record added                    2 min ago  │ NEW SPECIES        │
+│ [DATA] Expedition 004 complete             yesterday  │ Rabbit is now in your │
 │ [UNLOCK] Rainy Study wallpaper              day 02    │ Species Collection. │
 │ [READY] Research node available             day 01    │ [Open Collection]  │
 │                                                        │ [Mark Read]        │
@@ -655,8 +655,8 @@ Keep the notice list compact enough that the right detail sheet remains useful.
 ├──────────────────────┬───────────────────────────────┬───────────────────┤
 │ display shelf        │ CURRENT DISPLAY                │ ITEM DETAIL       │
 │ [Fernlight]          │ ┌───────────────────────────┐ │ Fernlight plaque  │
-│ [Forest Edge]        │ │ grass · water · hare      │ │ Earned: 6/10       │
-│ [Hare set]           │ │ small framed habitat     │ │ Unlocks wallpaper │
+│ [Forest Edge]        │ │ grass · water · rabbit      │ │ Earned: 6/10       │
+│ [Rabbit set]           │ │ small framed habitat     │ │ Unlocks wallpaper │
 │ [locked display]     │ └───────────────────────────┘ │ [Equip Display]   │
 │                      │                               │ [Send to My PC]   │
 └──────────────────────┴───────────────────────────────┴───────────────────┘
@@ -693,10 +693,10 @@ grid should remain calm and easy to browse.
 │ [ Search species, biome, research, record...                    ] [Clear]  │
 ├──────────────────────────┬───────────────────────────────────────────────┤
 │ FILTERS                  │ RESULTS                                         │
-│ All                      │ SPECIES · Hare                                 │
+│ All                      │ SPECIES · Rabbit                                 │
 │ Species                  │ Herbivore · Forest Edge             [Open]     │
 │ Biomes                   │ RESEARCH · Keen Hearing                        │
-│ Research                 │ Gene Lab · Hare                     [Open]     │
+│ Research                 │ Gene Lab · Rabbit                     [Open]     │
 │ History                  │ RECORD · Expedition 004                        │
 │ Music / Desktop          │ History · Fernlight Valley           [Open]     │
 └──────────────────────────┴───────────────────────────────────────────────┘

@@ -14,14 +14,16 @@ namespace SaltyGame
             }
 
             var random = new Random(runSeed);
-            var grid = new Grid<SpeciesCell>(data.Width, data.Height, data.WrapEdges);
+            var grid = new Grid<SpeciesCell>(data.Width, data.Height, data.Topology);
             var startingSpecies = GetSortedSpecies(data.StartingProbabilities);
             var fallbackSpecies = GetSortedSpecies(data.SpeciesRules);
             var populationCount = 0;
+            var speciesPopulationCounts = new Dictionary<SpeciesId, int>();
             for (var y = 0; y < data.Height; y++)
             {
                 for (var x = 0; x < data.Width; x++)
                 {
+                    if (!grid.IsPlayableCell(x, y)) continue;
                     var roll = random.NextDouble();
                     if (!TryGetInitialSpecies(roll, data, startingSpecies, out var species))
                     {
@@ -31,6 +33,16 @@ namespace SaltyGame
                     // Explicit starting populations are placed after the weighted
                     // pass so their counts remain deterministic for authored scenarios.
                     if (data.StartingPopulations.ContainsKey(species))
+                    {
+                        continue;
+                    }
+
+                    var speciesCount = speciesPopulationCounts.TryGetValue(species, out var currentSpeciesCount)
+                        ? currentSpeciesCount
+                        : 0;
+                    var speciesRules = data.SpeciesRules[species];
+                    if (speciesRules.MaximumPopulation > 0
+                        && speciesCount >= speciesRules.MaximumPopulation)
                     {
                         continue;
                     }
@@ -51,10 +63,12 @@ namespace SaltyGame
 
                     grid.SetCell(x, y, CreateCell(data, species));
                     populationCount++;
+                    speciesPopulationCounts[species] = speciesCount + 1;
                 }
             }
 
-            PlaceExplicitStartingPopulations(data, grid, random, ref populationCount);
+            PlaceExplicitStartingPopulations(
+                data, grid, random, ref populationCount, speciesPopulationCounts);
 
             var minimumPopulation = Math.Min(data.MinPopulation, grid.Count);
             if (data.MaxPopulation > 0)
@@ -65,9 +79,10 @@ namespace SaltyGame
             var attempts = 0;
             while (populationCount < minimumPopulation && attempts++ < grid.Count * 4)
             {
-                var index = random.Next(grid.Count);
+                var index = random.Next(grid.StorageCount);
                 var x = index % data.Width;
                 var y = index / data.Width;
+                if (!grid.IsPlayableCell(x, y)) continue;
                 var cell = grid.GetCell(x, y);
                 if (cell.IsCreature || cell.IsPlantResource)
                 {
@@ -75,8 +90,19 @@ namespace SaltyGame
                 }
 
                 var species = GetInitialSpecies(random.NextDouble(), data, startingSpecies, fallbackSpecies);
+                var speciesCount = speciesPopulationCounts.TryGetValue(species, out var currentSpeciesCount)
+                    ? currentSpeciesCount
+                    : 0;
+                var speciesRules = data.SpeciesRules[species];
+                if (speciesRules.MaximumPopulation > 0
+                    && speciesCount >= speciesRules.MaximumPopulation)
+                {
+                    continue;
+                }
+
                 grid.SetCell(x, y, CreateCell(data, species));
                 populationCount++;
+                speciesPopulationCounts[species] = speciesCount + 1;
             }
 
             StaggerInitialPlantGrowth(data, grid, random);
@@ -103,6 +129,7 @@ namespace SaltyGame
                 {
                     for (var x = 0; x < grid.Width; x++)
                     {
+                        if (!grid.IsPlayableCell(x, y)) continue;
                         var cell = grid.GetCell(x, y);
                         var resourceSpecies = cell.ResourceSpeciesId.IsValid
                             ? cell.ResourceSpeciesId
@@ -143,14 +170,15 @@ namespace SaltyGame
             CellularSimData data,
             Grid<SpeciesCell> grid,
             Random random,
-            ref int populationCount)
+            ref int populationCount,
+            Dictionary<SpeciesId, int> speciesPopulationCounts)
         {
             if (data.StartingPopulations.Count == 0)
             {
                 return;
             }
 
-            var indices = CreateShuffledIndices(grid.Count, random);
+            var indices = CreateShuffledIndices(grid.StorageCount, random);
             foreach (var species in GetSortedSpecies(data.StartingPopulations))
             {
                 var requested = data.StartingPopulations[species];
@@ -171,6 +199,7 @@ namespace SaltyGame
                     var cellIndex = indices[index];
                     var x = cellIndex % grid.Width;
                     var y = cellIndex / grid.Width;
+                    if (!grid.IsPlayableCell(x, y)) continue;
                     var cell = grid.GetCell(x, y);
                     if (cell.IsCreature || (cell.IsOccupied && !cell.IsTerrainResource))
                     {
@@ -211,6 +240,8 @@ namespace SaltyGame
                         $"Could not place the configured starting population for {species}. "
                         + $"Requested {requested}, placed {placed}.");
                 }
+
+                speciesPopulationCounts[species] = placed;
             }
         }
 
@@ -302,9 +333,9 @@ namespace SaltyGame
         static int CountNearbySpecies(Grid<SpeciesCell> grid, int x, int y, SpeciesId species)
         {
             var count = 0;
-            foreach (var offset in grid.GetPattern(NearbyPattern).Offsets)
+            foreach (var offset in grid.GetPattern(x, y, NearbyPattern).Offsets)
             {
-                if (grid.TryGetCell(x + offset.x, y + offset.y, out var neighbor)
+                if (grid.TryGetCellAtOffset(x, y, offset, out var neighbor)
                     && ((neighbor.IsPlantResource || neighbor.IsCreature)
                         && neighbor.SpeciesId == species))
                 {

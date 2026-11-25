@@ -3,7 +3,7 @@
 Chrono's handmade 64x64 originals are the source of truth:
 
 - Fox: `Assets/Art/Species/Animals/Chrono_Fox 1.png`
-- Hare/rabbit: `Assets/Art/Species/Animals/Chrono_Rabbit_Tile_Face.png`
+- Rabbit/rabbit: `Assets/Art/Species/Animals/Chrono_Rabbit_Tile_Face.png`
 
 Use **Salty Game > Art > Rebuild Chrono Species Icons** after changing either
 original. The command uses nearest-neighbor sampling, retains transparency and

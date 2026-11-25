@@ -24,7 +24,7 @@ namespace SaltyGame
     {
         public const int ContinuousExpeditionPhaseCount = 6;
         public const int JourneyPrototypeCycleCount = 2;
-        public const int HareCost = SpeciesProgression.HarePurchaseCost;
+        public const int RabbitCost = SpeciesProgression.RabbitPurchaseCost;
 
         public static event Action<SpeciesSimulationPreview, SimulationRunState> RunCompleted;
 
@@ -46,10 +46,10 @@ namespace SaltyGame
 
         readonly Dictionary<string, JourneyPopulationEncounter> journeyEncounters =
             new Dictionary<string, JourneyPopulationEncounter>(StringComparer.Ordinal);
-        static readonly string[] PopulationControlNames = { "+1 HARE", "-1 HARE", "+1 FOX", "-1 FOX", "+5 PLANTS", "-5 PLANTS" };
+        static readonly string[] PopulationControlNames = { "+1 RABBIT", "-1 RABBIT", "+1 FOX", "-1 FOX", "+5 PLANTS", "-5 PLANTS" };
         static readonly string[] PopulationControlHints = {
-            "More Hares increase food demand.", "Reduce food demand; keep at least one Hare.",
-            "More hunting pressure can restrain Hares.", "Less hunting pressure may increase food demand.",
+            "More Rabbits increase food demand.", "Reduce food demand; keep at least one Rabbit.",
+            "More hunting pressure can restrain Rabbits.", "Less hunting pressure may increase food demand.",
             "Restore food on bare ground.", "Reduce the available food supply." };
         public int PopulationControlCount => PopulationControlNames.Length;
         public string PopulationActionMessage { get; private set; } = string.Empty;
@@ -61,12 +61,12 @@ namespace SaltyGame
                 var food = new FoodPressureSnapshot(Run, SpeciesIds.Plant);
                 var count = SpeciesPopulationSnapshot.Create(Run.Cells, Run.Tick).GetCount(playerSpecies);
                 return $"{food.Status}  |  {food.Plants} Plants ({food.Change:+0;-0;0} this round)\n"
-                    + $"{count} Hares / {Run.PopulationPoolCapacity} refill limit  |  {food.StarvationDeaths} starvation deaths this journey\n"
-                    + "More Hares increase food demand. Births may exceed the refill limit.";
+                    + $"{count} Rabbits / {Run.PopulationPoolCapacity} refill limit  |  {food.StarvationDeaths} starvation deaths this journey\n"
+                    + "More Rabbits increase food demand. Births may exceed the refill limit.";
             }
         }
 
-        SpeciesId PopulationControlSpecies(int index) => index < 2 ? new SpeciesId("hare")
+        SpeciesId PopulationControlSpecies(int index) => index < 2 ? new SpeciesId("rabbit")
             : index < 4 ? new SpeciesId("fox") : SpeciesIds.Plant;
         int PopulationControlAmount(int index) => (index % 2 == 0 ? 1 : -1) * (index >= 4 ? 5 : 1);
         bool CanChangePopulation(SpeciesId species, int amount, out int actual, out string reason)
@@ -88,8 +88,8 @@ namespace SaltyGame
         {
             reason = "Available at a round decision before continuing.";
             if (index < 0 || index >= PopulationControlCount || !IsPopulationControlWindowOpen) return false;
-            if (progression == null || progression.Currency < HareCost)
-            { reason = $"Need {HareCost - (progression?.Currency ?? 0)} more Field Data."; return false; }
+            if (progression == null || progression.Currency < RabbitCost)
+            { reason = $"Need {RabbitCost - (progression?.Currency ?? 0)} more Field Data."; return false; }
             return CanChangePopulation(PopulationControlSpecies(index), PopulationControlAmount(index), out _, out reason);
         }
 
@@ -122,15 +122,15 @@ namespace SaltyGame
         {
             if (index < 0 || index >= PopulationControlCount) return string.Empty;
             var available = CanUsePopulationControl(index, out var reason);
-            return $"{PopulationControlNames[index]}  |  {HareCost} DATA\n" + (available ? PopulationControlHints[index] : reason);
+            return $"{PopulationControlNames[index]}  |  {RabbitCost} DATA\n" + (available ? PopulationControlHints[index] : reason);
         }
         public bool UsePopulationControl(int index)
         {
             if (!CanUsePopulationControl(index, out _)
                 || !ChangePopulation(PopulationControlSpecies(index), PopulationControlAmount(index),
                     "field-data-control", out var actual)) return false;
-            if (!progression.TrySpend(HareCost)) throw new InvalidOperationException("Validated population control could not be charged.");
-            PopulationActionMessage = $"{actual:+0;-0} {PopulationControlSpecies(index).Value}. Spent {HareCost} Field Data.";
+            if (!progression.TrySpend(RabbitCost)) throw new InvalidOperationException("Validated population control could not be charged.");
+            PopulationActionMessage = $"{actual:+0;-0} {PopulationControlSpecies(index).Value}. Spent {RabbitCost} Field Data.";
             return true;
         }
 
@@ -185,6 +185,7 @@ namespace SaltyGame
                 MaximumEnergy = rules.MaximumEnergy;
                 MaximumEnergyText = rules.MaximumEnergy.ToString(CultureInfo.InvariantCulture);
                 MaximumHealth = rules.MaximumHealth;
+                MaximumPopulation = rules.MaximumPopulation;
                 LitterMinimum = rules.LitterMinimum;
                 LitterMinimumText = rules.LitterMinimum.ToString(CultureInfo.InvariantCulture);
                 LitterMaximum = rules.LitterMaximum;
@@ -253,6 +254,7 @@ namespace SaltyGame
             public int MaximumEnergy;
             public string MaximumEnergyText;
             public int MaximumHealth;
+            public int MaximumPopulation;
             public int LitterMinimum;
             public string LitterMinimumText;
             public int LitterMaximum;
@@ -320,9 +322,9 @@ namespace SaltyGame
         }
 
         [Header("Grid")]
-        [SerializeField, Tooltip("Connect left/right and top/bottom edges for both species. Change before starting a session.")] bool wrapEdges;
         [SerializeField, Min(1)] int width = 32;
         [SerializeField, Min(1)] int height = 20;
+        [SerializeField, Tooltip("Connect opposing grid edges before starting a session.")] bool wrapEdges;
         [SerializeField] int seed = 12345;
         [SerializeField] bool randomizeSeedOnStart = true;
         [SerializeField] string playerSpeciesKey = "herbivore";
@@ -365,7 +367,7 @@ namespace SaltyGame
         [SerializeField] bool bevExperimentalFeaturesEnabled = true;
         [SerializeField, Min(0)] int foxAttackCooldownTicks;
         [SerializeField] bool coupledSpeciesResponsesEnabled;
-        [SerializeField, Tooltip("Experimental: allow Foxes to acquire ordinary Hare movement scent. Hare movement markers and dropping scent remain available either way.")]
+        [SerializeField, Tooltip("Experimental: allow Foxes to acquire ordinary Rabbit movement scent. Rabbit movement markers and dropping scent remain available either way.")]
         bool foxOrdinaryMovementScentEnabled;
 
         static readonly SpeciesUpgrade[] LegacyRewardOptions =
@@ -400,11 +402,15 @@ namespace SaltyGame
         bool journeyActive;
         GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
         Func<string, bool> mutationResearch;
+        Func<string, bool> mutationEquipment;
+        Func<string, int> mutationRankLimit;
         bool mutationResearchFromProfile;
 
         public void BindMutationResearch(ProfileSessionSnapshot profile)
         {
             mutationResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, playerSpecies);
+            mutationEquipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, playerSpecies);
+            mutationRankLimit = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, playerSpecies);
             mutationResearchFromProfile = profile != null;
             if (!sessionStarted && progression != null) ResetExpeditionProgression(progression.Definition.Rules);
         }
@@ -588,7 +594,7 @@ namespace SaltyGame
 
             return selectedUpgrade == null
                 ? "No upgrade selected."
-                : $"{SpeciesUpgradeCatalog.GetDisplayName(selectedUpgrade.Id)} — legacy upgrade applied to the next run.";
+                : $"{SpeciesUpgradeCatalog.GetDisplayName(selectedUpgrade.Id)} â€” legacy upgrade applied to the next run.";
         }
         public SpeciesPreviewState State => previewState;
         public bool WrapEdges => wrapEdges;
@@ -1263,7 +1269,9 @@ namespace SaltyGame
 
         SpeciesUpgradeSnapshot[] CreateFieldDataOrdinaryRewardPool()
         {
-            return SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(playerSpecies, authoredRewardOptions, mutationResearch);
+            var pool = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(playerSpecies, authoredRewardOptions, mutationResearch);
+            if (!mutationResearchFromProfile || mutationRankLimit == null || progression == null) return pool;
+            return pool.Where(upgrade => progression.GetUpgradeLevel(upgrade.Id) < mutationRankLimit(upgrade.Id)).ToArray();
         }
 
         /// <summary>Opts this preview into the approved Field Data route before its first run starts.</summary>
@@ -1541,6 +1549,15 @@ namespace SaltyGame
 
             var nextWidth = Mathf.Max(1, parsedWidth);
             var nextHeight = Mathf.Max(1, parsedHeight);
+            var scenarioData = SelectedScenario?.CreateRuntimeData();
+            var hasFixedLayout = scenarioData?.Topology is MapTopology;
+            if (hasFixedLayout && (nextWidth != scenarioData.Width || nextHeight != scenarioData.Height))
+            {
+                validationMessage = $"The selected map has fixed dimensions ({scenarioData.Width} x {scenarioData.Height}). Change its size in the scenario asset.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
             var nextMaximumPopulation = Mathf.Max(0, parsedMaximumPopulation);
             var nextStepInterval = Mathf.Max(0.01f, parsedStepInterval);
             var nextRunTicks = runWindowIsTicks ? Mathf.Max(1, parsedRunTicks) : 0;
@@ -1566,17 +1583,18 @@ namespace SaltyGame
                         + herbivoreStartingPopulation
                         + carnivoreStartingPopulation
                     : 0L;
-            if (SelectedScenario != null
+            if (scenarioData != null
                 && ((hasStartingPopulationValues && totalStartingPopulation == 0)
                     || (!hasStartingPopulationValues && !startingPopulationOverrideEnabled)))
             {
-                foreach (var population in SelectedScenario.CreateRuntimeData().StartingPopulations.Values)
+                foreach (var population in scenarioData.StartingPopulations.Values)
                 {
                     totalStartingPopulation += population;
                 }
             }
 
-            if (totalStartingPopulation > (long)nextWidth * nextHeight)
+            var capacity = hasFixedLayout ? scenarioData.Topology.CellCount : (long)nextWidth * nextHeight;
+            if (totalStartingPopulation > capacity)
             {
                 validationMessage = "Starting populations cannot exceed the grid capacity.";
                 settingsMessage = validationMessage;
@@ -1588,6 +1606,23 @@ namespace SaltyGame
                 validationMessage = $"Starting populations total {totalStartingPopulation} cannot exceed maximum population {nextMaximumPopulation}.";
                 settingsMessage = validationMessage;
                 return false;
+            }
+
+            if (hasStartingPopulationValues || startingPopulationOverrideEnabled)
+            {
+                var plantPopulation = hasStartingPopulationValues
+                    ? parsedPlantStartingPopulation : plantStartingPopulation;
+                var rabbitPopulation = hasStartingPopulationValues
+                    ? parsedHerbivoreStartingPopulation : herbivoreStartingPopulation;
+                var foxPopulation = hasStartingPopulationValues
+                    ? parsedCarnivoreStartingPopulation : carnivoreStartingPopulation;
+                if (!TryValidateSpeciesPopulation(SpeciesIds.Plant, plantPopulation, out validationMessage)
+                    || !TryValidateSpeciesPopulation(SpeciesIds.Herbivore, rabbitPopulation, out validationMessage)
+                    || !TryValidateSpeciesPopulation(SpeciesIds.Carnivore, foxPopulation, out validationMessage))
+                {
+                    settingsMessage = validationMessage;
+                    return false;
+                }
             }
 
             width = nextWidth;
@@ -1611,12 +1646,11 @@ namespace SaltyGame
                 herbivoreStartingPopulation = parsedHerbivoreStartingPopulation;
                 carnivoreStartingPopulation = parsedCarnivoreStartingPopulation;
                 startingPopulationOverrideEnabled = configuredStartingPopulation > 0;
-                if (!startingPopulationOverrideEnabled && SelectedScenario != null)
+                if (!startingPopulationOverrideEnabled && scenarioData != null)
                 {
-                    var authoredData = SelectedScenario.CreateRuntimeData();
-                    plantStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
-                    herbivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
-                    carnivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
+                    plantStartingPopulation = GetStartingPopulation(scenarioData, SpeciesIds.Plant, SpeciesRole.Plant);
+                    herbivoreStartingPopulation = GetStartingPopulation(scenarioData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
+                    carnivoreStartingPopulation = GetStartingPopulation(scenarioData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
                 }
             }
             randomizeSeedOnStart = randomizeSeed;
@@ -1738,7 +1772,7 @@ namespace SaltyGame
             lastExperimentalUpgradeId = null;
             experimentalOfferRotation = 0;
             rewardOptions = LegacyRewardOptions;
-            settingsMessage = $"Bev features enabled: opposed-roll combat, species stat lines, shared Hare skills, fox cooldown {foxAttackCooldownTicks} ticks, coupled responses {(coupledSpeciesResponsesEnabled ? "on" : "off")}.";
+            settingsMessage = $"Bev features enabled: opposed-roll combat, species stat lines, shared Rabbit skills, fox cooldown {foxAttackCooldownTicks} ticks, coupled responses {(coupledSpeciesResponsesEnabled ? "on" : "off")}.";
             // StartSimulation prepares the pending run after all setup fields are applied.
             validationMessage = settingsMessage;
             return true;
@@ -1988,8 +2022,8 @@ namespace SaltyGame
                 && progression.CanPurchase(rewardOptions[rewardIndex]);
         }
 
-        public bool CanBuyHare => playerSpecies.Value == "hare" && CanUsePopulationControl(0, out _);
-        public bool BuyHare() => CanBuyHare && UsePopulationControl(0);
+        public bool CanBuyRabbit => playerSpecies.Value == "rabbit" && CanUsePopulationControl(0, out _);
+        public bool BuyRabbit() => CanBuyRabbit && UsePopulationControl(0);
 
         public bool PurchaseReward(int rewardIndex)
         {
@@ -2425,7 +2459,7 @@ namespace SaltyGame
             if (journeyPendingNode == null || !journeyEncounters.TryGetValue(journeyPendingNode.NodeId, out var option)) return false;
             if (option.Kind == JourneyNodeKind.Refresh)
             {
-                if (index == 0) { species = playerSpecies; amount = option.Hares; }
+                if (index == 0) { species = playerSpecies; amount = option.Rabbits; }
                 else if (index == 1) amount = option.Plants;
             }
             else if (index == 0) amount = option.EventAmount(Run.Seed);
@@ -2472,8 +2506,8 @@ namespace SaltyGame
                     TryGetEncounterEffect(index, out var species, out var amount);
                     var available = CanChangePopulation(species, amount, out var actual, out var reason);
                     return index == 0
-                        ? $"RESTORE UP TO {encounter.Hares} HARES\n" + (available ? $"Adds {actual} now, within your pool. More Hares need more food." : reason)
-                        : $"PLANT {encounter.Plants} PLANTS\n" + (available ? "Restore food on bare ground. Hares can exhaust it again." : reason);
+                        ? $"RESTORE UP TO {encounter.Rabbits} RABBITS\n" + (available ? $"Adds {actual} now, within your pool. More Rabbits need more food." : reason)
+                        : $"PLANT {encounter.Plants} PLANTS\n" + (available ? "Restore food on bare ground. Rabbits can exhaust it again." : reason);
                 }
                 return index == 1 ? "LEAVE THE CACHE\nKeep the ecosystem as it is."
                     : $"OPEN THE SEED CACHE\n{encounter.GainPercent}%: +{encounter.Gain} Plants; {100-encounter.GainPercent}%: -{encounter.Loss} Plants."
@@ -2766,18 +2800,30 @@ namespace SaltyGame
                 return;
             }
 
-            if (settingsKey != DefaultSettingsKey && SelectedScenario != null)
+            var authoredData = SelectedScenario?.CreateRuntimeData();
+            if (settingsKey != DefaultSettingsKey && authoredData != null)
             {
-                var authoredData = SelectedScenario.CreateRuntimeData();
                 saved.width = authoredData.Width;
                 saved.height = authoredData.Height;
                 PlayerPrefs.SetString(DefaultSettingsKey, JsonUtility.ToJson(saved));
                 PlayerPrefs.Save();
             }
 
-            if (SelectedScenario != null && !saved.startingPopulationOverrideEnabled)
+            if (authoredData?.Topology is MapTopology topology)
             {
-                var authoredData = SelectedScenario.CreateRuntimeData();
+                saved.width = authoredData.Width;
+                saved.height = authoredData.Height;
+                var savedPopulation = (long)Mathf.Max(0, saved.plantStartingPopulation)
+                    + Mathf.Max(0, saved.herbivoreStartingPopulation) + Mathf.Max(0, saved.carnivoreStartingPopulation);
+                if (savedPopulation > topology.CellCount
+                    || (authoredData.MaxPopulation > 0 && savedPopulation > authoredData.MaxPopulation))
+                {
+                    saved.startingPopulationOverrideEnabled = false;
+                }
+            }
+
+            if (authoredData != null && !saved.startingPopulationOverrideEnabled)
+            {
                 var authoredPlant = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
                 var authoredHerbivore = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
                 var authoredCarnivore = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
@@ -2820,6 +2866,22 @@ namespace SaltyGame
             {
                 ruleDrafts[SpeciesIds.Carnivore] = saved.carnivore;
             }
+
+            if (SelectedScenario != null)
+            {
+                var authoredRules = SelectedScenario.CreateRuntimeData().SpeciesRules;
+                foreach (var entry in ruleDrafts)
+                {
+                    if (authoredRules.TryGetValue(entry.Key, out var authoredRule))
+                    {
+                        entry.Value.MaximumPopulation = authoredRule.MaximumPopulation;
+                    }
+                }
+            }
+
+            plantStartingPopulation = ClampStartingPopulation(SpeciesIds.Plant, plantStartingPopulation);
+            herbivoreStartingPopulation = ClampStartingPopulation(SpeciesIds.Herbivore, herbivoreStartingPopulation);
+            carnivoreStartingPopulation = ClampStartingPopulation(SpeciesIds.Carnivore, carnivoreStartingPopulation);
         }
 
         SpeciesRuleDraft GetRuleDraftOrDefault(SpeciesId species)
@@ -2835,8 +2897,10 @@ namespace SaltyGame
         void ResetExpeditionProgression(SpeciesRules playerRules)
         {
             progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, playerRules),
-                playerSpecies.Value == "hare" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile,
-                introductoryHareMutations: ShouldUseJourneyPrototype());
+                playerSpecies.Value == "rabbit" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile,
+                mutationRankLimit: playerSpecies.Value == "rabbit" ? mutationRankLimit : null,
+                mutationEquipment: playerSpecies.Value == "rabbit" ? mutationEquipment : null,
+                introductoryRabbitMutations: ShouldUseJourneyPrototype());
             coupledResponseProgression = null;
             appliedRunUpgrades.Clear();
         }
@@ -3071,7 +3135,7 @@ namespace SaltyGame
                         experimentalOfferRotation,
                         Run?.Seed ?? seed,
                         canOffer,
-                        introductoryHareMutations: ShouldUseJourneyPrototype())
+                        introductoryRabbitMutations: ShouldUseJourneyPrototype())
                     : SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                         lastExperimentalUpgradeId,
                         experimentalOfferRotation,
@@ -3113,8 +3177,12 @@ namespace SaltyGame
             {
                 case SpeciesUpgradeCatalog.FasterMovementId:
                     return "Move faster to escape predators and reach fresh food.";
+                case SpeciesUpgradeCatalog.FasterGestationId:
+                    return "Reduce Rabbit gestation time by 15% per rank, up to three ranks.";
+                case SpeciesUpgradeCatalog.OpenGroundSprintId:
+                    return "Move 0.5 faster across exposed ground during this journey.";
                 case SpeciesUpgradeCatalog.ToughHideId:
-                    return "Gain 2 health. A healthy Hare can survive a basic Fox hit. Survivors still need food.";
+                    return "Gain 2 health. A healthy Rabbit can survive a basic Fox hit. Survivors still need food.";
                 case SpeciesUpgradeCatalog.EfficientDigestionId:
                     return "Gain more energy from food.";
                 case SpeciesUpgradeCatalog.SeedDispersalId:
@@ -3124,7 +3192,7 @@ namespace SaltyGame
                 case SpeciesUpgradeCatalog.ReproductiveDriveId:
                     return "Add 10 percentage points to eligible reproduction attempts. More young need more food.";
                 case SpeciesUpgradeCatalog.ThreatExposureId:
-                    return "Avoid some Fox attacks before combat (+8 percentage points per rank). A caught Hare is still vulnerable.";
+                    return "Avoid some Fox attacks before combat (+8 percentage points per rank). A caught Rabbit is still vulnerable.";
                 case SpeciesUpgradeCatalog.QuickEscapeId:
                     return "Move 0.5 faster while Threatened; ordinary movement stays the same.";
                 case SpeciesUpgradeCatalog.LargerMinimumLitterId:
@@ -3136,7 +3204,7 @@ namespace SaltyGame
                 case SpeciesUpgradeCatalog.KeenSensesId:
                     return "Detect predators from farther away.";
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(upgradeId), upgradeId, "Unknown Hare Mutation.");
+                    throw new ArgumentOutOfRangeException(nameof(upgradeId), upgradeId, "Unknown Rabbit Mutation.");
             }
         }
 
@@ -3272,14 +3340,14 @@ namespace SaltyGame
                 .ToArray();
             if (missingPrerequisites.Length > 0)
             {
-                return $"LOCKED — requires {string.Join(", ", missingPrerequisites)}";
+                return $"LOCKED â€” requires {string.Join(", ", missingPrerequisites)}";
             }
 
             var blockedBy = upgrade.ExcludedUpgradeIds
                 .FirstOrDefault(id => progression.GetUpgradeLevel(id) > 0);
             if (!string.IsNullOrWhiteSpace(blockedBy))
             {
-                return $"LOCKED — conflicts with {blockedBy}";
+                return $"LOCKED â€” conflicts with {blockedBy}";
             }
 
             if (previewState != SpeciesPreviewState.PhaseDecision
@@ -3299,7 +3367,7 @@ namespace SaltyGame
             var timing = appliedToCurrentRun
                 ? "Added to the next phase and retained if this run restarts."
                 : "Applied to the next run.";
-            return $"{upgrade.DisplayName} — {upgrade.Description} Effects: {effects}. {timing}";
+            return $"{upgrade.DisplayName} â€” {upgrade.Description} Effects: {effects}. {timing}";
         }
 
         bool CanAddBoundaryPopulation(SpeciesUpgradeSnapshot upgrade)
@@ -3377,7 +3445,8 @@ namespace SaltyGame
                     role: draft.Role,
                     forageBelowEnergy: draft.ForageBelowEnergy,
                     maximumEnergy: draft.MaximumEnergy,
-                    maximumHealth: draft.MaximumHealth,
+                    // Saved editor drafts from before maximumHealth was added deserialize it as zero.
+                    maximumHealth: draft.MaximumHealth == 0 ? 1 : draft.MaximumHealth,
                     litterMinimum: draft.LitterMinimum,
                     litterMaximum: draft.LitterMaximum,
                     trackingPersistenceSteps: draft.TrackingPersistenceSteps,
@@ -3389,7 +3458,8 @@ namespace SaltyGame
                     matingEnergyCostFraction: draft.MatingEnergyCostFraction,
                     distributeMatingEnergyToOffspring: draft.DistributeMatingEnergyToOffspring,
                     crowdingEnergyReduction: draft.CrowdingEnergyReduction,
-                    gestationTicks: draft.GestationTicks);
+                    gestationTicks: draft.GestationTicks,
+                    maximumPopulation: draft.MaximumPopulation);
             }
 
             return result;
@@ -3598,6 +3668,27 @@ namespace SaltyGame
             }
         }
 
+        bool TryValidateSpeciesPopulation(SpeciesId species, int population, out string error)
+        {
+            error = null;
+            if (!ruleDrafts.TryGetValue(species, out var draft)
+                || draft.MaximumPopulation <= 0
+                || population <= draft.MaximumPopulation)
+            {
+                return true;
+            }
+
+            error = $"{species.Value} starting population cannot exceed its species maximum of {draft.MaximumPopulation}.";
+            return false;
+        }
+
+        int ClampStartingPopulation(SpeciesId species, int population)
+        {
+            return ruleDrafts.TryGetValue(species, out var draft) && draft.MaximumPopulation > 0
+                ? Math.Min(population, draft.MaximumPopulation)
+                : population;
+        }
+
         static SpeciesId? ResolveSpeciesId(
             IReadOnlyDictionary<SpeciesId, SpeciesRules> definitions,
             SpeciesId canonicalSpecies,
@@ -3636,6 +3727,7 @@ namespace SaltyGame
                 herbivoreStartingPopulation = 0;
                 carnivoreStartingPopulation = 0;
                 startingPopulationOverrideEnabled = false;
+                wrapEdges = false;
 
                 return;
             }
@@ -3647,6 +3739,7 @@ namespace SaltyGame
             runTicks = authoredData.RunTicks;
             maxPopulation = authoredData.MaxPopulation;
             minPopulation = authoredData.MinPopulation;
+            wrapEdges = authoredData.WrapEdges;
             plantStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
             herbivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
             carnivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);

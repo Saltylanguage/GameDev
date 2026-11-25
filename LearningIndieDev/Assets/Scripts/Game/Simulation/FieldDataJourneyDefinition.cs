@@ -18,7 +18,7 @@ namespace SaltyGame
 
     public enum FieldDataIncomeOperation
     {
-        AddPerHare = 0,
+        AddPerRabbit = 0,
         MultiplyPopulationPayout = 1,
     }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -28,6 +29,84 @@ namespace SaltyGame.Tests
             Assert.That(grid.Copy(value => value).WrapEdges, Is.True);
             Assert.That(GridSimulation.Step(grid, (cells, x, y) => cells.GetCell(x, y)).WrapEdges, Is.True);
             Assert.That(new Grid<int>(1, 1, true).GetPattern(GridPatternTemplates.CreateMooreRange(1)).Count, Is.Zero);
+        }
+
+        [Test]
+        public void GridAndStepsPreserveAnExplicitSparseTopology()
+        {
+            var topology = new HoleTopology(3, 2);
+            var source = new Grid<int>(3, 2, (x, y) => x + y * 10, topology);
+
+            Assert.That(source.Count, Is.EqualTo(5));
+            Assert.That(source.TryGetCell(1, 0, out _), Is.False);
+            Assert.That(source.TryResolveOffset(0, 0, Vector2Int.right, out _), Is.False);
+            Assert.That(source.TryResolveOffset(0, 0, Vector2Int.left, out var wrapped), Is.True);
+            Assert.That(wrapped, Is.EqualTo(new Vector2Int(2, 0)));
+
+            var copy = source.Copy();
+            var copiedPlayableCells = 0;
+            var mappedCopy = source.Copy(value =>
+            {
+                copiedPlayableCells++;
+                return value;
+            });
+            var stepped = GridSimulation.Step(source, (cells, x, y) => cells.GetCell(x, y) + 1);
+
+            Assert.That(copy.Topology, Is.SameAs(topology));
+            Assert.That(mappedCopy.Topology, Is.SameAs(topology));
+            Assert.That(copiedPlayableCells, Is.EqualTo(5));
+            Assert.That(stepped.Topology, Is.SameAs(topology));
+            Assert.That(stepped.Count, Is.EqualTo(5));
+            Assert.That(stepped.GetCell(2, 1), Is.EqualTo(13));
+            Assert.That(stepped.TryGetCell(1, 0, out _), Is.False);
+        }
+
+        [Test]
+        public void OffsetQueriesUseOriginSpecificSeamConnections()
+        {
+            var topology = new ShiftedSeamTopology(3, 3);
+            var grid = new Grid<int>(3, 3, (x, y) => x + y * 3, topology);
+
+            Assert.That(grid.TryGetCellAtOffset(0, 0, Vector2Int.left, out var cell), Is.True);
+            Assert.That(cell, Is.EqualTo(8));
+            Assert.That(grid.GetDistance(0, 0, 2, 2), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SimulationDataPreservesTopologyAndFingerprintsItsSeams()
+        {
+            var topology = new ShiftedSeamTopology(3, 5);
+            var data = new CellularSimData(3, 5, new Dictionary<SpeciesId, float>(),
+                new Dictionary<SpeciesId, SpeciesRules>(), 1f, 0.1f, topology: topology);
+            Assert.That(data.Copy().Topology, Is.SameAs(topology));
+            Assert.That(data.WithRunTicks(2, 0.1f).Topology, Is.SameAs(topology));
+            Assert.That(data.WithGridSize(3, 5).Topology, Is.SameAs(topology));
+            Assert.That(SpeciesInitialGridFactory.Create(data, 42).Topology, Is.SameAs(topology));
+            Assert.That(data.Fingerprint, Is.Not.EqualTo(data.WithTopology(new RectangularGridTopology(3, 5, true)).Fingerprint));
+            Assert.Throws<NotSupportedException>(() => data.WithGridSize(4, 5));
+            Assert.Throws<NotSupportedException>(() => data.WithWrapEdges(false));
+            Assert.DoesNotThrow(() => new CellularSimData(3, 2,
+                new Dictionary<SpeciesId, float>(), new Dictionary<SpeciesId, SpeciesRules>(),
+                1f, 0.1f, topology: new HoleTopology(3, 2)));
+        }
+
+        [Test]
+        public void PerceptionAndNavigationFollowTheSameCustomSeam()
+        {
+            var cells = new Grid<SpeciesCell>(3, 5, new ShiftedSeamTopology(3, 5));
+            cells.SetCell(2, 2, SpeciesCell.Grass(2f));
+            var empty = new GridPattern(Array.Empty<Vector2Int>());
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var up = new GridPattern(new[] { Vector2Int.up });
+            var rules = new SpeciesRules(movementSpeed: 1f, movementPattern: left,
+                attackPattern: empty, attackAmount: 0, blockPattern: empty, blockAmount: 0,
+                dietPattern: up, dietTarget: SpeciesIds.Plant, reproductionPattern: empty,
+                reproductionNeighborCount: 0, awareness: new SpeciesAwarenessRules(visionRange: 1));
+            Assert.That(SpeciesPerception.TryFindFoodTarget(cells, 0, 0, rules, new System.Random(5), out var food), Is.True);
+            Assert.That(food.Location, Is.EqualTo(new Vector2Int(2, 2)));
+            Assert.That(SpeciesNavigation.TryFindNextStep(cells, Vector2Int.zero,
+                new Vector2Int(2, 3), left, up, new System.Random(5), out var step), Is.True);
+            Assert.That(step, Is.EqualTo(new Vector2Int(2, 2)));
         }
 
         [Test]
@@ -118,6 +197,87 @@ namespace SaltyGame.Tests
             }
 
             public int Value { get; set; }
+        }
+
+        sealed class HoleTopology : IGridTopology
+        {
+            readonly RectangularGridTopology rectangle;
+
+            public HoleTopology(int width, int height)
+            {
+                rectangle = new RectangularGridTopology(width, height, wrapEdges: true);
+            }
+
+            public int Width => rectangle.Width;
+            public int Height => rectangle.Height;
+            public int CellCount => Width * Height - 1;
+            public bool WrapEdges => true;
+            public string Fingerprint => $"test-hole:{Width}x{Height}";
+            public IEnumerable<Vector2Int> PlayableCoordinates
+            {
+                get
+                {
+                    foreach (var position in rectangle.PlayableCoordinates)
+                        if (IsPlayableCell(position.x, position.y)) yield return position;
+                }
+            }
+
+            public bool IsPlayableCell(int x, int y) => rectangle.IsPlayableCell(x, y) && !(x == 1 && y == 0);
+            public bool TryResolveCoordinates(ref int x, ref int y) => rectangle.TryResolveCoordinates(ref x, ref y);
+
+            public bool TryResolveOffset(int originX, int originY, Vector2Int offset, out Vector2Int target)
+            {
+                if (!rectangle.TryResolveOffset(originX, originY, offset, out target) || !IsPlayableCell(target.x, target.y))
+                {
+                    target = default;
+                    return false;
+                }
+                return true;
+            }
+
+            public int GetDistance(int x, int y, int targetX, int targetY) => rectangle.GetDistance(x, y, targetX, targetY);
+            public GridPattern GetPattern(GridPattern pattern) => rectangle.GetPattern(pattern);
+            public GridPattern GetPattern(int originX, int originY, GridPattern pattern) => rectangle.GetPattern(originX, originY, pattern);
+        }
+
+        sealed class ShiftedSeamTopology : IGridTopology
+        {
+            readonly RectangularGridTopology rectangle;
+
+            public ShiftedSeamTopology(int width, int height)
+            {
+                rectangle = new RectangularGridTopology(width, height, wrapEdges: true);
+            }
+
+            public int Width => rectangle.Width;
+            public int Height => rectangle.Height;
+            public int CellCount => rectangle.CellCount;
+            public bool WrapEdges => true;
+            public string Fingerprint => $"test-shifted-seam:{Width}x{Height}";
+            public IEnumerable<Vector2Int> PlayableCoordinates => rectangle.PlayableCoordinates;
+            public bool IsPlayableCell(int x, int y) => rectangle.IsPlayableCell(x, y);
+            public bool TryResolveCoordinates(ref int x, ref int y) => rectangle.TryResolveCoordinates(ref x, ref y);
+
+            public bool TryResolveOffset(int originX, int originY, Vector2Int offset, out Vector2Int target)
+            {
+                if (originX == 0 && originY == 0 && offset == Vector2Int.left)
+                {
+                    target = new Vector2Int(2, 2);
+                    return true;
+                }
+
+                return rectangle.TryResolveOffset(originX, originY, offset, out target);
+            }
+
+            public int GetDistance(int x, int y, int targetX, int targetY)
+            {
+                if ((x == 0 && y == 0 && targetX == 2 && targetY == 2)
+                    || (x == 2 && y == 2 && targetX == 0 && targetY == 0)) return 1;
+                return rectangle.GetDistance(x, y, targetX, targetY);
+            }
+
+            public GridPattern GetPattern(GridPattern pattern) => rectangle.GetPattern(pattern);
+            public GridPattern GetPattern(int originX, int originY, GridPattern pattern) => rectangle.GetPattern(originX, originY, pattern);
         }
     }
 }

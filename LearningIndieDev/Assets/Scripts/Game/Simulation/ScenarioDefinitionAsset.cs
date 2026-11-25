@@ -46,6 +46,7 @@ namespace SaltyGame
             public int StartingPopulation => startingPopulation;
         }
 
+        [SerializeField] MapTopologyDefinition mapLayout = new MapTopologyDefinition();
         [SerializeField, Min(1)] int width = 32;
         [SerializeField, Min(1)] int height = 20;
         [SerializeField, Min(0.01f)] float runDurationSeconds = 20f;
@@ -55,6 +56,7 @@ namespace SaltyGame
         int runTicks;
         [SerializeField, Min(0)] int maxPopulation;
         [SerializeField, Min(0)] int minPopulation;
+        [SerializeField] bool wrapEdges;
         [SerializeField] SpeciesEntry[] species = Array.Empty<SpeciesEntry>();
 
         public IReadOnlyList<SpeciesEntry> Species => species;
@@ -94,9 +96,10 @@ namespace SaltyGame
             var effectiveRunDurationSeconds = runTicks > 0
                 ? (float)(runTicks * (double)stepInterval)
                 : runDurationSeconds;
+            var topology = (mapLayout ?? new MapTopologyDefinition()).Create(width, height, wrapEdges);
             return new CellularSimData(
-                width,
-                height,
+                topology.Width,
+                topology.Height,
                 probabilities,
                 rules,
                 effectiveRunDurationSeconds,
@@ -104,7 +107,8 @@ namespace SaltyGame
                 maxPopulation,
                 minPopulation,
                 alphaOffspringRules: alphaRules,
-                startingPopulations: startingPopulations);
+                startingPopulations: startingPopulations,
+                wrapEdges: wrapEdges, topology: topology);
         }
     }
 }

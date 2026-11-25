@@ -17,8 +17,8 @@ def rows(name):
 metrics = {(r["condition"],r["metric"]):r for r in rows("metrics.csv") if r["phase"] == "0"}
 pairs = {(r["condition"],r["metric"],r["scope"]):r for r in rows("paired-deltas.csv") if r["phase"] == "0"}
 by_case = {c["id"]:c for c in matrix["cases"]}
-fields = {"hareSurvival":"outcome.playerAliveAtHorizon", "allSpeciesSurvival":"outcome.allSpeciesAliveAtHorizon",
-    "meanAPS":"herbivore.hare.APS", "meanAHS":"predator.fox.AHS", "added":"purchase.added",
+fields = {"rabbitSurvival":"outcome.playerAliveAtHorizon", "allSpeciesSurvival":"outcome.allSpeciesAliveAtHorizon",
+    "meanAPS":"herbivore.rabbit.APS", "meanAHS":"predator.fox.AHS", "added":"purchase.added",
     "spent":"purchase.spent", "earned":"purchase.earned", "balance":"purchase.balance",
     "windowsReached":"purchase.windowsReached"}
 records = []
@@ -47,15 +47,15 @@ def average(r,key):
     value=mean(r,key)
     return "n/a" if value is None else f"{value:.3f} ({r[key]['n']})"
 with (destination / "report.md").open("w",encoding="utf-8") as stream:
-    stream.write(f"# Hare purchase candidate panel\n\n{matrix['runs']:,} runs: {len({r['candidate'] for r in records})} candidates x {len({r['path'] for r in records})} paths x {len({r['purchasePolicy'] for r in records})} purchase policies x {matrix['seedCount']} matched fresh seeds.\n\n")
+    stream.write(f"# Rabbit purchase candidate panel\n\n{matrix['runs']:,} runs: {len({r['candidate'] for r in records})} candidates x {len({r['path'] for r in records})} paths x {len({r['purchasePolicy'] for r in records})} purchase policies x {matrix['seedCount']} matched fresh seeds.\n\n")
     stream.write("Survival columns are percentages at tick 600; deltas are percentage points. APS and AHS are per-run means over actual observed windows, with Valid n in parentheses. Δbuy compares the same path with no purchases. Δpath compares Skip all with the same purchase policy. Self comparisons are zero.\n\n")
     for candidate in dict.fromkeys(r["candidate"] for r in records):
         stream.write("## "+candidate.replace("-","/")+"\n\n")
-        stream.write("| Path | Buy policy | Hare alive % | Δbuy | All alive % | Δbuy | Δpath all | Mean APS (n) | Mean AHS (n) | Mean ADD | Mean spend |\n")
+        stream.write("| Path | Buy policy | Rabbit alive % | Δbuy | All alive % | Δbuy | Δpath all | Mean APS (n) | Mean AHS (n) | Mean ADD | Mean spend |\n")
         stream.write("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n")
         for r in records:
             if r["candidate"] == candidate:
-                cells=[r["path"],r["purchasePolicy"],rate(r,"hareSurvival"),paired(r,"hareSurvival","VsNoPurchase"),
+                cells=[r["path"],r["purchasePolicy"],rate(r,"rabbitSurvival"),paired(r,"rabbitSurvival","VsNoPurchase"),
                     rate(r,"allSpeciesSurvival"),paired(r,"allSpeciesSurvival","VsNoPurchase"),paired(r,"allSpeciesSurvival","VsSkipAllSamePurchase"),
                     average(r,"meanAPS"),average(r,"meanAHS"),f"{mean(r,'added'):.2f}",f"{mean(r,'spent'):.2f}"]
                 stream.write("| "+" | ".join(cells)+" |\n")
@@ -65,7 +65,7 @@ with (destination / "report.md").open("w",encoding="utf-8") as stream:
     stream.write("Batch identity: `"+manifest["identity"]+"`. Raw SHA256: `"+provenance["rawHash"]+"`.\n")
 window_fields=["condition","seed","candidate","path","purchasePolicy","phase","decisionTick","reached",
     "price","populationBefore","populationAfter","requested","added","balanceBefore","earned","spent","balanceAfter",
-    "stopReason","nextPhaseTicks","nextPhaseHares","nextPhasePopulationChange","nextPhaseBirths","nextPhasePredationDeaths","nextPhaseStarvationDeaths"]
+    "stopReason","nextPhaseTicks","nextPhaseRabbits","nextPhasePopulationChange","nextPhaseBirths","nextPhasePredationDeaths","nextPhaseStarvationDeaths"]
 with raw.open(encoding="utf-8-sig") as source, (destination/"windows.csv").open("w",newline="",encoding="utf-8") as target:
     writer=csv.DictWriter(target,fieldnames=window_fields); writer.writeheader(); count=0
     for line in source:
@@ -80,9 +80,9 @@ with raw.open(encoding="utf-8-sig") as source, (destination/"windows.csv").open(
                 record.update({k:v for k,v in audit.items() if k in window_fields})
                 following=phases.get(phase+1)
                 if following:
-                    stat=next(s for s in following["herbivoreStatLines"] if s["speciesId"] == "hare")
+                    stat=next(s for s in following["herbivoreStatLines"] if s["speciesId"] == "rabbit")
                     record.update(nextPhaseTicks=following["windowEndTickInclusive"]-following["windowStartTickExclusive"],
-                        nextPhaseHares=stat["FPO"],nextPhasePopulationChange=stat["FPO"]-audit["populationAfter"],
+                        nextPhaseRabbits=stat["FPO"],nextPhasePopulationChange=stat["FPO"]-audit["populationAfter"],
                         nextPhaseBirths=stat["BIR"],nextPhasePredationDeaths=stat["PREY"],nextPhaseStarvationDeaths=stat["STRV"])
             writer.writerow(record); count+=1
     assert count == matrix["runs"]*5

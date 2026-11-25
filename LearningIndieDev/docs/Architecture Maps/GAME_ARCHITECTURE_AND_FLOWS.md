@@ -15,7 +15,7 @@ flowchart TB
     START["Launch"]
     MENU["Main Menu<br/>Profile · Continue · Quit"]
     DESKTOP["GalapagOS Desktop<br/>Launch screen · apps · widgets"]
-    SIM["Simulate 10 seconds · 6 rounds<br/>Forest Edge: Hare vs Fox · plants deferred"]
+    SIM["Simulate 10 seconds · 6 rounds<br/>Forest Edge: Rabbit vs Fox · plants deferred"]
     END{"Extinct or<br/>phase ten complete?"}
     SUMMARY["Phase Summary<br/>Population · Births · Deaths<br/>Food · Movement · Combat"]
     UPGRADE["Choose one Mutation or skip<br/>World remains frozen"]

@@ -10,44 +10,45 @@ namespace SaltyGame.EditorTests
         const string DefinitionPath = "Assets/Data/TestData/FieldDataStarterDefinition.asset";
 
         [Test]
-        public void HareRewardPoolIncludesBothSensesSkillsAndPreservesAuthoredSkillDefinitions()
+        public void RabbitRewardPoolIncludesBothSensesSkillsAndPreservesAuthoredSkillDefinitions()
         {
-            var hare = new SpeciesId("hare");
-            var fallback = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null);
+            var rabbit = new SpeciesId("rabbit");
+            var fallback = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(rabbit, null);
             Assert.That(fallback.Select(upgrade => upgrade.Id), Is.EqualTo(new[]
             {
                 SpeciesUpgradeCatalog.ToughHideId, SpeciesUpgradeCatalog.EfficientDigestionId,
-                SpeciesUpgradeCatalog.SeedDispersalId, SpeciesUpgradeCatalog.CrowdingToleranceId,
+                SpeciesUpgradeCatalog.SeedDispersalId, SpeciesUpgradeCatalog.FasterGestationId,
+                SpeciesUpgradeCatalog.OpenGroundSprintId, SpeciesUpgradeCatalog.CrowdingToleranceId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId, SpeciesUpgradeCatalog.KeenSensesId,
                 SpeciesUpgradeCatalog.LongVisionId, SpeciesUpgradeCatalog.FasterMovementId,
                 SpeciesUpgradeCatalog.ThreatExposureId, SpeciesUpgradeCatalog.QuickEscapeId,
                 SpeciesUpgradeCatalog.LargerMaximumLitterId,
                 SpeciesUpgradeCatalog.LargerMinimumLitterId,
             }));
-            Assert.That(fallback.All(upgrade => upgrade.TargetSpecies == hare), Is.True);
+            Assert.That(fallback.All(upgrade => upgrade.TargetSpecies == rabbit), Is.True);
             var authored = new[]
             {
                 fallback[2], fallback[0],
-                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerAttackId).CreateSnapshot(hare),
+                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerAttackId).CreateSnapshot(rabbit),
             };
-            var resolved = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, authored);
+            var resolved = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(rabbit, authored);
             Assert.That(resolved.Select(upgrade => upgrade.Id), Is.EqualTo(fallback.Select(upgrade => upgrade.Id)));
             Assert.That(resolved[2], Is.SameAs(authored[0]));
             Assert.That(resolved[0], Is.SameAs(authored[1]));
-            Assert.That(SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare,
+            Assert.That(SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(rabbit,
                 new[] { SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId).CreateSnapshot(new SpeciesId("fox")) })
                 .Select(upgrade => upgrade.Id), Is.EqualTo(fallback.Select(upgrade => upgrade.Id)));
         }
 
         [Test]
-        public void HareReproductiveDriveCannotExceedTheProbabilityBounds()
+        public void RabbitReproductiveDriveCannotExceedTheProbabilityBounds()
         {
             var rules = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
             var capped = SpeciesAttributeRegistry.Apply(rules, new SpeciesUpgradeModifier(
                 SpeciesAttributeIds.ReproductionChance, 1f - rules.ReproductionChance));
             var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId);
             Assert.That(upgrade.Apply(capped).ReproductionChance, Is.EqualTo(1f));
-            Assert.That(upgrade.CreateSnapshot(new SpeciesId("hare")).Apply(capped).ReproductionChance, Is.EqualTo(1f));
+            Assert.That(upgrade.CreateSnapshot(new SpeciesId("rabbit")).Apply(capped).ReproductionChance, Is.EqualTo(1f));
             Assert.That(SpeciesAttributeRegistry.Apply(capped, new SpeciesUpgradeModifier(
                 SpeciesAttributeIds.ReproductionChance, -2f)).ReproductionChance, Is.Zero);
         }
@@ -61,7 +62,7 @@ namespace SaltyGame.EditorTests
             Assert.That(snapshot.Version, Is.EqualTo(FieldDataJourneyDefinition.CurrentVersion));
             Assert.That(snapshot.Fingerprint, Has.Length.EqualTo(64));
             Assert.That(snapshot.ScenarioId, Is.EqualTo("ForestEdge"));
-            Assert.That(snapshot.SelectedSpeciesId, Is.EqualTo("hare"));
+            Assert.That(snapshot.SelectedSpeciesId, Is.EqualTo("rabbit"));
             Assert.That(snapshot.InitialFieldData, Is.Zero);
             Assert.That(snapshot.Route.Count, Is.EqualTo(7));
             Assert.That(snapshot.Route.Select(node => node.Kind), Is.EqualTo(new[]
@@ -202,7 +203,7 @@ namespace SaltyGame.EditorTests
                 serialized = new SerializedObject(clone);
                 controls = serialized.FindProperty("populationControls");
                 controls.GetArrayElementAtIndex(0).FindPropertyRelative("cost").intValue = 10;
-                controls.GetArrayElementAtIndex(1).FindPropertyRelative("id").stringValue = "add-hares";
+                controls.GetArrayElementAtIndex(1).FindPropertyRelative("id").stringValue = "add-rabbits";
                 serialized.ApplyModifiedPropertiesWithoutUndo();
                 Assert.That(clone.TryResolve(out _, out var idError), Is.False);
                 Assert.That(idError, Does.Contain("unique"));
@@ -233,7 +234,7 @@ namespace SaltyGame.EditorTests
 
                 Assert.That(clone.TryResolve(out var result, out var error), Is.False);
                 Assert.That(result, Is.Null);
-                Assert.That(error, Does.Contain("Signed Hare offer"));
+                Assert.That(error, Does.Contain("Signed Rabbit offer"));
             }
             finally
             {
@@ -268,7 +269,7 @@ namespace SaltyGame.EditorTests
         [Test]
         public void ExistingJourneyNodeKindSerializedValuesStayStable()
         {
-            Assert.That((int)FieldDataIncomeOperation.AddPerHare, Is.EqualTo(0));
+            Assert.That((int)FieldDataIncomeOperation.AddPerRabbit, Is.EqualTo(0));
             Assert.That((int)FieldDataIncomeOperation.MultiplyPopulationPayout, Is.EqualTo(1));
             Assert.That((int)JourneyNodeKind.Simulation, Is.EqualTo(0));
             Assert.That((int)JourneyNodeKind.Condition, Is.EqualTo(1));

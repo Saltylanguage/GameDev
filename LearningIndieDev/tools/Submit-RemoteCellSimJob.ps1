@@ -4,7 +4,7 @@ param(
     [string]$ScenarioPath,
     [int]$SeedStart = 1,
     [ValidateRange(1, 10000)] [int]$SeedCount = 20,
-    [string]$PlayerSpeciesId = 'hare',
+    [string]$PlayerSpeciesId = 'rabbit',
     [string]$UpgradeId = 'none',
     [string]$UpgradeSequence = '',
     [ValidateRange(0, 1000000)] [double]$UpgradeValueOverride = 0,

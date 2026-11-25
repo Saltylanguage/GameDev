@@ -28,8 +28,8 @@ def main():
         raise AssertionError("Invalid input was accepted")
 
     assert sweep.merge([["-speciesStats", "fox:energy.starting=80"],
-        ["-speciesStats", "hare:awareness.vision-range=7"]]) == [
-        "-speciesStats", "fox:energy.starting=80,hare:awareness.vision-range=7"]
+        ["-speciesStats", "rabbit:awareness.vision-range=7"]]) == [
+        "-speciesStats", "fox:energy.starting=80,rabbit:awareness.vision-range=7"]
     refuses(lambda: sweep.merge([["-speciesStats", "fox:energy.starting=80"],
         ["-speciesStats", "fox:energy.starting=120"]]))
     refuses(lambda: sweep.merge([["-gridWidth", "20"], ["-gridWidth", "24"]]))
@@ -64,7 +64,7 @@ def main():
     deltas = [candidate[s]["playerPopulation"] - reference[s]["playerPopulation"] for s in candidate]
     paired = list(csv.DictReader((analysis / "paired-deltas.csv").open()))
     result = next(r for r in paired if r["condition"] == case["id"] and r["scope"] == "same-context-path"
-        and r["phase"] == "0" and r["metric"] == "population.hare.final")
+        and r["phase"] == "0" and r["metric"] == "population.rabbit.final")
     assert math.isclose(float(result["mean"]), statistics.mean(deltas)) and int(result["n"]) == config["seedCount"]
     assert int(result["wins"]) == sum(d > 0 for d in deltas)
     assert int(result["losses"]) == sum(d < 0 for d in deltas)
@@ -90,7 +90,7 @@ def main():
     stat["pAVI"], stat["pAVIStatus"] = 0, "NotApplicable"
     stat["sAVI"], stat["sAVIStatus"] = 0, "Invalid"
     measured, *_ = sweep.values(unavailable, config["horizonTicks"])
-    assert measured["herbivore.hare.pAVI"] == (None, 1) and measured["herbivore.hare.sAVI"] == (None, 2)
+    assert measured["herbivore.rabbit.pAVI"] == (None, 1) and measured["herbivore.rabbit.sAVI"] == (None, 2)
     # Existing cohort tools must use full trajectories, not compact endpoints.
     script = Path(__file__).resolve().parents[3] / ".agents/skills/artifact-summarization/scripts/summarize_cell_sim.py"
     module_spec = importlib.util.spec_from_file_location("cohort_summary", script)
@@ -105,8 +105,8 @@ def main():
         population = run["populationStats"][row["speciesId"]]
         assert population["max"] == row["max"] and population["populationSampleIntegral"] == row["first"] + row["populationTickIntegral"]
     assert run["predatorStatLines"] and "combatRolls" in run["unavailableDetailFields"]
-    legacy = [{"species": [{"speciesId": "hare", "population": n}]} for n in [1, 2, 3, 4]]
-    assert summarizer.population_stats(legacy)["hare"]["mean"] == 2.5
+    legacy = [{"species": [{"speciesId": "rabbit", "population": n}]} for n in [1, 2, 3, 4]]
+    assert summarizer.population_stats(legacy)["rabbit"]["mean"] == 2.5
 
     # Checks hashes AND seed coverage, even if someone rewrites the summary hash.
     corrupt = target / "corrupt"
@@ -120,7 +120,7 @@ def main():
     summary = sweep.load(corrupt / "batch/summary.json")
     summary["outputHash"] = sweep.digest(raw)
     (corrupt / "batch/summary.json").write_text(json.dumps(summary))
-    refuses(lambda: sweep.analyze(corrupt, target / "invalid-analysis", "population.hare.final"))
+    refuses(lambda: sweep.analyze(corrupt, target / "invalid-analysis", "population.rabbit.final"))
     sweep.write(target / "checks.json", dict(state="Passed", checks=["compound stat axes and conflict rejection",
         "sampling reproducibility", "budget before expansion", "hand-calculated distributions and McNemar",
         "matched seed deltas", "one-axis held-context comparisons", "SQL coverage and metric mapping",

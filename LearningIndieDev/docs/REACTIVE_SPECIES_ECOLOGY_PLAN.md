@@ -25,15 +25,15 @@ species growth -> opportunity for its counter-species -> pressure peak
     -> counterplay or dispersal -> weakened opportunity -> recovery
 ```
 
-This is an extension of the existing Forest Edge Hare/Fox treatment. It does
+This is an extension of the existing Forest Edge Rabbit/Fox treatment. It does
 not replace the treatment or authorize a full adaptive-AI system.
 
 ## What is known, inferred, and still speculative
 
 ### Verified project evidence
 
-- Hare/Fox is already defined as a coupled interaction: grass supports Hare
-  growth, Hare concentration creates Fox opportunity, and interrupted prey
+- Rabbit/Fox is already defined as a coupled interaction: grass supports Rabbit
+  growth, Rabbit concentration creates Fox opportunity, and interrupted prey
   access should weaken Foxes.
 - Mutations are ordered, deterministic, temporary loadouts for the selected
   Species-Simulation species and never enter Biome Simulations. Each species'
@@ -86,8 +86,8 @@ Initial counter families:
 | Herbivore | Trailblazer: escape and migration | Tracker-resistant route choice or a temporary safe food frontier | Mobility gains access and escape, but can reduce local reproduction or food conversion. |
 | Herbivore | Warren: pocket survival and reproduction | Ambush avoidance, dispersal, or pressure on the pocket's food supply | A safe pocket is productive but becomes a valuable, predictable target. |
 | Herbivore | Gardeners: grass persistence/recovery | Fox target reliability around the cultivated patch | Better food creates a contestable location rather than a free advantage. |
-| Carnivore | Tracker: pursuit of visible/recent Hare movement | Trailblazer movement, route breaks, or dispersal | Pursuit is strong while a target exists and inefficient when prey is dispersed. |
-| Carnivore | Ambusher: edge-transition attack pressure | Open-ground feeding, route timing, or avoiding edge chokepoints | The strongest terrain for the Fox is not always the best terrain for the Hare. |
+| Carnivore | Tracker: pursuit of visible/recent Rabbit movement | Trailblazer movement, route breaks, or dispersal | Pursuit is strong while a target exists and inefficient when prey is dispersed. |
+| Carnivore | Ambusher: edge-transition attack pressure | Open-ground feeding, route timing, or avoiding edge chokepoints | The strongest terrain for the Fox is not always the best terrain for the Rabbit. |
 | Carnivore | Opportunistic breeder: hunt-streak reproduction | Break the streak by denying repeated contact | Short-term success can create a delayed population threat without guaranteeing growth. |
 
 Plants remain a third ecological participant. Plant upgrades should primarily
@@ -105,7 +105,7 @@ inflation.
    cause, attack opportunities and hit rate, prey access, energy margin,
    resource access, and time spent in danger.
 2. Compare each side with its own scenario baseline envelope. Do not compare raw
-   Hare and Fox population counts as if they were interchangeable units.
+   Rabbit and Fox population counts as if they were interchangeable units.
 3. Classify the interaction as `calm`, `contested`, or `pressured`. Add a
    deadband and hysteresis so one noisy tick cannot flip the state.
 4. When a side is `pressured`, expose one bounded counterplay opportunity at the

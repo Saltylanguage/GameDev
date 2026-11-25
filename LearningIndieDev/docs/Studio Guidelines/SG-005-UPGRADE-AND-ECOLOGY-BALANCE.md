@@ -2,7 +2,7 @@
 
 **Guideline ID:** SG-005  
 **Status:** Active  
-**Version:** 1.1  
+**Version:** 1.3
 **Adopted:** 2026-09-06  
 **Owner:** Josh  
 **Audience:** Designers, developers, researchers, and AI agents working on
@@ -194,7 +194,7 @@ outcome under a named reference panel. Any exchange rate must state:
 - the evidence version or experiment that produced it.
 
 For example, the project may learn that one unit of movement speed is worth an
-estimated amount of AV for Hare escape in Forest Edge. That estimate does not
+estimated amount of AV for Rabbit escape in Forest Edge. That estimate does not
 automatically apply to a plant, a confined map, a different starting speed, or
 a different expedition phase.
 
@@ -472,7 +472,7 @@ It does not require:
 - exhaustive testing of every possible combination;
 - automatic AI balancing or automatic production value changes;
 - a dashboard before the first balance questions can be answered manually;
-- broad content production before the Hare / Fox / plant slice is understood.
+- broad content production before the Rabbit / Fox / plant slice is understood.
 
 The goal is controlled variety: species can be very different while their
 costs, opportunities, counters, and ecological consequences remain explainable
@@ -482,6 +482,7 @@ and testable.
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 1.3 | 2026-11-18 | Adopted Rabbit as the current species name in guidance; historical experiment records retain their original labels. |
 | 1.2 | 2026-10-01 | Clarified permanent tree access and resettable active allocations; recorded the approved Rabbit Data / Research Data reset model. |
 | 1.1 | 2026-09-06 | Separated Species and Biome Simulation goals; made Genome unlocks permanent but activation configurable; excluded Mutations from Biome Simulations. |
 | 1.0 | 2026-09-06 | Established Mutation / Genome balance language, Adaptation Value boundaries, ecosystem and matchup review, and staged automation guidance. |

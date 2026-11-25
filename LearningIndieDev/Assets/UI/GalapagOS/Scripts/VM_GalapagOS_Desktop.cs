@@ -14,7 +14,7 @@ namespace SaltyGame
         const string MutePreference = "GalapagOS.Muted";
         const string ReducedMotionPreference = "GalapagOS.ReducedMotion";
         [SerializeField] GenomeCatalogProvider genomeCatalogProvider;
-        [SerializeField] string genomeSpeciesId = "hare";
+        [SerializeField] string genomeSpeciesId = "rabbit";
         Helper_ProfileSession profileSession;
         bool permanentGenomeEconomy;
         public GenomeCatalogSnapshot GenomeCatalog => genomeCatalogProvider == null
@@ -33,6 +33,11 @@ namespace SaltyGame
         public DelegateCommand ToggleMuteCommand { get; private set; }
         public DelegateCommand ToggleReducedMotionCommand { get; private set; }
         public DelegateCommand SetGameSpeedCommand { get; private set; }
+        public DelegateCommand SelectPlannerScenarioCommand { get; private set; }
+        public DelegateCommand SelectPlannerSpeciesCommand { get; private set; }
+        public DelegateCommand ContinuePlannerCommand { get; private set; }
+        public DelegateCommand BackPlannerCommand { get; private set; }
+        public DelegateCommand LaunchPlannerCommand { get; private set; }
 
         public string DesktopTitle => "GALAPAGOS DESKTOP";
         public string WindowTitle => "GALAPAGOS TEST WINDOW";
@@ -73,10 +78,54 @@ namespace SaltyGame
         public Visibility VolumePanelVisibility => volumePanelOpen ? Visibility.Visible : Visibility.Collapsed;
         public Visibility NotificationsPanelVisibility => notificationsPanelOpen ? Visibility.Visible : Visibility.Collapsed;
         public Visibility GameSpeedPanelVisibility => gameSpeedPanelOpen ? Visibility.Visible : Visibility.Collapsed;
+        public string PlannerScenarioId => plannerScenarioId;
+        public string PlannerScenarioName => plannerScenarioId == "FiveSpeciesSandbox" ? "FIVE SPECIES SANDBOX" : "FOREST EDGE";
+        public string PlannerPlayerSpeciesId => plannerPlayerSpeciesId;
+        public string PlannerPlayerSpeciesName => SpeciesDisplayName(plannerPlayerSpeciesId);
+        public string PlannerScenarioSummary => plannerScenarioId == "FiveSpeciesSandbox"
+            ? "A shared test ecology with Rabbit, Fox, Owl, Deer, and Wolf."
+            : "The current Rabbit expedition route, with Rabbit and Fox available.";
+        public string PlannerSelectedScenarioText => "Selected: " + PlannerScenarioName + " · " + PlannerScenarioSummary;
+        public string PlannerSpeciesAvailableText => "Available in " + PlannerScenarioName;
+        public string PlannerPlayerSpeciesSummary => plannerPlayerSpeciesId == "rabbit"
+            ? "Herbivore · feeds on plants"
+            : plannerPlayerSpeciesId == "deer" ? "Herbivore · feeds on plants"
+            : "Carnivore · choose a species to control";
+        public string PlannerSelectedSpeciesText => "Selected: " + PlannerPlayerSpeciesName + " · " + PlannerPlayerSpeciesSummary;
+        public string PlannerOptionsTitleText => PlannerPlayerSpeciesName + " · " + PlannerScenarioName;
+        public Visibility PlannerScenarioStepVisibility => plannerStep == 0 ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PlannerSpeciesStepVisibility => plannerStep == 1 ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PlannerOptionsStepVisibility => plannerStep == 2 ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PlannerContinueVisibility => plannerStep < 2 ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PlannerLaunchVisibility => plannerStep == 2 ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PlannerOwlVisibility => plannerScenarioId == "FiveSpeciesSandbox" ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PlannerDeerVisibility => PlannerOwlVisibility;
+        public Visibility PlannerWolfVisibility => PlannerOwlVisibility;
+        public string PlannerStepLabel => plannerStep == 0 ? "1 / 3 · SCENARIO" : plannerStep == 1 ? "2 / 3 · PLAYER SPECIES" : "3 / 3 · TEST OPTIONS";
+        public bool UseTestMutation
+        {
+            get => useTestMutation;
+            set
+            {
+                if (useTestMutation == value) return;
+                useTestMutation = value;
+                OnPropertyChanged();
+            }
+        }
+        public bool UseTestGenome
+        {
+            get => useTestGenome;
+            set
+            {
+                if (useTestGenome == value) return;
+                useTestGenome = value;
+                OnPropertyChanged();
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public void BindSimulationLauncher(Action launch)
+        public void BindSimulationLauncher(Action<bool> launch)
         {
             simulationLauncher = launch;
         }
@@ -113,6 +162,11 @@ namespace SaltyGame
             ToggleMuteCommand = new DelegateCommand(ToggleMute);
             ToggleReducedMotionCommand = new DelegateCommand(ToggleReducedMotion);
             SetGameSpeedCommand = new DelegateCommand(SetGameSpeed);
+            SelectPlannerScenarioCommand = new DelegateCommand(SelectPlannerScenario);
+            SelectPlannerSpeciesCommand = new DelegateCommand(SelectPlannerSpecies);
+            ContinuePlannerCommand = new DelegateCommand(() => SetPlannerStep(Math.Min(2, plannerStep + 1)));
+            BackPlannerCommand = new DelegateCommand(() => SetPlannerStep(Math.Max(0, plannerStep - 1)));
+            LaunchPlannerCommand = new DelegateCommand(() => simulationLauncher?.Invoke(true));
             volume = ReadSavedVolume();
             muted = PlayerPrefs.GetInt(MutePreference, 0) == 1;
             ApplyAudioVolume();
@@ -147,7 +201,7 @@ namespace SaltyGame
             {
                 if (simulationLauncher != null)
                 {
-                    simulationLauncher();
+                    simulationLauncher(false);
                 }
                 else
                 {
@@ -185,6 +239,60 @@ namespace SaltyGame
             OnPropertyChanged(nameof(SettingsSurfaceVisibility));
             OnPropertyChanged(nameof(GeneLabSurfaceVisibility));
             Debug.Log($"GalapagOS desktop app opened: {appName}", this);
+        }
+
+        void SelectPlannerScenario(object parameter)
+        {
+            var scenarioId = parameter?.ToString();
+            if (scenarioId != "ForestEdge" && scenarioId != "FiveSpeciesSandbox") return;
+            plannerScenarioId = scenarioId;
+            if (scenarioId == "ForestEdge" && plannerPlayerSpeciesId != "rabbit" && plannerPlayerSpeciesId != "fox")
+                plannerPlayerSpeciesId = "rabbit";
+            NotifyPlannerSelectionChanged();
+        }
+
+        void SelectPlannerSpecies(object parameter)
+        {
+            var speciesId = parameter?.ToString();
+            if (speciesId != "rabbit" && speciesId != "fox" && speciesId != "owl" && speciesId != "deer" && speciesId != "wolf") return;
+            if (plannerScenarioId == "ForestEdge" && speciesId != "rabbit" && speciesId != "fox") return;
+            plannerPlayerSpeciesId = speciesId;
+            NotifyPlannerSelectionChanged();
+        }
+
+        void SetPlannerStep(int nextStep)
+        {
+            plannerStep = nextStep;
+            OnPropertyChanged(nameof(PlannerStepLabel));
+            OnPropertyChanged(nameof(PlannerScenarioStepVisibility));
+            OnPropertyChanged(nameof(PlannerSpeciesStepVisibility));
+            OnPropertyChanged(nameof(PlannerOptionsStepVisibility));
+        }
+
+        void NotifyPlannerSelectionChanged()
+        {
+            OnPropertyChanged(nameof(PlannerScenarioId));
+            OnPropertyChanged(nameof(PlannerScenarioName));
+            OnPropertyChanged(nameof(PlannerScenarioSummary));
+            OnPropertyChanged(nameof(PlannerSelectedScenarioText));
+            OnPropertyChanged(nameof(PlannerSpeciesAvailableText));
+            OnPropertyChanged(nameof(PlannerPlayerSpeciesId));
+            OnPropertyChanged(nameof(PlannerPlayerSpeciesName));
+            OnPropertyChanged(nameof(PlannerPlayerSpeciesSummary));
+            OnPropertyChanged(nameof(PlannerSelectedSpeciesText));
+            OnPropertyChanged(nameof(PlannerOptionsTitleText));
+            OnPropertyChanged(nameof(PlannerOwlVisibility));
+            OnPropertyChanged(nameof(PlannerDeerVisibility));
+            OnPropertyChanged(nameof(PlannerWolfVisibility));
+        }
+
+        static string SpeciesDisplayName(string speciesId)
+        {
+            if (speciesId == "fox") return "FOX";
+            if (speciesId == "owl") return "OWL";
+            if (speciesId == "deer") return "DEER";
+            if (speciesId == "wolf") return "WOLF";
+            return "RABBIT";
         }
 
         void CloseDesktopApp()
@@ -460,7 +568,12 @@ namespace SaltyGame
         bool gameSpeedPanelOpen;
         string activeDesktopAppTitle;
         string activeDesktopAppDescription;
-        Action simulationLauncher;
+        Action<bool> simulationLauncher;
+        string plannerScenarioId = "ForestEdge";
+        string plannerPlayerSpeciesId = "rabbit";
+        int plannerStep;
+        bool useTestMutation;
+        bool useTestGenome;
         readonly ObservableCollection<GalapagOSDesktopWindow> openDesktopWindows = new ObservableCollection<GalapagOSDesktopWindow>();
     }
 

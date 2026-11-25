@@ -14,11 +14,11 @@ Current design in brief:
 - Use one wallet across Simulation → Shop → Simulation → Shop → Simulation,
   with six rounds per simulation and the same ecosystem continuing throughout.
 - Provide six between-round population controls, each at provisional 10 FD:
-  add/remove 1 Hare, add/remove 1 Fox and add/remove 5 Plants. Reject invalid
+  add/remove 1 Rabbit, add/remove 1 Fox and add/remove 5 Plants. Reject invalid
   purchases atomically and block removal of the final selected individual.
 - Execute income modifiers in acquired or paid-reordered sequence, rounding down
-  once after the full calculation. Starter offers are +1 FD/Hare, ×1.5 and ×2.
-- Shops have five seeded distinct offers: Hare-family buffs/nerfs and income
+  once after the full calculation. Starter offers are +1 FD/Rabbit, ×1.5 and ×2.
+- Shops have five seeded distinct offers: Rabbit-family buffs/nerfs and income
   modifiers. Round and node choices are free and income eligibility is not a
   guarantee. Award a provisional 10 FD after each simulation clear.
 - Shop-only reordering starts at 10 FD random / 100 FD chosen. Escalate the
@@ -67,7 +67,7 @@ and implementation deferred**.
 > temporary upgrades gained during that run are lost. Permanent Desktop
 > upgrades and unlocked upgrade or feature availability survive, even when
 > the unlock was earned during that run. Intended Field Data purchases include
-> removing Hares, adding or removing Foxes and Plants, and buying a random event.
+> removing Rabbits, adding or removing Foxes and Plants, and buying a random event.
 > Bevin will guide phase-clear criteria during initial playtesting; no exact
 > pass formula was chosen. See the [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
 >
@@ -135,7 +135,7 @@ Repeated common events need caps or diminishing returns so large populations can
 
 ## Within-journey Field Data spending
 
-The team included all of these as intended options: remove Hares, add or
+The team included all of these as intended options: remove Rabbits, add or
 remove Foxes, add or remove Plants, and buy a random event as a gamble. Field
 Data remains available across phase and node boundaries during the journey.
 Purchase costs, caps, legal timing and targets, random-event outcomes, and
@@ -224,7 +224,7 @@ Mastery objectives should require varied species behaviors. Repeating the same s
   rewards bank only when the whole journey succeeds.
 - Communicate the zero currency payout and loss of temporary upgrades for a
   failed journey while showing any permanent unlocks that remain.
-- One small Hare Genome preview or purchase after its balance and persistence
+- One small Rabbit Genome preview or purchase after its balance and persistence
   contracts are ready; broader Genome content remains later work.
 
 ## Questions to resolve before implementation

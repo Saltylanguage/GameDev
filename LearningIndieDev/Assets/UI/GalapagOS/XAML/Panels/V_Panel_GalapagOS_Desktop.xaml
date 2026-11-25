@@ -44,49 +44,49 @@
       <Style x:Key="Genome.NodeIcon" TargetType="Image">
         <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Species.Rabbit.32}" />
         <Style.Triggers>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.keen-hearing">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.keen-hearing">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongVision}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.safe-foraging">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.safe-foraging">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EfficientDigestion}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.guarded-burrow">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.guarded-burrow">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.ToughHide}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.swift-digging">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.swift-digging">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.long-stride">
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.rabbit.long-stride">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.long-vision">
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.rabbit.long-vision">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongVision}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.tough-hide">
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.rabbit.tough-hide">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.ToughHide}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.efficient-digestion">
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.rabbit.efficient-digestion">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EfficientDigestion}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.larger-litters">
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.rabbit.larger-litters">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.starting-population">
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.rabbit.starting-population">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.founding-hares">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.founding-rabbits">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.seed-dispersal">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.seed-dispersal">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.SeedSpreading}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.population-pool">
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.rabbit.population-pool">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="population-reserves">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.warren-network">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.warren-network">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="fast-gestation">
@@ -98,7 +98,7 @@
           <DataTrigger Binding="{Binding NodeId}" Value="high-crowding">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.HighCrowding}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.crowding-tolerance">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.crowding-tolerance">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.HighCrowding}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="increased-minimum-litter">
@@ -122,19 +122,19 @@
           <DataTrigger Binding="{Binding NodeId}" Value="burrowing">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.Burrowing}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.burrowing">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.burrowing">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.Burrowing}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="escape-instinct">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EscapeInstinct}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.escape-instinct">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.escape-instinct">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EscapeInstinct}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.increased-minimum-litter">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.increased-minimum-litter">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" />
           </DataTrigger>
-          <DataTrigger Binding="{Binding NodeId}" Value="hare.larger-litters">
+          <DataTrigger Binding="{Binding NodeId}" Value="rabbit.larger-litters">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="seed-spreading">
@@ -725,7 +725,7 @@
                     <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,3" />
                     <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                       <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="26" Height="26" Margin="0,0,9,0" />
-                      <TextBlock Text="HARE DATA" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
+                      <TextBlock Text="RABBIT DATA" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
                       <TextBlock Text="{Binding GenomeLab.RabbitDataBalanceText}" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                     </StackPanel>
                     <Border Grid.Column="3" Background="{DynamicResource Chrono_Sand}" Margin="0,3" />
@@ -750,14 +750,57 @@
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                       <StackPanel>
                         <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.128}" Width="116" Height="116" Stretch="Uniform" />
-                        <TextBlock Text="HARE" FontSize="23" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{DynamicResource Chrono_TreeBark}" />
+                        <TextBlock Text="RABBIT" FontSize="23" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{DynamicResource Chrono_TreeBark}" />
                         <StackPanel Visibility="{Binding GenomeLab.PermanentControlsVisibility}" Margin="0,20,0,0">
                           <TextBlock Text="{Binding GenomeLab.ResearchLevelText}" FontSize="17" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}" />
                           <TextBlock Text="Each level multiplies species settlement by 1.10. Existing receipts stay fixed." Margin="0,10,0,0" FontSize="15" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_TreeBark}" />
                           <Button Content="{Binding GenomeLab.ResearchOfferText}" Command="{Binding GenomeLab.PurchaseResearchCommand}" IsEnabled="{Binding GenomeLab.CanPurchaseResearch}" Margin="0,12,0,0" Height="38" FontSize="14" Style="{StaticResource GalapagOS.Button.Primary}" />
                           <TextBlock Text="{Binding GenomeLab.ResearchReasonText}" Margin="0,6,0,0" FontSize="14" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_TreeBark}" />
-                          <TextBlock Text="Research Data is shared across species. Hare Data funds this path and its permanent nodes." Margin="0,18,0,0" FontSize="14" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}" />
+                          <TextBlock Text="Research Data is shared across species. Rabbit Data funds this path and its permanent nodes." Margin="0,18,0,0" FontSize="14" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}" />
                         </StackPanel>
+                        <Border Visibility="{Binding GenomeLab.DeveloperWalletToolsVisibility}"
+                                Margin="0,16,0,0"
+                                Padding="8"
+                                Background="{DynamicResource Chrono_Lime}"
+                                BorderBrush="{DynamicResource Chrono_Olive}"
+                                BorderThickness="1"
+                                CornerRadius="5">
+                          <StackPanel>
+                            <TextBlock Text="DEVELOPER WALLET TOOLS"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="Editor / development build only. Grants save to this profile."
+                                       Margin="0,3,0,5"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource Chrono_Olive}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="AMOUNT TO GRANT"
+                                       Margin="0,0,0,3"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource Chrono_TreeBark}" />
+                            <TextBox Text="{Binding GenomeLab.DeveloperGrantAmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="30"
+                                     Margin="0,0,0,5" />
+                            <Button Content="+ RABBIT DATA"
+                                    Command="{Binding GenomeLab.GrantRabbitDataCommand}"
+                                    Style="{StaticResource GalapagOS.Button.Secondary}"
+                                    Height="30"
+                                    Margin="0,0,0,4" />
+                            <Button Content="+ RESEARCH DATA"
+                                    Command="{Binding GenomeLab.GrantResearchDataCommand}"
+                                    Style="{StaticResource GalapagOS.Button.Secondary}"
+                                    Height="30" />
+                            <TextBlock Text="{Binding GenomeLab.DeveloperWalletToolsStatusText}"
+                                       Margin="0,5,0,0"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       TextWrapping="Wrap" />
+                          </StackPanel>
+                        </Border>
                       </StackPanel>
                     </ScrollViewer>
                   </Border>
@@ -1047,7 +1090,7 @@
                             <TextBlock Text="REDUCED MOTION" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                             <TextBlock Text="{Binding Settings.ReducedMotionText}" Margin="0,8,0,8" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
                             <Button Content="TOGGLE" Width="170" Height="40" Command="{Binding Settings.ToggleReducedMotionCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" />
-                            <TextBlock Text="Simulation events remain in the text feed." Margin="0,8,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                            <TextBlock Text="Hides brief hunt and birth animations on the board; the selected Journey marker stops pulsing. Event text remains visible." Margin="0,8,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
                           </StackPanel>
                         </Grid>
                       </Grid>
@@ -1091,7 +1134,7 @@
                         <Rectangle Grid.Row="1" Fill="{DynamicResource Chrono_Sand}" Opacity="0.78" />
                         <StackPanel Grid.Row="2" Margin="0,12,0,0">
                           <Border Height="92" Background="#FFE5EDB1" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="3" CornerRadius="6" Padding="8">
-                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="66" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="26" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="60" Height="60" Stretch="Uniform" /><Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,8" /><TextBlock Grid.Column="2" Text="HARE" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="3" Text="☆" FontSize="27" Foreground="{DynamicResource Chrono_GoldenPollen}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="66" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="26" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="60" Height="60" Stretch="Uniform" /><Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,8" /><TextBlock Grid.Column="2" Text="RABBIT" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="3" Text="☆" FontSize="27" Foreground="{DynamicResource Chrono_GoldenPollen}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
                           </Border>
                           <Border Height="82" Margin="0,8,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="6" Padding="8">
                             <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="66" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="26" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Species.Fox.64}" Width="56" Height="56" Stretch="Uniform" /><Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,8" /><TextBlock Grid.Column="2" Text="FOX" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="3" Text="☆" FontSize="25" Foreground="#FF9B9271" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
@@ -1124,7 +1167,7 @@
                             <Ellipse Width="9" Height="9" Canvas.Left="504" Canvas.Top="224" Fill="{DynamicResource Chrono_GoldenPollen}" />
                           </Canvas>
                         </Border>
-                        <TextBlock Grid.Row="1" Text="HARE  ·  HERBIVORE" Margin="0,12,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="23" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" />
+                        <TextBlock Grid.Row="1" Text="RABBIT  ·  HERBIVORE" Margin="0,12,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="23" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" />
                         <Border Grid.Row="2" Background="#FFE8F1C4" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5" Padding="12,5" HorizontalAlignment="Center" Margin="0,10,0,0"><StackPanel Orientation="Horizontal"><Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="24" Height="24" Margin="0,0,7,0" /><TextBlock Text="DISCOVERED" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" /></StackPanel></Border>
                         <TextBlock Grid.Row="3" Text="A cautious grazer with sharp hearing and a growing record." Margin="18,14,18,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Top" />
                         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0"><Button Content="OPEN IN GENE LAB" Width="218" Height="44" Command="{Binding OpenGeneLabCommand}" Style="{StaticResource GalapagOS.Button.Primary}" /><Button Content="OPEN HISTORY" Width="178" Height="44" Margin="12,0,0,0" Command="{Binding OpenHistoryCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" /></StackPanel>
@@ -1185,7 +1228,7 @@
                 <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8"><TextBlock Text="HISTORY / DATA RECORD  ·  EXPEDITIONS   PHASE TIMELINE   SPECIES   BIOMES   ACHIEVEMENTS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
                 <Grid Grid.Row="1" Margin="0,8,0,8"><Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /><ColumnDefinition Width="142" /></Grid.ColumnDefinitions>
                   <Border Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="7"><StackPanel><TextBlock Text="SAVED RECORDS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="004 · LATEST" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="003" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="002" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
-                  <Border Grid.Column="1" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="EXPEDITION 004 · FERNLIGHT VALLEY" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="HARE · PHASE TIMELINE" Margin="0,3,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="──●────●────●────●──" Margin="0,16,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="15" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text=" P1       P2       P3       P4" Margin="0,2,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" /><Button Content="OPEN RECORD" Height="26" Margin="0,14,0,0" IsEnabled="False" HorizontalAlignment="Left" Style="{StaticResource GalapagOS.Button.Primary}" /></StackPanel></Border>
+                  <Border Grid.Column="1" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="EXPEDITION 004 · FERNLIGHT VALLEY" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="RABBIT · PHASE TIMELINE" Margin="0,3,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="──●────●────●────●──" Margin="0,16,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="15" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text=" P1       P2       P3       P4" Margin="0,2,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" /><Button Content="OPEN RECORD" Height="26" Margin="0,14,0,0" IsEnabled="False" HorizontalAlignment="Left" Style="{StaticResource GalapagOS.Button.Primary}" /></StackPanel></Border>
                   <Border Grid.Column="2" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="7"><StackPanel><TextBlock Text="RECORD SUMMARY" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="POPULATION   28" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="COLLECTED    28/40" Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="RARE GENES   3/8" Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
                 </Grid>
                 <Border Grid.Row="2" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}" BorderThickness="1" CornerRadius="5" Padding="6"><TextBlock Text="NOTE · PHASE VALUES DESCRIBE ONE CONTINUOUS EXPEDITION" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
@@ -1203,12 +1246,73 @@
               </Grid>
 
               <Grid Visibility="{Binding ExpeditionPlannerSurfaceVisibility}">
-                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-                <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8"><TextBlock Text="EXPEDITION PLANNER  ·  1 BIOME  →  2 SPECIES  →  3 OPTIONS  →  4 LAUNCH" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
-                <Grid Grid.Row="1" Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                  <Border Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="BIOME" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="FOREST EDGE" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="gentle pressure" Margin="0,4,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
-                  <Border Grid.Column="2" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="PLAYER SPECIES" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="HARE · HERBIVORE" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="starting traits" Margin="0,4,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
-                  <Border Grid.Column="4" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="LAUNCH PERMIT" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="READY TO REVIEW" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><Button Content="LAUNCH EXPEDITION" Height="27" Margin="0,12,0,0" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Primary}" /></StackPanel></Border>
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8">
+                  <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <TextBlock Text="EXPEDITION PLANNER  ·  SCENARIO  →  SPECIES  →  TEST OPTIONS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding Settings.PlannerStepLabel}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
+                  </Grid>
+                </Border>
+
+                <Grid Grid.Row="1" Margin="0,10,0,10" Visibility="{Binding Settings.PlannerScenarioStepVisibility}">
+                  <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                  <StackPanel>
+                    <TextBlock Text="CHOOSE A SCENARIO" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                    <TextBlock Text="Start with the existing Rabbit route or open the five-species test ecology." Margin="0,4,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                  </StackPanel>
+                  <Grid Grid.Row="1" Margin="0,12,0,0">
+                    <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Button Command="{Binding Settings.SelectPlannerScenarioCommand}" CommandParameter="ForestEdge" HorizontalContentAlignment="Stretch" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" Padding="14" Style="{StaticResource GalapagOS.Button.Secondary}">
+                      <StackPanel VerticalAlignment="Center"><TextBlock Text="FOREST EDGE" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="Rabbit and Fox · current journey route" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_Olive}" TextWrapping="Wrap" /></StackPanel>
+                    </Button>
+                    <Button Grid.Column="2" Command="{Binding Settings.SelectPlannerScenarioCommand}" CommandParameter="FiveSpeciesSandbox" HorizontalContentAlignment="Stretch" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" Padding="14" Style="{StaticResource GalapagOS.Button.Secondary}">
+                      <StackPanel VerticalAlignment="Center"><TextBlock Text="FIVE SPECIES SANDBOX" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="Rabbit · Fox · Owl · Deer · Wolf" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_Olive}" TextWrapping="Wrap" /></StackPanel>
+                    </Button>
+                    <Border Grid.Row="1" Grid.ColumnSpan="3" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="1" CornerRadius="5" Padding="8" Margin="0,10,0,0"><TextBlock Text="{Binding Settings.PlannerSelectedScenarioText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" /></Border>
+                  </Grid>
+                </Grid>
+
+                <Grid Grid.Row="1" Margin="0,10,0,10" Visibility="{Binding Settings.PlannerSpeciesStepVisibility}">
+                  <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                  <StackPanel>
+                    <TextBlock Text="CHOOSE YOUR PLAYER SPECIES" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                    <TextBlock Text="{Binding Settings.PlannerSpeciesAvailableText}" Margin="0,4,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_Olive}" />
+                  </StackPanel>
+                  <UniformGrid Grid.Row="1" Columns="5" Margin="0,14,0,8">
+                    <Button Command="{Binding Settings.SelectPlannerSpeciesCommand}" CommandParameter="rabbit" Margin="4" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" Padding="6" Style="{StaticResource GalapagOS.Button.Secondary}"><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="68" Height="68" Stretch="Uniform" /><TextBlock Text="RABBIT" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Button>
+                    <Button Command="{Binding Settings.SelectPlannerSpeciesCommand}" CommandParameter="fox" Margin="4" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" Padding="6" Style="{StaticResource GalapagOS.Button.Secondary}"><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><Image Source="{StaticResource GalapagOS.Image.Species.Fox.64}" Width="68" Height="68" Stretch="Uniform" /><TextBlock Text="FOX" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Button>
+                    <Button Visibility="{Binding Settings.PlannerOwlVisibility}" Command="{Binding Settings.SelectPlannerSpeciesCommand}" CommandParameter="owl" Margin="4" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" Padding="6" Style="{StaticResource GalapagOS.Button.Secondary}"><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><Image Source="{StaticResource GalapagOS.Image.Species.Owl.64}" Width="68" Height="68" Stretch="Uniform" /><TextBlock Text="OWL" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Button>
+                    <Button Visibility="{Binding Settings.PlannerDeerVisibility}" Command="{Binding Settings.SelectPlannerSpeciesCommand}" CommandParameter="deer" Margin="4" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" Padding="6" Style="{StaticResource GalapagOS.Button.Secondary}"><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><Image Source="{StaticResource GalapagOS.Image.Species.Deer.64}" Width="68" Height="68" Stretch="Uniform" /><TextBlock Text="DEER" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Button>
+                    <Button Visibility="{Binding Settings.PlannerWolfVisibility}" Command="{Binding Settings.SelectPlannerSpeciesCommand}" CommandParameter="wolf" Margin="4" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" Padding="6" Style="{StaticResource GalapagOS.Button.Secondary}"><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><Image Source="{StaticResource GalapagOS.Image.Species.Wolf.64}" Width="68" Height="68" Stretch="Uniform" /><TextBlock Text="WOLF" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Button>
+                  </UniformGrid>
+                  <Border Grid.Row="2" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="1" CornerRadius="5" Padding="8"><TextBlock Text="{Binding Settings.PlannerSelectedSpeciesText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" /></Border>
+                </Grid>
+
+                <Grid Grid.Row="1" Margin="0,10,0,10" Visibility="{Binding Settings.PlannerOptionsStepVisibility}">
+                  <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                  <StackPanel>
+                    <TextBlock Text="OPTIONAL TEST INJECTIONS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                    <TextBlock Text="{Binding Settings.PlannerOptionsTitleText}" Margin="0,4,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_Olive}" />
+                  </StackPanel>
+                  <Grid Grid.Row="1" Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Border Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="12">
+                      <StackPanel VerticalAlignment="Center"><CheckBox Content="Inject a test Mutation" IsChecked="{Binding Settings.UseTestMutation, Mode=TwoWay}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="Adds a small +0.25 movement speed boost to the selected species for this run." Margin="0,8,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" /></StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="12">
+                      <StackPanel VerticalAlignment="Center"><CheckBox Content="Inject a test Genome node" IsChecked="{Binding Settings.UseTestGenome, Mode=TwoWay}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="Adds a small +1 vision range Genome effect to that species in the active population." Margin="0,8,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" /></StackPanel>
+                    </Border>
+                  </Grid>
+                  <Border Grid.Row="2" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="1" CornerRadius="5" Padding="8"><TextBlock Text="Test injections apply only to the launched run. They do not unlock or purchase profile upgrades." FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" /></Border>
+                </Grid>
+
+                <Grid Grid.Row="2" Margin="0,0,0,0">
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                  <Button Content="BACK" Command="{Binding Settings.BackPlannerCommand}" Width="120" Height="34" Style="{StaticResource GalapagOS.Button.Secondary}" />
+                  <Button Grid.Column="2" Content="CONTINUE" Visibility="{Binding Settings.PlannerContinueVisibility}" Command="{Binding Settings.ContinuePlannerCommand}" Width="150" Height="34" Style="{StaticResource GalapagOS.Button.Primary}" />
+                  <Button Grid.Column="2" Content="LAUNCH EXPEDITION" Visibility="{Binding Settings.PlannerLaunchVisibility}" Command="{Binding Settings.LaunchPlannerCommand}" Width="210" Height="34" Style="{StaticResource GalapagOS.Button.Primary}" />
                 </Grid>
               </Grid>
 
@@ -1300,7 +1404,7 @@
                               <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /></Grid.ColumnDefinitions>
                               <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="37" Height="37" Stretch="Uniform" VerticalAlignment="Center" />
                               <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,6" />
-                              <TextBlock Grid.Column="2" Text="HARE" Margin="10,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                              <TextBlock Grid.Column="2" Text="RABBIT" Margin="10,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                               <Ellipse Grid.Column="3" Width="11" Height="11" Fill="{DynamicResource Chrono_Olive}" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1" VerticalAlignment="Center" />
                             </Grid>
                           </Border>
@@ -1355,9 +1459,9 @@
                           <Grid>
                             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="1" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                             <StackPanel>
-                              <TextBlock Text="HARE · GRAZER" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                              <TextBlock Text="RABBIT · GRAZER" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
                               <Border Background="#FFE8F1C4" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5" Padding="9,4" HorizontalAlignment="Left" Margin="0,10,0,0"><TextBlock Text="DISCOVERED" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /></Border>
-                              <TextBlock Text="Hares prefer open grass and avoid sustained pressure." Margin="0,14,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                              <TextBlock Text="Rabbits prefer open grass and avoid sustained pressure." Margin="0,14,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
                             </StackPanel>
                             <Rectangle Grid.Row="1" Margin="0,18,0,14" Fill="{DynamicResource Chrono_Sand}" Opacity="0.75" />
                             <TextBlock Grid.Row="2" Text="FIELD OBSERVATIONS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
@@ -1423,8 +1527,8 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
                 <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8"><TextBlock Text="RESEARCH INBOX / BULLETIN  ·  ALL   NEW   SPECIES   RESEARCH   EXPEDITIONS        3 UNREAD" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
                 <Grid Grid.Row="1" Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="170" /></Grid.ColumnDefinitions>
-                  <Border Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="NOTICE STACK" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="[NEW] Hare record added    2 min ago" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="[DATA] Expedition 004 complete" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="[READY] Research node available" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
-                  <Border Grid.Column="2" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="NOTICE DETAIL" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="NEW SPECIES" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="Hare is now in your Species Collection." Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" /><Button Content="MARK READ" Height="26" Margin="0,10,0,0" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Secondary}" /></StackPanel></Border>
+                  <Border Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="NOTICE STACK" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="[NEW] Rabbit record added    2 min ago" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="[DATA] Expedition 004 complete" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="[READY] Research node available" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
+                  <Border Grid.Column="2" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="NOTICE DETAIL" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="NEW SPECIES" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="Rabbit is now in your Species Collection." Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" /><Button Content="MARK READ" Height="26" Margin="0,10,0,0" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Secondary}" /></StackPanel></Border>
                 </Grid>
               </Grid>
 
@@ -1432,7 +1536,7 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
                 <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8"><TextBlock Text="HABITAT GALLERY / MUSEUM  ·  HABITATS   SPECIES SETS   ACHIEVEMENTS   DESKTOP DECOR" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
                 <Grid Grid.Row="1" Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="120" /><ColumnDefinition Width="*" /><ColumnDefinition Width="136" /></Grid.ColumnDefinitions>
-                  <Border Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="7"><StackPanel><TextBlock Text="DISPLAY SHELF" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="FERNLIGHT" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="FOREST EDGE" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="HARE SET" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
+                  <Border Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="7"><StackPanel><TextBlock Text="DISPLAY SHELF" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="FERNLIGHT" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="FOREST EDGE" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="RABBIT SET" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
                   <Border Grid.Column="1" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="CURRENT DISPLAY" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><Border Height="110" Margin="0,7,0,0" Background="{DynamicResource Chrono_AzureSky}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5"><Grid><Path Data="M 0,90 L 70,48 L 125,78 L 180,42 L 255,88 L 320,55 L 390,92 L 390,110 L 0,110 Z" Fill="{DynamicResource Chrono_Olive}" /><Ellipse Width="38" Height="38" Fill="{DynamicResource Chrono_GoldenPollen}" HorizontalAlignment="Right" Margin="0,8,18,0" /></Grid></Border></StackPanel></Border>
                   <Border Grid.Column="2" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="7"><StackPanel><TextBlock Text="ITEM DETAIL" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="FERNLIGHT PLAQUE" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="Earned: 6 / 10" Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" /><Button Content="EQUIP DISPLAY" Height="26" Margin="0,10,0,0" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Primary}" /></StackPanel></Border>
                 </Grid>
@@ -1445,7 +1549,7 @@
                   <Border Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="8"><TextBlock Text="⌕  Search species, biome, research, record...                                 CLEAR" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
                   <Grid Grid.Row="1" Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="116" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                     <Border Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="7"><StackPanel><TextBlock Text="FILTERS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="ALL" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="SPECIES" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="BIOMES" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
-                    <Border Grid.Column="2" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="RESULTS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="SPECIES · Hare       Herbivore · Forest Edge    [OPEN]" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="RESEARCH · Quick Feet  Gene Lab · Hare       [OPEN]" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="RECORD · Expedition 004  History                 [OPEN]" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
+                    <Border Grid.Column="2" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="RESULTS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="SPECIES · Rabbit       Herbivore · Forest Edge    [OPEN]" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="RESEARCH · Quick Feet  Gene Lab · Rabbit       [OPEN]" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="RECORD · Expedition 004  History                 [OPEN]" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
                   </Grid>
                 </Grid>
               </Grid>
@@ -1785,7 +1889,7 @@
                      VerticalAlignment="Center" />
               <StackPanel Grid.Column="1"
                           VerticalAlignment="Center">
-                <TextBlock Text="GENE LAB · HARE"
+                <TextBlock Text="GENE LAB · RABBIT"
                            FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                            FontSize="19"
                            FontWeight="Bold"
@@ -1947,7 +2051,7 @@
                            FontWeight="Bold"
                            Foreground="{DynamicResource Chrono_Olive}"
                            HorizontalAlignment="Right" />
-                <TextBlock Text="HARE"
+                <TextBlock Text="RABBIT"
                            Margin="0,2,0,0"
                            FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                            FontSize="14"
@@ -1983,7 +2087,7 @@
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
                   <StackPanel>
-                    <TextBlock Text="HERBIVORE / HARE"
+                    <TextBlock Text="HERBIVORE / RABBIT"
                                FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                                FontSize="16"
                                FontWeight="Bold"
@@ -1993,7 +2097,7 @@
                                FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                                FontSize="11"
                                Foreground="{DynamicResource Chrono_TreeBark}" />
-                    <TextBlock Text="HARE ROOT · OWNED"
+                    <TextBlock Text="RABBIT ROOT · OWNED"
                                Margin="0,4,0,0"
                                FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                FontSize="10"

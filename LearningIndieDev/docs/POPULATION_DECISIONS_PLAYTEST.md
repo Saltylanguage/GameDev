@@ -12,10 +12,10 @@ follow the existing Field Data design:
 
 | Control | Cost | Consequence |
 | --- | --- | --- |
-| +1 Hare | 10 Field Data | More Hares and more food demand; ordinary refill cap applies |
-| -1 Hare | 10 Field Data | Less food demand; cannot remove the final player individual |
+| +1 Rabbit | 10 Field Data | More Rabbits and more food demand; ordinary refill cap applies |
+| -1 Rabbit | 10 Field Data | Less food demand; cannot remove the final player individual |
 | +1 Fox | 10 Field Data | More hunting pressure |
-| -1 Fox | 10 Field Data | Less hunting pressure; Hare food demand can subsequently rise |
+| -1 Fox | 10 Field Data | Less hunting pressure; Rabbit food demand can subsequently rise |
 | +5 Plants | 10 Field Data | Restores food on suitable bare ground |
 | -5 Plants | 10 Field Data | Reduces food supply |
 
@@ -31,7 +31,7 @@ is rejected instead of recording a nonexistent refill. Placement obeys the world
 The live ledger shows current Plant count and its net change since the round
 opened, with EMPTY when none remain. Round decisions label food as available,
 declining, or exhausted. The decision and encounter views also show the current
-Hare population, refill limit, and cumulative player starvation deaths. Counts
+Rabbit population, refill limit, and cumulative player starvation deaths. Counts
 are explicitly described as supply observations: they do not estimate nutrients,
 carrying capacity, or time until extinction. Player additions/removals affect the
 net count change. An increase does not prove sustainable renewal.
@@ -43,8 +43,8 @@ new encounters. Choosing one branch commits that path for the current journey.
 Each still leads into one of the existing second simulations; later map nodes
 remain placeholders.
 
-- **Rest Stop:** choose up to 10 Hares, 10 Plants, or continue without a refresh.
-  Hare restoration clamps to remaining pool capacity; its label shows the actual
+- **Rest Stop:** choose up to 10 Rabbits, 10 Plants, or continue without a refresh.
+  Rabbit restoration clamps to remaining pool capacity; its label shows the actual
   grant. Full-pool and unsuitable-space choices are disabled with a reason.
 - **Seed Cache:** open a cache with disclosed 50% odds of +10 Plants and 50% odds
   of -5 Plants, or leave it alone. It costs no Field Data in this first slice.
@@ -62,7 +62,7 @@ or reseeding it. The map summary reports the actual result before continuation.
 The base replenishment pool remains 50; active capacity Genome nodes add 10 each.
 The separate starting Genome adds 5 only when seeding a fresh world. Natural
 births can exceed the pool and above-cap survivors remain. These controls provide
-agency without rescuing unchecked growth: Hares can still exhaust food and die
+agency without rescuing unchecked growth: Rabbits can still exhaust food and die
 of starvation. Zero Plants is feedback, not a new instant-failure trigger.
 
 ## Ownership and accounting

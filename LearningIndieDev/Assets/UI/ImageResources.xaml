@@ -62,6 +62,16 @@
                  UriSource="../Art/Species/Animals/Standardized/64/Animals_01_Rabbit.png" />
     <BitmapImage x:Key="GalapagOS.Image.Species.Rabbit.128"
                  UriSource="../Art/Species/Animals/Standardized/128/Animals_01_Rabbit.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Species.Deer.64"
+                 UriSource="../Art/Species/Animals/Standardized/64/Animals_01_Deer.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Species.Wolf.64"
+                 UriSource="../Art/Species/Animals/Standardized/64/Animals_01_Wolf.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Species.Owl.64"
+                 UriSource="../Art/Species/Animals/Standardized/64/Animals_01_Eagle.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Species.Deer.128"
+                 UriSource="../Art/Species/Animals/Standardized/128/Animals_01_Deer.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Species.Wolf.128"
+                 UriSource="../Art/Species/Animals/Standardized/128/Animals_01_Wolf.png" />
     <BitmapImage x:Key="GalapagOS.Image.Simulation.Rabbit.64"
                  UriSource="../Art/Species/Animals/Chrono_Rabbit_Tile_Face.png" />
 </ResourceDictionary>

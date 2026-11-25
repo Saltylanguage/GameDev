@@ -46,7 +46,8 @@ namespace SaltyGame
                 bed = new GameObject("Simulation Audio Bed").transform;
                 bed.SetParent(owner.transform, false);
                 StartLoop(bed.gameObject, ambience ??= CreateBed(false), 0.09f);
-                StartLoop(bed.gameObject, music ??= CreateBed(true), 0.12f);
+                // shortcut: one fixed pilot track, add a playlist when the music direction is approved.
+                StartLoop(bed.gameObject, music ??= Resources.Load<AudioClip>("Audio/CalmTrack") ?? CreateBed(true), 0.12f);
             }
             foreach (var source in bed.GetComponents<AudioSource>())
                 if (!source.isPlaying) source.Play();

@@ -38,7 +38,7 @@ This is the engineering source of truth for runtime ownership, data contracts, d
 | Engine | Unity 6000.4.6f1 | **Current** |
 | Player presentation | Noesis/XAML plus Unity composition and a custom board renderer | **Implemented foundation** |
 | Target platform | Windows 64-bit Steam, keyboard/mouse | **Committed slice target** |
-| Resolution | 1920×1080 target; 1280×720 functional | **Graphics acceptance recorded** |
+| Resolution | 1920×1080 target; 1280×720 outside the current supported target; lower bound TBD | **Graphics acceptance recorded at the target** |
 | Determinism | Seeded run; deterministic for a fixed scenario/ruleset/version/schedule | **Implemented within recorded evidence bounds** |
 | Player schedule | 6 rounds × 10 seconds of simulation time; 5 Mutation choices after rounds 1–5 | **Committed product contract** |
 | Tick conversion | At a 0.1-second step interval, one 10-second round is 100 completed ticks; simulation time is authoritative | **Runtime/configuration acceptance pending** |
@@ -105,7 +105,7 @@ MainMenu
 
 `GalapagOSDesktopNoesisHost.OpenSimulation` then swaps the Desktop to its local simulation view and starts a locally composed preview. It does not consume a `SimulationLaunchRequest`, selected scenario, seed, schedule, or frozen profile progression. This makes the screen executable but disconnects it from profile selection and expedition preparation.
 
-The accepted test contract for this current local route is direct-start Forest Edge/Hare. This is an acceptance-fixture decision, not approval of the local-default composition as the final architecture; the route must still consume the selected profile and launch request. The recorded PlayMode failures have not been individually verified, so do not attribute them to a specific expectation until their result details are available.
+The accepted test contract for this current local route is direct-start Forest Edge/Rabbit. This is an acceptance-fixture decision, not approval of the local-default composition as the final architecture; the route must still consume the selected profile and launch request. The recorded PlayMode failures have not been individually verified, so do not attribute them to a specific expectation until their result details are available.
 
 The legacy `Lab -> CellularAutomataPrototype` route does use the immutable `SimulationLaunchRequest` contract. It proves the launch object can work, but it is not the intended player home. The fix should establish one request/session owner and reuse the contract in the Desktop route rather than creating a third launch path.
 
@@ -117,7 +117,7 @@ The legacy `Lab -> CellularAutomataPrototype` route does use the immutable `Simu
 | Profile -> Desktop | Yes | Yes | **No; snapshot is not retained** |
 | Desktop -> Expedition Planner | Visual concepts/shell elements | No complete planner | No |
 | Planner -> immutable launch request | Legacy contract exists | No | No |
-| Desktop -> embedded simulation | Yes | Yes; directly starts Forest Edge/Hare | **Local defaults; bypasses request/profile** |
+| Desktop -> embedded simulation | Yes | Yes; directly starts Forest Edge/Rabbit | **Local defaults; bypasses request/profile** |
 | Running -> pause/resume | Yes | Yes | Yes |
 | Running -> speed/zoom | Controls visible | Yes | **No commands bound** |
 | Board -> selected cell details | ViewModel method exists | No | **No pointer-to-cell call** |
@@ -272,7 +272,7 @@ CF-1 through CF-5 implement and verify:
 - generic schedule/report support;
 - phase and expedition evidence required by EX-010.
 
-CF-6 is partially complete. Documentation, automated lifecycle/evidence coverage, graphics checks, Windows smoke, and the historical ten-phase EX-010 Forest Edge/Hare run are recorded. Measuring the current six-round player session is optional stretch work, not an open product-acceptance gate.
+CF-6 is partially complete. Documentation, automated lifecycle/evidence coverage, graphics checks, Windows smoke, and the historical ten-phase EX-010 Forest Edge/Rabbit run are recorded. Measuring the current six-round player session is optional stretch work, not an open product-acceptance gate.
 
 ## 6. Mutation, Genome, and offer execution
 
@@ -280,7 +280,7 @@ CF-6 is partially complete. Documentation, automated lifecycle/evidence coverage
 
 At a valid boundary, the composition layer prepares validated `SpeciesUpgradeSnapshot` values. The player can purchase one visible option or Skip, then Continue. Ordered snapshots affect only later ticks. Initialization-only effects remain launch-only.
 
-Seven Hare upgrade assets are authored and loaded by the preview, but the XAML surface has only three purchase commands. Because the current list is exposed in asset order, only the first three catalog entries are reachable through the player preview. This is executable code with incomplete product reachability, not a completed three-build selection system.
+Seven Rabbit upgrade assets are authored and loaded by the preview, but the XAML surface has only three purchase commands. Because the current list is exposed in asset order, only the first three catalog entries are reachable through the player preview. This is executable code with incomplete product reachability, not a completed three-build selection system.
 
 Before the slice claims Trailblazer/Warren/Gardeners support, the offer system must define and test:
 
@@ -305,8 +305,8 @@ The first Genome foundation now exists:
 
 This is a data and provenance boundary, not a finished progression feature. No production node currently changes simulation rules. The remaining sequence is:
 
-1. **Complete 2026-09-17:** remove the visualization-only Hare/Fox assets, debug selector, and player-scene catalog provider while retaining generic authoring and display contracts.
-2. Approve one small Hare node/effect/cost contract and its player-facing wording.
+1. **Complete 2026-09-17:** remove the visualization-only Rabbit/Fox assets, debug selector, and player-scene catalog provider while retaining generic authoring and display contracts.
+2. Approve one small Rabbit node/effect/cost contract and its player-facing wording.
 3. Establish the production profile owner, scientific-data wallet and settlement flow, save-schema versioning, migration, reset, and corrupt-save recovery.
 4. Add player actions for buying, activating, and deactivating legal nodes between simulations.
 5. Map the approved node to immutable executable rules without changing authored natural species assets.
@@ -392,7 +392,7 @@ The 2026-09-17 full-suite rerun passed. See the retained artifact above; the ear
 The M1 player-flow gate needs evidence that:
 
 1. A selected profile remains owned through Desktop, launch, results, and return.
-2. A Forest Edge/Hare expedition launches from the canonical Desktop route without developer-only fields.
+2. A Forest Edge/Rabbit expedition launches from the canonical Desktop route without developer-only fields.
 3. The player route runs six 10-second simulation rounds; at a 0.1-second step interval, each round spans 100 completed ticks.
 4. At every non-terminal boundary, Mutation or Skip followed by Continue preserves the same world.
 5. Every intended Mutation build has a reachable, valid offer path and a visible effective tick.
@@ -428,7 +428,7 @@ The M1 player-flow gate needs evidence that:
 | 2026-09-12 | Treat GalapagOS Desktop as the canonical player home; standalone Lab remains legacy/developer. | New flow work must connect Desktop to the existing launch/domain contracts. |
 | 2026-09-12 | Record executable code separately from player-reachable and correctly connected behavior. | Inert controls and bypassed handoffs cannot be reported as completed features. |
 | 2026-09-12 | Keep roadmap v2 as a working baseline without treating proposed S3 as approved. | Documentation may describe planned ownership while preserving the review gate. |
-| 2026-09-17 | Keep direct-start Forest Edge/Hare as the current Desktop acceptance contract. | Verify individual PlayMode failures before changing runtime behavior or fixtures. |
+| 2026-09-17 | Keep direct-start Forest Edge/Rabbit as the current Desktop acceptance contract. | Verify individual PlayMode failures before changing runtime behavior or fixtures. |
 | 2026-09-17 | Remove visualization-only Genome maps from the canonical player scene. | Generic Genome contracts remain, but no dummy catalog may appear as approved production progression. |
 | 2026-09-06 | Retain one runner/run across phase boundaries and apply validated immutable upgrades only while frozen. | Continue preserves all ecological state and accumulated evidence. |
 | 2026-09-04 | Keep initialization-only effects at launch and active-run disk resume out of the slice. | Boundary rewards cannot silently rebuild/refill the world; persistence remains separate. |

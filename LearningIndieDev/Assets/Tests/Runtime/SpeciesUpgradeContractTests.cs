@@ -55,7 +55,7 @@ namespace SaltyGame.Tests
         public void ToughHideRaisesMaximumHealthThroughTheSnapshotContract()
         {
             var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId);
-            var snapshot = upgrade.CreateSnapshot(new SpeciesId("hare"));
+            var snapshot = upgrade.CreateSnapshot(new SpeciesId("rabbit"));
             var rules = new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
                 EmptyPattern, null, EmptyPattern, 0, metabolism: 0);
 
@@ -73,9 +73,9 @@ namespace SaltyGame.Tests
         [Test]
         public void QuickEscapeAddsOnlyThreatenedMovementThroughTheSnapshotContract()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.QuickEscapeId);
-            var snapshot = upgrade.CreateSnapshot(hare);
+            var snapshot = upgrade.CreateSnapshot(rabbit);
             var rules = CreateRules(movementSpeed: 1f, metabolism: 1, awareness: null);
             var result = snapshot.Apply(rules);
 
@@ -89,17 +89,17 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void InstallingToughHideRaisesCurrentAndNewHareHealth()
+        public void InstallingToughHideRaisesCurrentAndNewRabbitHealth()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
+                [rabbit] = new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
                     EmptyPattern, null, EmptyPattern, 0, reproductionChance: 0f, metabolism: 0),
             };
             var cells = new Grid<SpeciesCell>(3, 1);
-            cells.SetCell(0, 0, new SpeciesCell(hare, health: 1, energy: 10));
-            var run = new SimulationRunState(cells, hare, seed: 42, durationSeconds: 1f, targetTicks: 2);
+            cells.SetCell(0, 0, new SpeciesCell(rabbit, health: 1, energy: 10));
+            var run = new SimulationRunState(cells, rabbit, seed: 42, durationSeconds: 1f, targetTicks: 2);
             run.ConfigureContinuousPhases(1);
             var runner = new SpeciesSimulationRunner(run, rules, 0.1f, stopOnPlayerExtinction: false);
             runner.Start();
@@ -107,25 +107,25 @@ namespace SaltyGame.Tests
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.AwaitingDecision));
 
             var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId)
-                .CreateSnapshot(hare);
+                .CreateSnapshot(rabbit);
             var upgradedRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
             {
-                [hare] = upgrade.Apply(rules[hare]),
+                [rabbit] = upgrade.Apply(rules[rabbit]),
             };
             Assert.That(runner.InstallBoundaryState(upgradedRules, null, new[] { upgrade }), Is.True);
             var health = new List<int>();
             for (var x = 0; x < run.Cells.Width; x++)
             {
                 var cell = run.Cells.GetCell(x, 0);
-                if (cell.IsCreature && cell.SpeciesId == hare) health.Add(cell.Health);
+                if (cell.IsCreature && cell.SpeciesId == rabbit) health.Add(cell.Health);
             }
             Assert.That(health, Is.EqualTo(new[] { 3 }));
-            Assert.That(runner.TryAddBoundaryPopulation(hare, 1), Is.True);
+            Assert.That(runner.TryAddBoundaryPopulation(rabbit, 1), Is.True);
             health.Clear();
             for (var x = 0; x < run.Cells.Width; x++)
             {
                 var cell = run.Cells.GetCell(x, 0);
-                if (cell.IsCreature && cell.SpeciesId == hare) health.Add(cell.Health);
+                if (cell.IsCreature && cell.SpeciesId == rabbit) health.Add(cell.Health);
             }
             Assert.That(health, Is.EqualTo(new[] { 3, 3 }));
         }
@@ -194,7 +194,7 @@ namespace SaltyGame.Tests
             Assert.That(upgraded.CrowdingEnergyReduction, Is.EqualTo(0.5f));
 
             var legacyUpgrade = new SpeciesUpgrade(
-                "hare-rule-preservation-test",
+                "rabbit-rule-preservation-test",
                 cost: 0,
                 type: SpeciesUpgradeType.MovementSpeed,
                 value: 0.5f).Apply(rules);
@@ -286,7 +286,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void CoupledResponsesMapOnlyTheExperimentalHareFoxCatalog()
+        public void CoupledResponsesMapOnlyTheExperimentalRabbitFoxCatalog()
         {
             AssertCoupledResponse(SpeciesIds.Herbivore, SpeciesUpgradeCatalog.ToughHideId,
                 SpeciesIds.Carnivore, SpeciesUpgradeCatalog.PiercingBiteId);
@@ -306,10 +306,10 @@ namespace SaltyGame.Tests
                 SpeciesIds.Herbivore, SpeciesUpgradeCatalog.EfficientDigestionId);
             AssertCoupledResponse(SpeciesIds.Carnivore, SpeciesUpgradeCatalog.BroodDriveId,
                 SpeciesIds.Herbivore, SpeciesUpgradeCatalog.ReproductiveDriveId);
-            AssertCoupledResponse(new SpeciesId("hare"), SpeciesUpgradeCatalog.ToughHideId,
+            AssertCoupledResponse(new SpeciesId("rabbit"), SpeciesUpgradeCatalog.ToughHideId,
                 new SpeciesId("fox"), SpeciesUpgradeCatalog.PiercingBiteId);
             AssertCoupledResponse(new SpeciesId("fox"), SpeciesUpgradeCatalog.RelentlessPursuitId,
-                new SpeciesId("hare"), SpeciesUpgradeCatalog.ThreatExposureId);
+                new SpeciesId("rabbit"), SpeciesUpgradeCatalog.ThreatExposureId);
             Assert.That(SpeciesUpgradeCatalog.TryGetCoupledResponse(
                 SpeciesIds.Herbivore,
                 SpeciesUpgradeCatalog.KeenSensesId,
@@ -338,6 +338,9 @@ namespace SaltyGame.Tests
             Assert.That(
                 SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.LargerMaximumLitterId),
                 Is.EqualTo(SpeciesUpgradeCatalog.LargerMaximumLitterMaxLevel));
+            Assert.That(
+                SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.LargerMinimumLitterId),
+                Is.EqualTo(SpeciesUpgradeCatalog.LargerMinimumLitterMaxLevel));
         }
 
         [Test]
@@ -567,7 +570,7 @@ namespace SaltyGame.Tests
         {
             var progression = new SpeciesProgression(
                 new SpeciesDefinition(
-                    new SpeciesId("hare"),
+                    new SpeciesId("rabbit"),
                     CreateRules(movementSpeed: 1f, metabolism: 1, awareness: null)));
             var initialRules = progression.CurrentRules;
 
@@ -581,7 +584,7 @@ namespace SaltyGame.Tests
 
             var missingPrerequisite = CreateSnapshot(
                 "requires-base",
-                new SpeciesId("hare"),
+                new SpeciesId("rabbit"),
                 new SpeciesUpgradeModifier(SpeciesAttributeIds.MovementSpeed, 0.5f),
                 prerequisiteUpgradeIds: new[] { "base" });
             Assert.That(progression.TryApplyRunUpgrade(missingPrerequisite), Is.False);
@@ -589,13 +592,13 @@ namespace SaltyGame.Tests
 
             var baseUpgrade = CreateSnapshot(
                 "base",
-                new SpeciesId("hare"),
+                new SpeciesId("rabbit"),
                 new SpeciesUpgradeModifier(SpeciesAttributeIds.CrowdingTolerance, 1f));
             Assert.That(progression.TryApplyRunUpgrade(baseUpgrade), Is.True);
 
             var excludedByBase = CreateSnapshot(
                 "excluded-by-base",
-                new SpeciesId("hare"),
+                new SpeciesId("rabbit"),
                 new SpeciesUpgradeModifier(SpeciesAttributeIds.MovementSpeed, 0.5f),
                 excludedUpgradeIds: new[] { "base" });
             Assert.That(progression.TryApplyRunUpgrade(excludedByBase), Is.False);

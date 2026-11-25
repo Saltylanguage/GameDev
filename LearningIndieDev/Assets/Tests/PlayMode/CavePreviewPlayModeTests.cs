@@ -26,7 +26,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(runtime.SpeciesPreview.Run.Status, Is.EqualTo(SimulationRunStatus.Running));
             Assert.That(runtime.SpeciesPreview.SelectedScenario, Is.Not.Null);
             Assert.That(runtime.SpeciesPreview.SelectedScenario.name, Is.EqualTo("ForestEdge"));
-            Assert.That(runtime.SpeciesPreview.PlayerSpecies.Value, Is.EqualTo("hare"));
+            Assert.That(runtime.SpeciesPreview.PlayerSpecies.Value, Is.EqualTo("rabbit"));
 
             // The scene host now starts the canonical Forest Edge run on entry.
             // Reset because the remainder of this test exercises setup controls.

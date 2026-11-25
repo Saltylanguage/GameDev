@@ -69,7 +69,7 @@ research action.
 | Element | State and behavior |
 | --- | --- |
 | Persistent scientific-data bar | Shows Research, Plant, Herbivore, and Carnivore Data with text labels and numeric values. |
-| Profile summary | `Forest Edge study · Hare focus · Representative data` |
+| Profile summary | `Forest Edge study · Rabbit focus · Representative data` |
 | Last experiment summary | `No completed experiment in this fixture` with a clear empty state. |
 | `Open Research` | Enabled. Opens Research preview with the first project selected. |
 | `Species Archive` | Disabled and labeled `Prototype — later sprint`. |
@@ -114,7 +114,7 @@ the UI.
 
 | Project | Type | Cost | Prerequisite | State | Benefit preview |
 | --- | --- | --- | --- | --- | --- |
-| Forage Route Mapping | Herbivore research | 10 Research + 20 Herbivore | None | Available and affordable | Reveals a food-search route preview for the Hare study. |
+| Forage Route Mapping | Herbivore research | 10 Research + 20 Herbivore | None | Available and affordable | Reveals a food-search route preview for the Rabbit study. |
 | Predator Avoidance Field Notes | Herbivore research | 160 Research + 60 Herbivore | Forage Route Mapping | Locked and unaffordable | Reveals a predator-pressure observation overlay. |
 
 The locked project shows both reasons: the prerequisite is not completed and
@@ -148,7 +148,7 @@ order is retained at both target resolutions.
 +--------------------------------------------------------------------------------+
 | [Back] Lab Overview | Research 120 | Plant 36 | Herbivore 48 | Carnivore 12   |
 +--------------------------------------------------------------------------------+
-| Forest Edge study · Hare focus                 | NEXT RESEARCH                |
+| Forest Edge study · Rabbit focus                 | NEXT RESEARCH                |
 | Representative data                            | [ Open Research ]            |
 |                                                | Archive [Prototype]          |
 | Last experiment: none in this fixture          | Expedition [Prototype]       |
@@ -196,7 +196,7 @@ and the Lab content becomes a stacked layout:
 +------------------------------------------------------------------------+
 | [Back] Lab Overview   Research 120  Plant 36  Herbivore 48  Carnivore 12 |
 +------------------------------------------------------------------------+
-| Forest Edge study · Hare focus                                         |
+| Forest Edge study · Rabbit focus                                         |
 | Representative data                                                    |
 | Last experiment: none in this fixture                                  |
 |                                                                        |

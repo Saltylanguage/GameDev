@@ -627,7 +627,7 @@ namespace SaltyGame.EditorTools
         {
             if (role == SpeciesRole.Plant)
             {
-                DrawSectionLabel("ADDITIONAL SHARED STATS");
+                DrawSectionLabel("ADDITIONAL SRABBITD STATS");
                 DrawProperty(Find(serializedObject, "movementSpeed"), "Movement Speed");
                 DrawProperty(Find(serializedObject, "visionRange"), "Vision Range");
                 DrawProperty(Find(serializedObject, "maximumEnergy"), "Maximum Energy");
@@ -971,7 +971,7 @@ namespace SaltyGame.EditorTools
         Texture2D ResolveSpeciesIcon(string id, SpeciesRole role)
         {
             var searchKey = NormalizeIconKey(id);
-            if (searchKey == "hare")
+            if (searchKey == "rabbit")
             {
                 searchKey = "rabbit";
             }

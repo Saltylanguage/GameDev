@@ -74,7 +74,7 @@ The clean boundary is:
 - **Why it matters:** We could score the wrong outcome and still produce a result
   that looks official. The earlier `PREY` mix-up is the concrete example.
 - **Evidence:** [EX-007 analysis](../Research/Experiments/EX-007-Predictive-Statline-Interventions/AI_ANALYSIS.md)
-  records that `PREY` was first read as a food/resource event instead of Hare
+  records that `PREY` was first read as a food/resource event instead of Rabbit
   deaths caused by carnivores.
 - **Smallest mitigation:** Give each scored stat a stable name, plain-English
   meaning, unit, sign convention, time window, and contract version.

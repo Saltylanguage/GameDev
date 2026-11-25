@@ -21,7 +21,7 @@ The app opens with no command prompt and does not need Codex running.
 Start on **Set up & run**. **Load D5 example** fills a proposed 24-run setup:
 one automatic Gardeners strategy × six purchase policies × four matched seeds.
 It uses the existing local frozen confirmation snapshot and inspection settings
-(54×32 wrapped map, 325 Plants / 30 Hares / 15 Foxes, Hare vision 9, Fox starting
+(54×32 wrapped map, 325 Plants / 30 Rabbits / 15 Foxes, Rabbit vision 9, Fox starting
 energy 160). This is a reusable research example, not a production default or
 an automated recreation of Bevin's manual choices. It launches nothing.
 
@@ -31,8 +31,8 @@ an automated recreation of Bevin's manual choices. It launches nothing.
 2. On **Run settings**, review the name, owner, question, expectation and
    success/failure criteria. These record what you
    intend to learn; the app does not invent an ecology viability threshold.
-3. On **Scenario**, set starting Plant/Hare/Fox totals, grid, wrapping and ticks
-   per round. On **Choices**, select automatic Mutation strategies and Hare
+3. On **Scenario**, set starting Plant/Rabbit/Fox totals, grid, wrapping and ticks
+   per round. On **Choices**, select automatic Mutation strategies and Rabbit
    purchase policies; each has a description. Use **Compare values** for
    additional overrides or several values of the same setting. First seed,
    seeds per condition, workers, chunk size and timeout are on **Run settings**.
@@ -56,7 +56,7 @@ Automatic strategies are the existing Skip all / Trailblazer / Warren / Gardener
 research policies. They do not define a player role or model subjective play.
 Purchases are capped by the recorded wallet/rules, not guaranteed additions.
 Late five requests up to five at decision 5; restoration requests up to five
-toward the starting Hare total at each reached decision. Unreached windows and
+toward the starting Rabbit total at each reached decision. Unreached windows and
 blocked purchases stay explicit in the exported evidence.
 
 ## Build the test matrix interactively
@@ -76,21 +76,21 @@ to edit it, or **Remove selected** to remove that setting. Comparison values
 replace the corresponding single Scenario setting or optional D5 override.
 They do not modify the source snapshot or production assets.
 
-For example, Hare population `20, 30` and Fox starting energy `120, 160` create
+For example, Rabbit population `20, 30` and Fox starting energy `120, 160` create
 four setting variants. With four strategies, six purchase policies and four
 matched seeds, that requests **4 × 6 × 4 × 4 = 384 runs**. Each condition uses
 the same consecutive seed range. Changing a value immediately rebuilds the
 preview and invalidates any previous validation.
 
 Thirty-two runner-supported controls are available: starting populations, map
-width/height, Hare/Fox vision, starting/maximum energy, metabolism, movement
+width/height, Rabbit/Fox vision, starting/maximum energy, metabolism, movement
 speed, reproduction chance/food requirement/litter limits/gestation ticks, attack modifier and
-defense, Plant wilt/food energy, and Hare seed-drop chance. These are absolute
+defense, Plant wilt/food energy, and Rabbit seed-drop chance. These are absolute
 stat overrides; they are separate from Mutation choices or Genome allocations.
 The pinned runner checks the resolved rules before Run, including combinations
 whose energy/litter values would otherwise be normalized.
 
-To compare gestation, select **Hare gestation ticks** and enter `0, 12, 24, 48`,
+To compare gestation, select **Rabbit gestation ticks** and enter `0, 12, 24, 48`,
 then add **Fox gestation ticks** with `48` to hold Fox timing fixed. One value
 overrides a setting; multiple values compare it. Zero means immediate births.
 Positive values delay birth after conception; the carrying parent must survive
@@ -150,7 +150,7 @@ and diagnostics for inspection; no automatic deletion of saved runs occurs.
    files or a completed sweep's `sweep.json`. **Add sweep folder...** accepts a
    completed sweep or its experiment folder. Remove selected items if needed.
 2. Choose **Promising seeds** (default) or **Lowest seeds (legacy)** for review.
-   Set the final-horizon success floors: default **5 Hares / 5 Foxes / 100 Plants**.
+   Set the final-horizon success floors: default **5 Rabbits / 5 Foxes / 100 Plants**.
    These are editable export criteria, not simulation changes. Optionally enable
    **Customize examples, filters and checkpoint ticks**.
    Condition words filter readable condition names; seeds accept comma- or
@@ -172,8 +172,8 @@ The GUI uses the existing [worksheet exporter](CELLSIM_EXCEL_EXPORT.md); it does
 not recalculate ecology results or use AI to invent explanations. Zero, missing
 data and unreached checkpoints remain distinct, and human notes stay blank.
 The workbook opens on **Batch summary**, with experiment context, full matching
-run counts, goal/Hare-survival rates and 95% uncertainty ranges, median endpoint,
-mean endpoint populations, Hare births, purchases and decision-window access.
+run counts, goal/Rabbit-survival rates and 95% uncertainty ranges, median endpoint,
+mean endpoint populations, Rabbit births, purchases and decision-window access.
 Its **BatchSummary** table can drive condition-level pivots. A two-seed screen
 has wide uncertainty; confirm promising conditions on new seeds before tuning.
 **Choice impact** pairs the same seeds against matching Skip all Mutation and
@@ -258,7 +258,7 @@ Setup/run integration check (runs a small fixture batch, including stop/resume;
 use the existing neutral confirmation snapshot, not a production research batch):
 
 ```powershell
-$snapshot = (Resolve-Path .\artifacts\cellsim-hare-confirmation-20261008-143725\snapshot.json).Path
+$snapshot = (Resolve-Path .\artifacts\cellsim-rabbit-confirmation-20261008-143725\snapshot.json).Path
 $result = Join-Path (Split-Path $app) 'run-checks.json'
 Start-Process $app -ArgumentList @('--run-check', ('"' + $snapshot + '"'), ('"' + $result + '"')) -WindowStyle Hidden -Wait
 Get-Content $result
@@ -274,7 +274,7 @@ These are tooling checks, not ecology balance findings.
 
 ## Current scope and next additions
 
-The current setup supports the neutral Plant/Hare/Fox frozen scenario, thirty
+The current setup supports the neutral Plant/Rabbit/Fox frozen scenario, thirty
 explicit comparison controls and the existing six-round flow. Creating a fresh
 snapshot from Unity, other species, custom upgrade-level/Genome loadouts,
 arbitrary scientific axes/flat horizons, wider preset discovery and independent

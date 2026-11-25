@@ -47,7 +47,7 @@ Run from `LearningIndieDev`:
 # Optional purchase-by-purchase population-change explanations.
 .\CellSim.ps1 Excel -ReportPath .\artifacts\my-run\report.json -DetailedObservations
 
-# Rank promising seeds against an explicit final-horizon goal (Hares, Foxes, Plants).
+# Rank promising seeds against an explicit final-horizon goal (Rabbits, Foxes, Plants).
 .\CellSim.ps1 Excel -ReportPath .\artifacts\my-sweep `
     -ReviewSelection promising -SuccessFloors 5,5,100
 
@@ -73,7 +73,7 @@ settings that vary say so rather than showing one condition as universal.
 Unavailable legacy settings say Not recorded. Workbench experiment notes must
 match their frozen hash; they do not override the executed scientific arguments.
 
-The summary covers every matching run, including examples not displayed. Hare
+The summary covers every matching run, including examples not displayed. Rabbit
 and all-three-species survival each have a count and percentage at the stated
 horizon. Rates divide by all matching runs, including early extinctions. Missing
 required population/horizon data makes the affected count/rate Not recorded;
@@ -83,16 +83,16 @@ tick. Missing endpoint counts stay visible. A seed filter narrows this whole
 population, not just the example rows.
 
 The **BatchSummary** Excel table adds a final-horizon goal, success count/rate,
-95% uncertainty bounds, median endpoint tick, mean endpoint populations, Hare
-births, purchased Hares and access to recorded decision windows. The default
-goal is at least **5 Hares, 5 Foxes and 100 Plants** at the configured horizon.
+95% uncertainty bounds, median endpoint tick, mean endpoint populations, Rabbit
+births, purchased Rabbits and access to recorded decision windows. The default
+goal is at least **5 Rabbits, 5 Foxes and 100 Plants** at the configured horizon.
 Change those three floors on the export screen or with `-SuccessFloors`.
 These are review criteria inferred from Bevin's latest experiment notes;
 they do not change simulation rules or approve a production balance target.
 Missing numeric results stay blank, with unknown-outcome counts visible.
 Endpoint averages include early extinctions at their actual final ticks.
 
-Goal and Hare-survival uncertainty use the two-sided 95% Wilson interval
+Goal and Rabbit-survival uncertainty use the two-sided 95% Wilson interval
 described by [NIST](https://www.itl.nist.gov/div898/handbook/prc/section2/prc241.htm).
 Each condition's seeds are treated as independent trials. Conditions that share
 seeds are paired observations, not extra independent trials to pool together.
@@ -106,15 +106,15 @@ at the same purchase policy, and purchase policies against **No purchases**
 at the same Mutation policy. The source batch, other executed settings, horizon
 and seed must match. Controls may be outside a condition text filter; a seed
 filter applies to both arms. The **ChoiceImpact** table reports paired wins,
-losses, ties, goal-rate change, endpoint/Hare-population differences, recorded
+losses, ties, goal-rate change, endpoint/Rabbit-population differences, recorded
 non-skip choices and purchases. Missing or ambiguous controls and unknown
 outcomes remain explicit. These are descriptive comparisons, without a
 significance test or a claim that an automatic policy reproduces human play.
 
-For ecology autonomy, **Goal met with no purchased Hares** counts success with
+For ecology autonomy, **Goal met with no purchased Rabbits** counts success with
 known zero additions; it may include Mutations. **Unassisted goal met** applies
 only to Skip all / No purchases with a known purchase ledger. Decision-window
-access and Hare births help distinguish a run that supports continued play
+access and Rabbit births help distinguish a run that supports continued play
 from one ending before choices or reproduction occur. This is evidence for
 the recorded horizon; human enjoyment and longer-term stability require their
 own checks. A baseline with only Skip all / No purchases cannot establish the
@@ -126,13 +126,13 @@ choices and purchases, purchase limits, a short factual explanation, your notes,
 and source evidence. Each decision has its own line. Use the header filters and
 frozen seed column to compare runs while scrolling.
 
-Population order is **Hares / Foxes / Plants**. A phase's closing snapshot is used
+Population order is **Rabbits / Foxes / Plants**. A phase's closing snapshot is used
 before the next phase's reinforcement. The purchase ledger supplies the exact
-pre-purchase Hare count when available. Zero is a measured count; `Not recorded`
+pre-purchase Rabbit count when available. Zero is a measured count; `Not recorded`
 is missing evidence; `Not reached` means the run ended before that checkpoint.
 An early extinction retains all available endpoint populations.
 
-The concise default explanation reports the endpoint, highest recorded Hare
+The concise default explanation reports the endpoint, highest recorded Rabbit
 count and whole-run births/deaths when recorded. Choices, spending and purchase
 limits remain in their own columns. Enable **Include detailed purchase-by-purchase
 observations** under the Workbench's Customize settings, or pass
@@ -146,21 +146,21 @@ Mutation names follow the report; levels are not invented from a final loadout.
 Run review. Each run occupies one row in the named Excel table **RunData**.
 Headers are on the first row, with no merged cells or spacer rows. Seed,
 strategy, purchase policy and condition are separate fields. Initial, checkpoint
-and final Hare/Fox/Plant populations each have their own numeric column.
+and final Rabbit/Fox/Plant populations each have their own numeric column.
 `Run review row` identifies the corresponding readable row.
 Executed map dimensions/wrapping and each explicit species stat override also
 have individual numeric fields, so Workbench comparisons can become pivot
 fields directly. Omitted stat overrides stay blank: this export does not invent
 unrecorded baseline stat values from a condition label.
 
-Whole-run and per-round Hare herbivore and Fox predator slash-line fields are
+Whole-run and per-round Rabbit herbivore and Fox predator slash-line fields are
 exported individually, including counters, derived rates, reconciliation flags
-and source statuses. Prefixes such as `Run Hare herbivore APS` and
+and source statuses. Prefixes such as `Run Rabbit herbivore APS` and
 `Round 2 Fox predator KIL` identify the species, role and observation window.
 Round start/end ticks and opening/closing populations stay separate; an early
 extinction uses its actual observed window rather than implying a full round.
 Decisions also have separate chosen/offered mutation IDs, path levels, acquired
-upgrades and purchase ledger fields, including requested/added Hares, spending,
+upgrades and purchase ledger fields, including requested/added Rabbits, spending,
 balances and stop reasons. Final loadouts expose one count column per recorded
 upgrade. This is a wide table intended for selecting fields in pivots and charts;
 Run review remains the place to read a run from left to right.
@@ -178,10 +178,10 @@ To build a first pivot in Excel:
 1. Select any cell on **Run data**, then **Insert → PivotTable**. The source is
    the table **RunData**.
 2. Put **Strategy** in Rows and **Purchase policy** in Columns.
-3. Put **Hares alive at horizon (0/1)** in Values, choose **Average**, and format
-   it as a percentage. Or use **Final Hare population** as an average/count.
+3. Put **Rabbits alive at horizon (0/1)** in Values, choose **Average**, and format
+   it as a percentage. Or use **Final Rabbit population** as an average/count.
 4. For rate comparisons, filter the corresponding status to **Valid**; for
-   example average **Run Hare herbivore APS** with its status set to Valid.
+   example average **Run Rabbit herbivore APS** with its status set to Valid.
 5. Use **Insert → PivotChart** to visualize the pivot.
 
 These pivots cover the selected examples only (200 by default). They must not
@@ -195,7 +195,7 @@ are not generated or inferred; any existing captures can be linked in your notes
 
 By default at most **200 rows** are shown (configurable from 1 to 1,000). The
 default **Promising seeds** selection ranks goal success first, then success
-without purchased Hares, actual endpoint tick, final Hares/Foxes/Plants and
+without purchased Rabbits, actual endpoint tick, final Rabbits/Foxes/Plants and
 lowest seed. The first cell shows whether the goal was met or remained below
 the floors. Unknown goals rank below known outcomes. The ranking is an explicit
 review aid, not a claim that maximizing populations defines good balance.

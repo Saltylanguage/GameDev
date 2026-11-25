@@ -43,12 +43,12 @@ internal sealed partial class RunPage
         "trailblazer" => "Automatic choices between Faster Movement and Threat Exposure, favoring the lower-level path skill.",
         "warren" => "Automatic choices between Tough Hide and Crowding Tolerance, favoring the lower-level path skill.",
         "gardeners" => "Automatic choices between Efficient Digestion and Seed Dispersal, favoring the lower-level path skill.",
-        "none" => "Spend no Field Data on Hares.",
-        "late-five" => "Request up to five Hares only after round 5 (before the final round).",
-        "each-one" => "Request up to one Hare after each of rounds 1–5.",
-        "each-three" => "Request up to three Hares after each of rounds 1–5.",
-        "each-five" => "Request up to five Hares after each of rounds 1–5.",
-        "restore-toward-start" => "Request up to five Hares toward this condition's starting population at each decision. Request zero when already at or above it.", _ => ""
+        "none" => "Spend no Field Data on Rabbits.",
+        "late-five" => "Request up to five Rabbits only after round 5 (before the final round).",
+        "each-one" => "Request up to one Rabbit after each of rounds 1–5.",
+        "each-three" => "Request up to three Rabbits after each of rounds 1–5.",
+        "each-five" => "Request up to five Rabbits after each of rounds 1–5.",
+        "restore-toward-start" => "Request up to five Rabbits toward this condition's starting population at each decision. Request zero when already at or above it.", _ => ""
     };
     Label Description(string text)
     {
@@ -93,22 +93,22 @@ internal sealed partial class RunPage
         snapshot.ReadOnly = true; snapshot.Width = 320;
         var browse = Button("Choose snapshot..."); browse.Click += (_, _) => ChooseSnapshot();
         basics.Controls.Add(Flow(browse, snapshot)); basics.Controls.Add(snapshotDetails);
-        Explain(snapshot, "Neutral frozen Plant/Hare/Fox scenario exported from Unity. This file and its rules are copied into each validated experiment.");
-        basics.Controls.Add(Row("Starting Plants", plants, TextLabel("Hares"), hares, TextLabel("Foxes"), foxes));
+        Explain(snapshot, "Neutral frozen Plant/Rabbit/Fox scenario exported from Unity. This file and its rules are copied into each validated experiment.");
+        basics.Controls.Add(Row("Starting Plants", plants, TextLabel("Rabbits"), rabbits, TextLabel("Foxes"), foxes));
         basics.Controls.Add(Description("Placed at tick 0. Each animal/Plant occupies a cell; starting totals must fit every requested map."));
-        foreach (var control in new[] { plants, hares, foxes }) Explain(control, "Initial population. Use Compare values to test multiple totals with matched seeds.");
+        foreach (var control in new[] { plants, rabbits, foxes }) Explain(control, "Initial population. Use Compare values to test multiple totals with matched seeds.");
         basics.Controls.Add(Row("Map size", width, TextLabel("×"), height, wrap));
-        Explain(width, "Map columns (1–4096)."); Explain(height, "Map rows (1–4096)."); Explain(wrap, "When enabled, movement/perception can cross the map boundary to the opposite side.");
+        Explain(width, "Map columns (1–4096)."); Explain(height, "Map rows (1–4096)."); Explain(wrap, "Every map connects opposite edges for movement, perception, and interactions.");
         basics.Controls.Add(Description("Width × height determines available cells and population density. Wrapping connects opposite map edges."));
         Field(basics, "Ticks per round", phase, "Six rounds, with five Mutation/purchase decisions after rounds 1–5. Increasing this changes time between decisions and the final horizon.");
-        basics.Controls.Add(Flow(statOverrides)); basics.Controls.Add(Row("Hare vision", vision, TextLabel("Fox energy"), energy));
+        basics.Controls.Add(Flow(statOverrides)); basics.Controls.Add(Row("Rabbit vision", vision, TextLabel("Fox energy"), energy));
         basics.Controls.Add(Description("Optional D5 overrides. Leave unchecked to retain snapshot rules. Comparison values replace these when the same stat is selected."));
-        Explain(statOverrides, "Override only Hare vision and Fox starting energy; other species rules remain from the snapshot unless added in Compare values.");
-        Explain(vision, "Hare perception range in cells, applied only when the override checkbox is enabled."); Explain(energy, "Fox starting energy, applied only when the override checkbox is enabled.");
+        Explain(statOverrides, "Override only Rabbit vision and Fox starting energy; other species rules remain from the snapshot unless added in Compare values.");
+        Explain(vision, "Rabbit perception range in cells, applied only when the override checkbox is enabled."); Explain(energy, "Fox starting energy, applied only when the override checkbox is enabled.");
         var choices = Section("Choices", "Every selected strategy is tested against every selected purchase policy. The matrix updates immediately. These are scripted research policies.");
         choices.Controls.Add(TextLabel("MUTATION STRATEGIES"));
         foreach (var (id, check) in strategies) { choices.Controls.Add(check); choices.Controls.Add(Description(ChoiceDescription(id))); Explain(check, ChoiceDescription(id)); }
-        choices.Controls.Add(TextLabel("HARE PURCHASE POLICIES"));
+        choices.Controls.Add(TextLabel("RABBIT PURCHASE POLICIES"));
         foreach (var (id, check) in purchases) { choices.Controls.Add(check); choices.Controls.Add(Description(ChoiceDescription(id))); Explain(check, ChoiceDescription(id)); }
         choices.Controls.Add(Description("Purchases are limited by the recorded wallet, price and placement capacity. Requests are not guaranteed additions."));
         var comparisons = Section("Compare values", "Add one value to override a setting, or several to compare. All values are crossed with each other, every strategy, every purchase policy and the same seeds.");
@@ -143,7 +143,7 @@ internal sealed partial class RunPage
         comparisonGrid.Columns.Add("Values", "Values (comma separated)"); comparisonGrid.Columns[1].FillWeight = 42;
         comparisonGrid.CellValueChanged += (_, _) => Changed(); comparisonGrid.RowsRemoved += (_, _) => Changed();
         comparisons.Controls.Add(comparisonGrid);
-        comparisons.Controls.Add(Description("Example: Hare population 20, 30 × Fox energy 120, 160 creates four variants per strategy/purchase pairing. One value adds no extra conditions. Double-click a values cell to edit it."));
+        comparisons.Controls.Add(Description("Example: Rabbit population 20, 30 × Fox energy 120, 160 creates four variants per strategy/purchase pairing. One value adds no extra conditions. Double-click a values cell to edit it."));
         var execution = Section("Run settings", "Describe the experiment, choose matched seeds, and set how this computer executes the batch. Nothing runs until Validate setup succeeds and you click Run.");
         name.Width = owner.Width = question.Width = hypothesis.Width = success.Width = failure.Width = 330;
         foreach (var text in new[] { question, hypothesis, success, failure }) { text.Multiline = true; text.AutoSize = false; text.Height = 60; text.ScrollBars = ScrollBars.Vertical; }

@@ -481,7 +481,7 @@ internal static class Program
         incomeSteps = award.Income?.Steps.Select(step => new FieldDataReplayIncomeStep
         {
             instanceId = step.InstanceId, offerId = step.OfferId, operation = step.Operation.ToString(),
-            inputAmount = step.InputAmount, outputAmount = step.OutputAmount, population = step.HarePopulation,
+            inputAmount = step.InputAmount, outputAmount = step.OutputAmount, population = step.RabbitPopulation,
         }).ToArray() ?? Array.Empty<FieldDataReplayIncomeStep>(),
     };
 
@@ -729,7 +729,7 @@ internal static class Program
                 var species = snapshot.species.FirstOrDefault(s => s.id == stat.GetProperty("speciesId").GetString());
                 var role = name == "herbivoreStatLine" ? SpeciesRole.Herbivore : SpeciesRole.Carnivore;
                 // The legacy policy report also emits a predator stat line for a
-                // Hare. Its denominators are inapplicable; validate the real role.
+                // Rabbit. Its denominators are inapplicable; validate the real role.
                 if (species != null && species.rules.role == role && !stat.GetProperty("fpoReconciled").GetBoolean())
                     throw new InvalidDataException("Population accounting failed: " + name);
             }
@@ -746,7 +746,7 @@ internal static class Program
             {
                 int N(string key) => purchase.GetProperty(key).GetInt32();
                 if (N("phase") != ++phase || phase > 5 || N("decisionTick") >= run.GetProperty("ticks").GetInt32()
-                    || N("price") != SpeciesProgression.HarePurchaseCost || N("balanceBefore") != balance
+                    || N("price") != SpeciesProgression.RabbitPurchaseCost || N("balanceBefore") != balance
                     || N("earned") != N("populationBefore") || N("earned") <= 0
                     || N("added") < 0 || N("added") > N("requested") || N("requested") > 5
                     || N("spent") != N("added") * N("price")
@@ -755,7 +755,7 @@ internal static class Program
                     throw new InvalidDataException("Purchase ledger failed to reconcile.");
                 balance = N("balanceAfter"); added += N("added");
             }
-            var stat = run.GetProperty("herbivoreStatLines").EnumerateArray().Single(s => s.GetProperty("speciesId").GetString() == "hare");
+            var stat = run.GetProperty("herbivoreStatLines").EnumerateArray().Single(s => s.GetProperty("speciesId").GetString() == "rabbit");
             if (stat.GetProperty("ADD").GetInt32() != added)
                 throw new InvalidDataException("Purchase additions differ from population accounting.");
         }
@@ -872,6 +872,16 @@ internal static class Program
     static void SelfTest()
     {
         VerifyCarcassFeeding();
+        var shapeCells = new[] { new UnityEngine.Vector2Int(0, 1), new UnityEngine.Vector2Int(1, 1), new UnityEngine.Vector2Int(2, 1) };
+        var shape = new MapTopology(3, 3, shapeCells,
+            new[] { new MapBoundaryConnection(shapeCells[0], UnityEngine.Vector2Int.left, shapeCells[2]) }, "test-shape;seed=17");
+        var shapeData = new CellularSimData(3, 3, new Dictionary<SpeciesId, float>(), SpeciesRuleDefaults.Create(), 6f, .1f, topology: shape);
+        var shapeSnapshot = UnityEngine.JsonUtility.FromJson<PortableSnapshot>(UnityEngine.JsonUtility.ToJson(PortableSnapshot.Create(shapeData)));
+        var restoredShape = shapeSnapshot.Restore();
+        if (restoredShape.Topology.Fingerprint != shape.Fingerprint || !restoredShape.Topology.TryResolveOffset(0, 1, UnityEngine.Vector2Int.left, out var shapeTarget)
+            || shapeTarget.x != 2 || shapeTarget.y != 1 || restoredShape.Topology.IsPlayableCell(1, 0))
+            throw new Exception("Shape topology and generation-input snapshot round-trip failed.");
+        Console.WriteLine("PASS: shape cells, reciprocal seams, gaps and generation inputs survive portable JSON.");
         var gestationPattern = new GridPattern(new[] { UnityEngine.Vector2Int.left, UnityEngine.Vector2Int.right });
         var gestationRules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create());
         gestationRules[SpeciesIds.Carnivore] = new SpeciesRules(
@@ -945,32 +955,32 @@ internal static class Program
         var integral = b.RootElement.GetProperty("populationHistory").EnumerateArray().Skip(1)
             .Sum(sample => sample.GetProperty("species").EnumerateArray().First(s => s.GetProperty("speciesId").GetString() == "herbivore").GetProperty("population").GetInt64());
         if (trajectory.GetProperty("populationTickIntegral").GetInt64() != integral) throw new Exception("Trajectory exposure failed.");
-        var hare = new SpeciesId("hare"); var rules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create());
-        rules[hare] = rules[SpeciesIds.Herbivore];
+        var rabbit = new SpeciesId("rabbit"); var rules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create());
+        rules[rabbit] = rules[SpeciesIds.Herbivore];
         var policyData = new CellularSimData(8, 8, new Dictionary<SpeciesId, float>
-        { [SpeciesIds.Plant] = .3f, [hare] = .1f, [SpeciesIds.Carnivore] = .03f },
+        { [SpeciesIds.Plant] = .3f, [rabbit] = .1f, [SpeciesIds.Carnivore] = .03f },
             rules, 4f, .1f);
         var policySnapshot = PortableSnapshot.Create(policyData);
         using var policy = JsonDocument.Parse(RunPortableSeed(policySnapshot,
-            new[] { "-playerSpeciesId", "hare", "-phaseLengthTicks", "3", "-mutationPolicy", "trailblazer", "-experimentalFeatures", "bev-experimental" }, 42, false));
+            new[] { "-playerSpeciesId", "rabbit", "-phaseLengthTicks", "3", "-mutationPolicy", "trailblazer", "-experimentalFeatures", "bev-experimental" }, 42, false));
         ValidateRun(policy.RootElement, 42, policySnapshot);
         using var detailedPolicy = JsonDocument.Parse(RunPortableSeed(policySnapshot,
-            new[] { "-playerSpeciesId", "hare", "-phaseLengthTicks", "3", "-mutationPolicy", "trailblazer", "-experimentalFeatures", "bev-experimental" }, 42, true));
+            new[] { "-playerSpeciesId", "rabbit", "-phaseLengthTicks", "3", "-mutationPolicy", "trailblazer", "-experimentalFeatures", "bev-experimental" }, 42, true));
         Compare(policy.RootElement, detailedPolicy.RootElement, "mutation-policy", "42");
-        if (policy.RootElement.GetProperty("spatial").GetProperty("hareObservations").GetInt32() <= 0)
+        if (policy.RootElement.GetProperty("spatial").GetProperty("rabbitObservations").GetInt32() <= 0)
             throw new Exception("Mutation-policy spatial observations missing.");
-        var starting = new Dictionary<SpeciesId, int> { [hare] = 30, [SpeciesIds.Plant] = 0,
+        var starting = new Dictionary<SpeciesId, int> { [rabbit] = 30, [SpeciesIds.Plant] = 0,
             [SpeciesIds.Herbivore] = 0, [SpeciesIds.Carnivore] = 0 };
         var purchaseData = new CellularSimData(16, 16, policyData.StartingProbabilities, rules, 4f, .1f,
             startingPopulations: starting);
         var purchaseSnapshot = PortableSnapshot.Create(purchaseData);
-        var purchaseArguments = new[] { "-playerSpeciesId", "hare", "-phaseLengthTicks", "1",
+        var purchaseArguments = new[] { "-playerSpeciesId", "rabbit", "-phaseLengthTicks", "1",
             "-phaseUpgradeSchedule", "none;none;none;none;none;none", "-experimentalFeatures", "bev-experimental" };
         using var control = JsonDocument.Parse(RunPortableSeed(purchaseSnapshot, purchaseArguments, 42, false));
         foreach (var purchasePolicy in new[] { "none", "early-five", "middle-five", "late-five", "each-one",
             "each-three", "each-five", "restore-toward-start" })
         {
-            var input = purchaseArguments.Concat(new[] { "-harePurchasePolicy", purchasePolicy }).ToArray();
+            var input = purchaseArguments.Concat(new[] { "-rabbitPurchasePolicy", purchasePolicy }).ToArray();
             using var bought = JsonDocument.Parse(RunPortableSeed(purchaseSnapshot, input, 42, false));
             ValidateRun(bought.RootElement, 42, purchaseSnapshot);
             using var repeated = JsonDocument.Parse(RunPortableSeed(purchaseSnapshot, input, 42, true));
@@ -995,7 +1005,7 @@ internal static class Program
             maxPopulation: 30, startingPopulations: starting);
         var cappedSnapshot = PortableSnapshot.Create(cappedData);
         using var capped = JsonDocument.Parse(RunPortableSeed(cappedSnapshot,
-            purchaseArguments.Concat(new[] { "-harePurchasePolicy", "each-five" }).ToArray(), 42, false));
+            purchaseArguments.Concat(new[] { "-rabbitPurchasePolicy", "each-five" }).ToArray(), 42, false));
         ValidateRun(capped.RootElement, 42, cappedSnapshot);
         var firstWindow = capped.RootElement.GetProperty("purchaseWindows")[0];
         if (firstWindow.GetProperty("added").GetInt32() != 0 || firstWindow.GetProperty("spent").GetInt32() != 0
@@ -1004,19 +1014,19 @@ internal static class Program
         foreach (var invalid in new[] { "unknown", "" })
         {
             rejected = false;
-            try { RunPortableSeed(purchaseSnapshot, purchaseArguments.Concat(new[] { "-harePurchasePolicy", invalid }).ToArray(), 42, false); }
+            try { RunPortableSeed(purchaseSnapshot, purchaseArguments.Concat(new[] { "-rabbitPurchasePolicy", invalid }).ToArray(), 42, false); }
             catch (ArgumentException) { rejected = true; }
             if (!rejected) throw new Exception("Invalid purchase policy accepted.");
         }
         restored.width++; rejected = false;
         try { restored.Restore(); } catch (InvalidOperationException) { rejected = true; }
         if (!rejected) throw new Exception("Corrupt snapshot accepted.");
-        var hareResearch = new SpeciesId("hare");
-        var noResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(null, hareResearch);
-        var ownedGenome = new SpeciesGenomeProfile(hareResearch,
-            new[] { "hare.keen-hearing" }, Array.Empty<string>());
+        var rabbitResearch = new SpeciesId("rabbit");
+        var noResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(null, rabbitResearch);
+        var ownedGenome = new SpeciesGenomeProfile(rabbitResearch,
+            new[] { "rabbit.keen-hearing" }, Array.Empty<string>());
         var ownedProfile = new ProfileSessionSnapshot(true, "self-test", "Self test", new[] { ownedGenome });
-        var ownedResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(ownedProfile, hareResearch);
+        var ownedResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(ownedProfile, rabbitResearch);
         if (noResearch(SpeciesUpgradeCatalog.LongVisionId)
             || !ownedResearch(SpeciesUpgradeCatalog.LongVisionId)
             || !ownedResearch(SpeciesUpgradeCatalog.KeenSensesId)
@@ -1058,7 +1068,7 @@ internal static class Program
         if (!cells.GetCell(1, 0).IsMeatResource || cells.GetCell(1, 0).FoodReserve != 96f
             || metrics.GetActivity(SpeciesIds.Carnivore).FoodConsumed != 0f
             || metrics.GetActivity(SpeciesIds.Carnivore).CombatKills != 1)
-            throw new Exception("A lethal Hare attack did not leave a 96-energy carcass for later feeding.");
+            throw new Exception("A lethal Rabbit attack did not leave a 96-energy carcass for later feeding.");
 
         cells = SpeciesSimulation.Step(cells, rules, seed: 42, metrics: metrics);
         var foxActivity = metrics.GetActivity(SpeciesIds.Carnivore);
@@ -1067,7 +1077,7 @@ internal static class Program
             || cells.GetCell(2, 0).Energy != 96
             || foxActivity.FoodConsumed != 96f
             || foxActivity.FoodActionSuccesses != 2)
-            throw new Exception("Two Foxes did not share the Hare carcass up to their energy limits.");
+            throw new Exception("Two Foxes did not share the Rabbit carcass up to their energy limits.");
 
         for (var tick = 2; tick < 600; tick++)
         {
@@ -1077,31 +1087,31 @@ internal static class Program
         if (!cells.GetCell(0, 0).IsCreature || cells.GetCell(0, 0).Energy != 48
             || !cells.GetCell(2, 0).IsCreature || cells.GetCell(2, 0).Energy != 48)
             throw new Exception("Two Foxes did not spend exactly 48 energy across a 600-tick node.");
-        Console.WriteLine("PASS: one 96-energy Hare carcass feeds two Foxes through a 600-tick node.");
+        Console.WriteLine("PASS: one 96-energy Rabbit carcass feeds two Foxes through a 600-tick node.");
     }
 
     static void VerifyPortableBurrowDigest(Func<Grid<SpeciesCell>, string> surfaceDigest)
     {
-        var hare = new SpeciesId("hare");
+        var rabbit = new SpeciesId("rabbit");
         var fox = new SpeciesId("fox");
         var noMovement = new GridPattern(Array.Empty<UnityEngine.Vector2Int>());
-        var hareRules = new SpeciesRules(movementSpeed: 0f, movementPattern: noMovement,
+        var rabbitRules = new SpeciesRules(movementSpeed: 0f, movementPattern: noMovement,
             attackPattern: noMovement, attackAmount: 0, blockPattern: noMovement, blockAmount: 0,
             dietPattern: noMovement, dietTarget: null, reproductionPattern: noMovement,
             reproductionNeighborCount: 0, reproductionChance: 0f, reproductionFoodRequired: 1,
             metabolism: 0, role: SpeciesRole.Herbivore);
         var foxRules = new SpeciesRules(movementSpeed: 0f, movementPattern: noMovement,
             attackPattern: GridPatternTemplates.CreateMooreRange(1), attackAmount: 100,
-            blockPattern: noMovement, blockAmount: 0, dietPattern: noMovement, dietTarget: hare,
+            blockPattern: noMovement, blockAmount: 0, dietPattern: noMovement, dietTarget: rabbit,
             reproductionPattern: noMovement, reproductionNeighborCount: 0,
             reproductionChance: 0f, reproductionFoodRequired: 1, metabolism: 0,
             role: SpeciesRole.Carnivore);
         var cells = new Grid<SpeciesCell>(7, 7);
-        cells.SetCell(3, 3, new SpeciesCell(hare, energy: 48));
-        var run = new SimulationRunState(cells, hare, seed: 75, durationSeconds: 100f);
+        cells.SetCell(3, 3, new SpeciesCell(rabbit, energy: 48));
+        var run = new SimulationRunState(cells, rabbit, seed: 75, durationSeconds: 100f);
         run.ConfigureContinuousPhases(10);
-        var rules = new Dictionary<SpeciesId, SpeciesRules> { [hare] = hareRules, [fox] = foxRules };
-        var burrowing = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare,
+        var rules = new Dictionary<SpeciesId, SpeciesRules> { [rabbit] = rabbitRules, [fox] = foxRules };
+        var burrowing = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(rabbit,
                 Array.Empty<SpeciesUpgradeSnapshot>(), id => id == SpeciesUpgradeCatalog.BurrowingId)
             .Single(upgrade => upgrade.Id == SpeciesUpgradeCatalog.BurrowingId);
         var simulation = new SpeciesSimulationRunner(run, rules, 0.1f,
@@ -1109,28 +1119,28 @@ internal static class Program
 
         if (!simulation.AdvanceOneTick()) throw new Exception("Burrowing digest fixture could not dig.");
         run.Cells.SetCell(4, 3, new SpeciesCell(fox, energy: 100));
-        if (!simulation.AdvanceOneTick() || run.HiddenHareCount != 1)
-            throw new Exception("Burrowing digest fixture could not hide the Hare.");
+        if (!simulation.AdvanceOneTick() || run.HiddenRabbitCount != 1)
+            throw new Exception("Burrowing digest fixture could not hide the Rabbit.");
 
-        var surfaceOnly = new SimulationRunState(run.Cells.Copy(), hare, seed: 75, durationSeconds: 100f);
+        var surfaceOnly = new SimulationRunState(run.Cells.Copy(), rabbit, seed: 75, durationSeconds: 100f);
         if (surfaceDigest(run.Cells) != surfaceDigest(surfaceOnly.Cells))
             throw new Exception("Burrowing digest fixture did not preserve identical visible boards.");
         if (PortableRunStateDigest(run) == PortableRunStateDigest(surfaceOnly))
-            throw new Exception("Portable run digest omitted hidden Hare and Burrow state.");
-        Console.WriteLine("PASS: portable run digest distinguishes identical surface boards with hidden Hare and Burrow state.");
+            throw new Exception("Portable run digest omitted hidden Rabbit and Burrow state.");
+        Console.WriteLine("PASS: portable run digest distinguishes identical surface boards with hidden Rabbit and Burrow state.");
     }
 
     static void RunJourneyReplaySelfTest()
     {
         var rules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create());
-        var hare = new SpeciesId("hare");
+        var rabbit = new SpeciesId("rabbit");
         var cardinals = SpeciesRuleDefaults.CreateCardinalPattern();
-        rules[hare] = new SpeciesRules(0, cardinals, cardinals, 0, cardinals, 0, cardinals, null,
+        rules[rabbit] = new SpeciesRules(0, cardinals, cardinals, 0, cardinals, 0, cardinals, null,
             cardinals, 0, reproductionChance: 0, startingEnergy: 500, metabolism: 0,
             role: SpeciesRole.Herbivore, maximumEnergy: 500);
         var probabilities = new Dictionary<SpeciesId, float>();
         var populations = new Dictionary<SpeciesId, int>
-        { [hare] = 20, [SpeciesIds.Plant] = 0, [SpeciesIds.Herbivore] = 0, [SpeciesIds.Carnivore] = 0 };
+        { [rabbit] = 20, [SpeciesIds.Plant] = 0, [SpeciesIds.Herbivore] = 0, [SpeciesIds.Carnivore] = 0 };
         var data = new CellularSimData(16, 16, probabilities, rules, 20f, .2f,
             startingPopulations: populations);
         var route = new[]
@@ -1143,8 +1153,8 @@ internal static class Program
         };
         var controls = new[]
         {
-            new FieldDataPopulationControl("add-hares", "hare", 1, 10),
-            new FieldDataPopulationControl("remove-hares", "hare", -1, 10),
+            new FieldDataPopulationControl("add-rabbits", "rabbit", 1, 10),
+            new FieldDataPopulationControl("remove-rabbits", "rabbit", -1, 10),
             new FieldDataPopulationControl("add-foxes", "carnivore", 1, 10),
             new FieldDataPopulationControl("remove-foxes", "carnivore", -1, 10),
             new FieldDataPopulationControl("add-plants", "plant", 5, 10),
@@ -1152,7 +1162,7 @@ internal static class Program
         };
         var income = new[]
         {
-            new FieldDataIncomeOffer("flat-hare", "+1 FD per Hare", FieldDataIncomeOperation.AddPerHare, 1m,
+            new FieldDataIncomeOffer("flat-rabbit", "+1 FD per Rabbit", FieldDataIncomeOperation.AddPerRabbit, 1m,
                 FieldDataIncomeSource.Shop, 1, 20),
             new FieldDataIncomeOffer("multiply-1-5", "×1.5 payout", FieldDataIncomeOperation.MultiplyPopulationPayout, 1.5m,
                 FieldDataIncomeSource.Shop, 1, 30),
@@ -1161,13 +1171,13 @@ internal static class Program
             new FieldDataIncomeOffer("multiply-2", "×2 payout", FieldDataIncomeOperation.MultiplyPopulationPayout, 2m,
                 FieldDataIncomeSource.Shop, 2, 50),
         };
-        var definition = new FieldDataJourneyDefinition("portable-self-test", "self-test", "hare", route,
+        var definition = new FieldDataJourneyDefinition("portable-self-test", "self-test", "rabbit", route,
             controls, income, Array.Empty<FieldDataSignedSpeciesOffer>(), new FieldDataReorderPricing(10, 11, 10, 10));
         var portable = PortableSnapshot.Create(data);
         portable.sourceCommit = "self-test";
-        portable.arguments = new[] { "-playerSpeciesId", "hare", "-runTicks", "1800" };
+        portable.arguments = new[] { "-playerSpeciesId", "rabbit", "-runTicks", "1800" };
         if (!SaltyGame.EditorTools.CellularSimulationExperimentRunner.PortableExperimentalOptions(
-                new[] { "-playerSpeciesId", "hare", "-experimentalFeatures", "bev-experimental" }).UsesSpeciesStatLines)
+                new[] { "-playerSpeciesId", "rabbit", "-experimentalFeatures", "bev-experimental" }).UsesSpeciesStatLines)
             throw new Exception("Portable journey omitted exported experimental features.");
         portable.fieldDataDefinition = FieldDataPortableDefinition.Create(definition);
         portable.sourceHash = PortableSourceHash(relative =>
@@ -1194,11 +1204,11 @@ internal static class Program
                 exitSuccessfulResults = true,
                 actions = new[]
                 {
-                    new FieldDataReplayAction { tick = 100, type = "population", requestId = "before-reward-resolved", controlKind = "AddHare" },
+                    new FieldDataReplayAction { tick = 100, type = "population", requestId = "before-reward-resolved", controlKind = "AddRabbit" },
                     new FieldDataReplayAction { tick = 100, type = "resolve-choice", choiceId = "skip", humanDecisionTimeMilliseconds = 247 },
                     new FieldDataReplayAction { tick = 700, type = "resolve-choice", choiceId = "skip" },
-                    new FieldDataReplayAction { tick = 700, type = "population", requestId = "buy-hare-1", controlKind = "AddHare" },
-                    new FieldDataReplayAction { tick = 701, type = "population", requestId = "off-boundary", controlKind = "AddHare" },
+                    new FieldDataReplayAction { tick = 700, type = "population", requestId = "buy-rabbit-1", controlKind = "AddRabbit" },
+                    new FieldDataReplayAction { tick = 701, type = "population", requestId = "off-boundary", controlKind = "AddRabbit" },
                 },
             };
             File.WriteAllText(actionPath, JsonSerializer.Serialize(schedule, Json));
@@ -1240,7 +1250,7 @@ internal static class Program
                 throw new Exception("Field Data journey replay was not deterministic for identical frozen inputs.");
             var boundary800 = output.GetProperty("boundaries").EnumerateArray()
                 .Single(boundary => boundary.GetProperty("tick").GetInt32() == 800);
-            if (boundary800.GetProperty("populations").GetProperty("hare").GetInt32() != 21)
+            if (boundary800.GetProperty("populations").GetProperty("rabbit").GetInt32() != 21)
                 throw new Exception("A successful replay intervention did not change the next board boundary.");
             portable.fieldDataDefinition = FieldDataPortableDefinition.Create(definition.WithSimulationCount(4));
             File.WriteAllText(snapshotPath, JsonSerializer.Serialize(portable, Json));
@@ -1251,7 +1261,7 @@ internal static class Program
                 actions = new[]
                 {
                     new FieldDataReplayAction { tick = 600, type = "resolve-choice", choiceId = "skip" },
-                    new FieldDataReplayAction { tick = 600, type = "shop-offer", requestId = "long-plus", offerId = "flat-hare" },
+                    new FieldDataReplayAction { tick = 600, type = "shop-offer", requestId = "long-plus", offerId = "flat-rabbit" },
                     new FieldDataReplayAction { tick = 600, type = "shop-offer", requestId = "long-tier-15", offerId = "multiply-1-5" },
                     new FieldDataReplayAction { tick = 600, type = "shop-offer", requestId = "long-repeat-15", offerId = "multiply-1-5" },
                     new FieldDataReplayAction { tick = 600, type = "shop-offer", requestId = "long-tier-175-early", offerId = "multiply-1-75" },

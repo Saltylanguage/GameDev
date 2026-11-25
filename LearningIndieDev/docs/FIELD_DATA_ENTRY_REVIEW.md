@@ -41,7 +41,7 @@ definition and switches the active route presentation to its five nodes.
 
 Use an explicit selection method on the preview/helper composition before
 constructing the Field Data session. The definition's stable identity selects
-the mode; scenario `ForestEdge` plus player species `hare` is not sufficient,
+the mode; scenario `ForestEdge` plus player species `rabbit` is not sufficient,
 because the old map uses that same pair. Do not infer the mode from asset names,
 scene names, map rows or the mere presence of a configured definition.
 
@@ -60,7 +60,7 @@ button, asset or runtime behavior has been implemented by this document.
 | Current source | Observed behavior | Consequence for the selected route |
 | --- | --- | --- |
 | [Desktop host](../Assets/UI/GalapagOS/Scripts/GalapagOSDesktopNoesisHost.cs) | Binds the Desktop Simulation launcher, captures active-profile launch inputs, and opens the map when the preview is journey-ready | Keep this canonical entry and its profile failure recovery; add route selection inside the map |
-| [Launch request](../Assets/Scripts/Game/Simulation/SimulationLaunchRequest.cs) and [default setup](../Assets/UI/Lab/VM_ExpeditionSetup.cs) | Launch data includes profile/scenario/species/seed and frozen Genome; defaults are ForestEdge/Hare/10100 | Keep those defaults for development; a route definition needs an explicit additional composition/selection seam |
+| [Launch request](../Assets/Scripts/Game/Simulation/SimulationLaunchRequest.cs) and [default setup](../Assets/UI/Lab/VM_ExpeditionSetup.cs) | Launch data includes profile/scenario/species/seed and frozen Genome; defaults are ForestEdge/Rabbit/10100 | Keep those defaults for development; a route definition needs an explicit additional composition/selection seam |
 | [Preview](../Assets/Scripts/Game/Presentation/SpeciesSimulationPreview.cs) | Current journey has two six-round cycles; node eligibility assumes reward row 0, simulation row 1, condition row 2 and simulation row 3 | A different map asset alone cannot run the five-node route; new-mode commands delegate to the Field Data session and leave the legacy branches intact |
 | [Map asset](../Assets/Scripts/Game/Simulation/JourneyMapAsset.cs) | Applies by scenario/species and owns node layout/connectivity; no Field Data definition exists | Preserve the large map's layout/identity; use an explicit selected definition to distinguish modes |
 | [Node kinds](../Assets/Scripts/Game/Simulation/JourneyNodeAsset.cs) | Serialized kinds are Simulation=0 through Reward=5; no Shop exists | Append Shop=6 when needed; do not reorder existing values or reinterpret Condition as Shop |
@@ -72,10 +72,10 @@ button, asset or runtime behavior has been implemented by this document.
 This source review records the current authored inputs; it does not approve
 their balance or freeze the later 200-seed panel.
 
-- Scenario: [ProductionData ForestEdge](../Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset), 36 x 20, starting Plant 400 / Hare 55 / Fox 35.
-- Scenario species references resolve to [plant](../Assets/Data/TestData/plant.asset), [hare](../Assets/Data/ProductionData/CellularSimulation/Species/hare.asset) and [fox](../Assets/Data/ProductionData/CellularSimulation/Species/fox.asset) through their actual asset GUIDs. The Plant input is currently under TestData; do not rename, relocate or replace it as part of FD-T01.
+- Scenario: [ProductionData ForestEdge](../Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset), 36 x 20, starting Plant 400 / Rabbit 55 / Fox 35.
+- Scenario species references resolve to [plant](../Assets/Data/TestData/plant.asset), [rabbit](../Assets/Data/ProductionData/CellularSimulation/Species/rabbit.asset) and [fox](../Assets/Data/ProductionData/CellularSimulation/Species/fox.asset) through their actual asset GUIDs. The Plant input is currently under TestData; do not rename, relocate or replace it as part of FD-T01.
 - Default launch seed: 10100. Use the existing frozen active-profile Genome snapshot; this review invents no approved Genome configuration for the later comparison.
-- Development source baseline: `acc371ac84aa01476e562e9b29e3e441263b8f2e`; the latest commit touching this scenario/Hare/Fox asset set is `3086bfb`.
+- Development source baseline: `acc371ac84aa01476e562e9b29e3e441263b8f2e`; the latest commit touching this scenario/Rabbit/Fox asset set is `3086bfb`.
 - Local SHA-256 source/input manifest: `artifacts/fd-t01-entry-20261016/source-baseline.json`. It records inspected source and input bytes, not the complete resolved runtime configuration.
 - FD-T15 must freeze the then-current source revision, resolved scenario/rules/options/Genome, definition and actual 200 seeds before matched comparisons. The development reference above is not evidence from those runs.
 
@@ -86,7 +86,7 @@ their balance or freeze the later 200-seed panel.
 | Larger map | Retain all existing nodes, edges, placements, panorama/scroll/hover behavior and its older route. Selecting the test is explicit; merely viewing the map grants no rewards |
 | Standalone path | No selected Field Data definition preserves existing six-round behavior and public APIs; retain ordinary Mutation caps and historical report meanings |
 | World continuity | Test shops hold the same runner/board/history at ticks 600/1,200; no new grid, seed reset, cooldown reset or second wallet |
-| Economy | FD starts at 0; approved rewards, six interventions, ordered income and signed Hare effects remain journey-local; permanent wallets/Genome purchases and ecology corrections are separate |
+| Economy | FD starts at 0; approved rewards, six interventions, ordered income and signed Rabbit effects remain journey-local; permanent wallets/Genome purchases and ecology corrections are separate |
 | Profile | Preserve banked currency, unlocks and feature availability; retain independent playtime/tick accounting and the frozen participating-species Genome input |
 | Evidence | Existing tests are regression references, not newly passed tests. New route tests must exercise explicit selection, reject invalid definitions, and prove that reopening the larger map does not reset or settle a run |
 

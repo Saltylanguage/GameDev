@@ -45,6 +45,62 @@ readiness. Retained XML/logs: `artifacts/unity-tests-20261114-111056/` (local,
 ignored). This baseline is not an S6 kickoff, a balance decision, or player
 acceptance.
 
+## November 18 cozy individual-led simulation direction
+
+Josh selected the low-population, character-led direction as the current design
+target, accepting the added architecture risk. Fox overhunting remains the
+opening pressure, and avoidance, survival, and faster reproduction remain the
+species-level responses. Rabbits and Foxes act autonomously; the player makes
+indirect choices and inspects animals, tiles, and other entities for useful
+state and event information. Direct control of individual animals is out of
+scope for this direction.
+
+For the played Hare species, a survivor keeps its identity, individual state,
+and event history across the run's simulation nodes. New Rabbits have their own
+identities and may inherit a tunable share of parental stats and event-derived
+effects. The exact inheritance rule and which effects can be inherited remain
+open. This supersedes the November 10 count-only Hare carryover rule as the
+design target; Fox and other nonplayed-species persistence is unchanged unless
+separately decided.
+
+The Rabbit life cycle is an observable sequence: reach breeding eligibility,
+encounter a suitable mate, mate successfully, produce a litter, and see offspring
+survive and mature. Rabbit inspection includes contextual goals across three
+scopes: individual goals (for example, reach speed 5), lineage goals (at least
+five living Rabbits in the lineage), and run goals (for example, acquire the
+Burrow Mutation). Goals should guide players toward viable strategies without
+requiring one specific Mutation or issuing commands to the animal.
+
+An intelligent event-tracking and presentation system, with useful tile and
+animal inspection, is necessary work for this direction. It should connect
+events to affected animals, life stages, lineages, goal progress, and visible
+outcomes in an engaging and visually appealing way. Its data model, inheritance
+details, goal lifecycle, and presentation are still open design work.
+
+This direction supersedes the November 14 deferral of individual-state
+persistence and focused inspection/goals as design requirements, and reopens
+the earlier exclusion of major simulation and UI work. It does not silently
+add implementation tasks to the existing S6 estimate: revise the sprint scope
+and capacity before scheduling the work.
+
+## November 19 first-pass Rabbit population ceiling and crowding
+
+Josh set the initial cozy population values to 3 Rabbits and 2 Foxes, with a
+hard Rabbit ceiling of 15. The ceiling includes living Rabbits, hidden burrow
+occupants, and pending litter reserved for birth. Rabbit population purchases,
+starting counts, and reproduction must respect that ceiling. The overall
+`maxPopulation` remains disabled so the Rabbit limit does not cap Plants.
+
+For capped species, the crowding metabolism surcharge scales with current living
+population divided by the species ceiling. With the current multiplier of 2,
+the Rabbit surcharge starts at 20% of its maximum at 3/15 and reaches 100% at
+15/15. Uncapped species retain the existing local-group crowding rule. The
+first-pass authored setup also uses a 34×19 map and 600 ticks; Rabbit starts
+with 24 energy, 2 health, and 9 vision, while Fox attack is 1 and vision is 8.
+The Fox energy values remain 48 starting / 96 maximum, with 2 energy lost per
+25 ticks and a forage threshold of 72. These are test inputs, not measured
+survival or death-rate targets; no balance result has been collected for them.
+
 ## November 9 predator-first design decision
 
 Josh selected **Fox overhunting of Hares** as the introductory scenario's primary, immediately understandable pressure. Plant overgrazing may remain a gentle background pressure, but it must not obscure the opening problem or make food renewal the only viable answer. Use the existing Hare/Fox matchup before considering another predator species or terrain system.

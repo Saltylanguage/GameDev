@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a3f0c4b7e1469aa51f2c6d8e9b3041, type: 3}
   m_Name: LargerLitters
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
-  upgradeId: poc.hare.larger-litters
+  upgradeId: poc.rabbit.larger-litters
   displayName: Larger Litters
   description: 'POC: maximum litter size +1. Provisional test value, not balanced.'
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   prerequisiteNodeIds:
-  - poc.hare.tough-hide
+  - poc.rabbit.tough-hide
   rabbitDataPrice: 1
   capacityPoints: 1
   branchName: Warren

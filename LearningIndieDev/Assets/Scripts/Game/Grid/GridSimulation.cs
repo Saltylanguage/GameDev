@@ -16,7 +16,10 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(nextCell));
             }
 
-            return new Grid<T>(source.Width, source.Height, (x, y) => nextCell(source, x, y), source.WrapEdges);
+            var next = new Grid<T>(source.Width, source.Height, source.Topology);
+            foreach (var position in source.Topology.PlayableCoordinates)
+                next.SetCell(position.x, position.y, nextCell(source, position.x, position.y));
+            return next;
         }
     }
 }

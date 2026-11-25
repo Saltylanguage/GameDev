@@ -5,7 +5,7 @@ namespace SaltyGame
 {
     public sealed class SpeciesProgression
     {
-        public const int HarePurchaseCost = 10;
+        public const int RabbitPurchaseCost = 10;
 
         readonly Dictionary<string, int> purchasedUpgradeLevels =
             new Dictionary<string, int>(StringComparer.Ordinal);
@@ -13,15 +13,20 @@ namespace SaltyGame
         readonly List<SpeciesUpgradeSnapshot> appliedRunUpgrades =
             new List<SpeciesUpgradeSnapshot>();
         readonly Func<string, bool> mutationResearch;
-        readonly bool introductoryHareMutations;
+        readonly Func<string, int> mutationRankLimit;
+        readonly Func<string, bool> mutationEquipment;
+        readonly bool introductoryRabbitMutations;
 
         public SpeciesProgression(SpeciesDefinition definition, Func<string, bool> mutationResearch = null,
-            bool usesGeneLabResearch = false, bool introductoryHareMutations = false)
+            bool usesGeneLabResearch = false, Func<string, int> mutationRankLimit = null,
+            Func<string, bool> mutationEquipment = null, bool introductoryRabbitMutations = false)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
             CurrentRules = definition.Rules;
             this.mutationResearch = mutationResearch;
-            this.introductoryHareMutations = introductoryHareMutations;
+            this.mutationRankLimit = mutationRankLimit;
+            this.mutationEquipment = mutationEquipment;
+            this.introductoryRabbitMutations = introductoryRabbitMutations;
             UsesGeneLabResearch = usesGeneLabResearch && mutationResearch != null;
         }
 
@@ -34,8 +39,10 @@ namespace SaltyGame
         public IReadOnlyList<SpeciesUpgradeSnapshot> AppliedRunUpgrades => appliedRunUpgrades.AsReadOnly();
         public bool UsesGeneLabResearch { get; }
         public bool IsMutationResearched(string id) => mutationResearch == null || mutationResearch(id);
-        public bool HasMutationAccess(string id) => IsMutationResearched(id)
-            || (introductoryHareMutations && Definition.Id.Value == "hare"
+        public bool IsMutationAvailable(string id) => IsMutationResearched(id)
+            && (!UsesGeneLabResearch || mutationEquipment != null && mutationEquipment(id));
+        public bool HasMutationAccess(string id) => IsMutationAvailable(id)
+            || (introductoryRabbitMutations && Definition.Id.Value == "rabbit"
                 && (id == SpeciesUpgradeCatalog.ThreatExposureId
                     || id == SpeciesUpgradeCatalog.ToughHideId
                     || id == SpeciesUpgradeCatalog.ReproductiveDriveId));
@@ -109,7 +116,6 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
-            // Reproduction chance is clamped during application; tolerate float accumulation at 1.
             return HasMutationAccess(upgrade.Id)
                 && GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id)
                 && (upgrade.Type != SpeciesUpgradeType.ReproductionChance
@@ -177,8 +183,11 @@ namespace SaltyGame
                 || !CanApplyBurrowMutation(upgrade.Id, hasStarterBurrowing)) return false;
             if (upgrade.Id == SpeciesUpgradeCatalog.ReproductiveDriveId && CurrentRules.ReproductionChance >= 1f)
                 return false;
-            return TryApplyRunUpgrade(upgrade, upgrade == null ? 1
-                : SpeciesUpgradeCatalog.GetFieldDataRewardMaxLevel(Definition.Id, upgrade.Id));
+            var levelLimit = upgrade == null ? 1
+                : SpeciesUpgradeCatalog.GetFieldDataRewardMaxLevel(Definition.Id, upgrade.Id);
+            if (UsesGeneLabResearch && mutationRankLimit != null)
+                levelLimit = Math.Min(levelLimit, Math.Max(0, mutationRankLimit(upgrade.Id)));
+            return TryApplyRunUpgrade(upgrade, levelLimit);
         }
 
         bool TryApplyRunUpgrade(SpeciesUpgradeSnapshot upgrade, int levelLimit)
@@ -229,6 +238,26 @@ namespace SaltyGame
 
         SpeciesUpgradeSnapshot CreateRankedMutationSnapshot(SpeciesUpgradeSnapshot upgrade, int level)
         {
+            if (upgrade.Id == SpeciesUpgradeCatalog.FasterGestationId)
+            {
+                var baselineTicks = Definition.Rules.GestationTicks;
+                var adjustedTicks = SpeciesUpgradeCatalog.GetGestationTicksAfterReduction(baselineTicks, level);
+                var delta = adjustedTicks - CurrentRules.GestationTicks;
+                var gestationModifiers = delta == 0
+                    ? Array.Empty<SpeciesUpgradeModifier>()
+                    : new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.GestationTicks, delta) };
+                return new SpeciesUpgradeSnapshot(
+                    upgrade.Id,
+                    upgrade.DisplayName,
+                    upgrade.Description,
+                    upgrade.TargetSpecies,
+                    upgrade.Cost,
+                    gestationModifiers,
+                    upgrade.PrerequisiteUpgradeIds,
+                    upgrade.ExcludedUpgradeIds,
+                    upgrade.PopulationToAdd,
+                    upgrade.PreContactAvoidanceChanceBonus);
+            }
             if (upgrade.Id != SpeciesUpgradeCatalog.LargerMaximumLitterId
                 || level != SpeciesUpgradeCatalog.LargerMaximumLitterMaxLevel
                 || CurrentRules.LitterMinimum >= 2)

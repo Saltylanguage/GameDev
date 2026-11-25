@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a3f0c4b7e1469aa51f2c6d8e9b3041, type: 3}
   m_Name: StartingPopulation
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
-  upgradeId: poc.hare.starting-population
-  displayName: Founding Hares
-  description: +5 Hares at the start of a new journey. A larger colony consumes more
+  upgradeId: poc.rabbit.starting-population
+  displayName: Founding Rabbits
+  description: +5 Rabbits at the start of a new journey. A larger colony consumes more
     food. Does not refill each round.
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   prerequisiteNodeIds: []
   rabbitDataPrice: 5
   capacityPoints: 1

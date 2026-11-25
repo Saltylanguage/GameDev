@@ -127,7 +127,7 @@ namespace SaltyGame.EditorTests
         static FieldDataSpeciesEffectInstance Effect(string id, string family, string attribute, float amount)
         {
             return new FieldDataSpeciesEffectInstance(id,
-                new FieldDataSignedSpeciesOffer(id, family, "hare", attribute, amount, 30, 1));
+                new FieldDataSignedSpeciesOffer(id, family, "rabbit", attribute, amount, 30, 1));
         }
     }
 }

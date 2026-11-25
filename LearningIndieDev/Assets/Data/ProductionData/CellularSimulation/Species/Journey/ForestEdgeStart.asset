@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: forest-edge-start
   displayName: CREEK BEND
-  description: Begin beside the water. Choose one Hare Mutation before the first
+  description: Begin beside the water. Choose one Rabbit Mutation before the first
     cycle.
   kind: 5
   row: 0

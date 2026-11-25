@@ -126,7 +126,7 @@ future confirmation overlay must use explicit End semantics.
 - Main Menu and GalapagOS Desktop use separate scenes and explicit scene-transition helpers. The legacy Lab scene remains available for isolated developer/test coverage.
 - Main Menu contains Profile Selection, Continue, and Quit. Profile Selection is the first-launch path; Continue loads the GalapagOS Desktop with the last loaded profile and is disabled when none exists.
 - Main Menu and Desktop use explicit `Single` scene loads. The desktop-hosted simulation uses a local camera/view composition and returns to the desktop surface after its results action; the standalone Simulation scene remains available for the legacy Lab route.
-- **P1-032, active first S4 task:** replace the Desktop-hosted local Forest Edge/Hare preview start with an active-profile launch using current defaults (Forest Edge, Hare, seed 10100) and the immutable `SimulationLaunchRequest`. Josh owns the accepted 6h task; Sim reviews launch inputs. Missing or invalid profile context must fail closed with visible recovery to profile selection. No new setup-choice screen, profile persistence, or reward settlement is included. S4 started on 2026-10-01.
+- **P1-032, active first S4 task:** replace the Desktop-hosted local Forest Edge/Rabbit preview start with an active-profile launch using current defaults (Forest Edge, Rabbit, seed 10100) and the immutable `SimulationLaunchRequest`. Josh owns the accepted 6h task; Sim reviews launch inputs. Missing or invalid profile context must fail closed with visible recovery to profile selection. No new setup-choice screen, profile persistence, or reward settlement is included. S4 started on 2026-10-01.
 - Use explicit screen state and Noesis visual states for local overlays and polish; do not introduce a general navigation framework for this flow.
 - The cellular simulation remains a separate scene and domain boundary.
 - UI ViewModels expose presentation-ready values and explicit commands. XAML does not read simulation assets, `PlayerPrefs`, or mutable domain state directly.
@@ -159,7 +159,7 @@ future confirmation overlay must use explicit End semantics.
 - A representative purchase preview identifies every currency cost and resulting
   unlock without changing fake balances.
 - Species Archive distinguishes permanent Genome state from species mastery.
-- Expedition Setup demonstrates Forest Edge + Hare and summarizes the selected run.
+- Expedition Setup demonstrates Forest Edge + Rabbit and summarizes the selected run.
 - Placeholder balances, nodes, and mastery values are visibly marked as representative UI data.
 - The UI has empty, locked, affordable, unaffordable, selected, confirmation, and error visual states even where real services are not wired yet.
 - A Play Mode smoke test covers Main Menu → GalapagOS Desktop navigation at the ViewModel/host boundary.
@@ -230,12 +230,12 @@ Exit gate: the results screen can explain every balance change and replaying the
 
 Deliverables:
 
-- first small Hare Genome tree for the slice;
+- first small Rabbit Genome tree for the slice;
 - locked, available, affordable, purchased/unlocked, active, inactive, and
   prerequisite states;
 - biology-themed project descriptions, cost breakdowns, confirmation, and
   purchase-result feedback using the real scientific-data wallet;
-- one permanent Hare improvement with a supported stat or explicit behaviour,
+- one permanent Rabbit improvement with a supported stat or explicit behaviour,
   an ecological obligation, and the evidence required by
   [`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md);
 - separate saved unlock state and active configuration, with a representative
@@ -244,8 +244,8 @@ Deliverables:
   Genome work is ready.
 
 Exit gate: one Gene Lab purchase survives restart, can be activated or
-deactivated between simulations, and affects every Hare population only when
-active, including a run where Hare is not the selected species. The launch
+deactivated between simulations, and affects every Rabbit population only when
+active, including a run where Rabbit is not the selected species. The launch
 record includes the active Genome snapshot and authored base data remains
 unchanged.
 
@@ -260,7 +260,7 @@ Deliverables:
 - branch prerequisites, exclusions, previews, costs, and ordered loadout recording;
 - offer logic that cannot strand a committed branch.
 
-Exit gate: three seeded Hare runs demonstrate visibly distinct builds and
+Exit gate: three seeded Rabbit runs demonstrate visibly distinct builds and
 reproduce from scenario, seed, frozen Genome fingerprints, and ordered
 Mutations.
 
@@ -270,7 +270,7 @@ Mutations.
 
 Deliverables:
 
-- Hare mastery objectives based on varied behaviors;
+- Rabbit mastery objectives based on varied behaviors;
 - Species Archive discovery/mastery presentation;
 - result-to-Lab reveal of data, mastery, Genome research, and next objective;
 - one complete new-profile → expedition → reward → Genome purchase → changed
@@ -336,7 +336,7 @@ Before E1 implementation begins:
 2. Define the representative UI data fixture and required visual states.
    Include all currency balances, one experiment-return summary, affordable and
    unaffordable Genome projects, a prerequisite chain, one ecological-effect
-   preview, and one Hare mastery objective.
+   preview, and one Rabbit mastery objective.
 3. Decide whether the existing `MainMenu.unity` Noesis view can host the root shell without scene repair.
 4. Write the small screen-state/ViewModel contract and scene transition contract.
 5. Add Main Menu to Build Settings only when the shell can launch without trapping normal simulation development.

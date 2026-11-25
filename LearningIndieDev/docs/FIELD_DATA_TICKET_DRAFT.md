@@ -4,10 +4,10 @@
 - **Published closeout, October 21:** All FD-T01–FD-T16 are verified Done/complete in Trello, with 79 current checklist items resolved. Bevin accepted the first five-node slice and confirmed APS fixed. Implementation `e6cadcd` and integration `dc4f6c5` are on BevBranch and ProjectMain; Salty's incoming planning update is preserved. T16 explicitly defers uncollected timing/matched-human notes and next content rather than claiming they occurred. Sprint 5 remains Active for unrelated work. See the [publication handoff](handoffs/2026-10-21-0153-codex-field-data-publication-and-ticket-closeout.md). Older dated status entries below are historical.
 - **October21 acceptance:** Bevin explicitly accepts the initial five-node slice as a good starting point and confirms APS fixed in play. The local T13 human presentation criterion and T16 keep-loop decision are satisfied; missing timing/matched-human-path metadata is preserved as unrecorded, not invented or made into another acceptance gate. Further content remains unspecified. This records human acceptance without claiming a fresh Trello audit, all16 external cards closed or publication. See the [acceptance record](FIELD_DATA_SELF_PLAY_REVIEW.md).
 - **October20 human playthrough:** Bevin completed the whole route and said it felt good, with near population misses on both animal sides. Positive keep-loop feedback is recorded in the [self-play record](FIELD_DATA_SELF_PLAY_REVIEW.md); APS reporting was the specific defect, now corrected with159 focused EditMode/4 PlayMode passes (2 graphics skips). Missing human timing/matched-path details are not fabricated, and no live Trello criteria/status changes are claimed. See the [handoff](handoffs/2026-10-20-0007-codex-field-data-human-playthrough-and-aps-accounting-fix.md).
-- **October 19 evidence refresh:** T14 now has eight current-rule action fixtures passing direct Unity/headless parity (1/1 dedicated test, zero skips). T15 has 600/600 validated current-rule journeys: Remove Hare 58/200 survive, Add Hare 1/200, save for ×2 52/200. Current evidence and limits are in the [report](Research/Experiments/FD-Current-Loop-Refresh-20261019/REPORT.md). Earlier dated execution entries remain history. No card status, tuning, commit or push changed; T13/T16 human work remains open.
+- **October 19 evidence refresh:** T14 now has eight current-rule action fixtures passing direct Unity/headless parity (1/1 dedicated test, zero skips). T15 has 600/600 validated current-rule journeys: Remove Rabbit 58/200 survive, Add Rabbit 1/200, save for ×2 52/200. Current evidence and limits are in the [report](Research/Experiments/FD-Current-Loop-Refresh-20261019/REPORT.md). Earlier dated execution entries remain history. No card status, tuning, commit or push changed; T13/T16 human work remains open.
 - **October 18 node-navigation revision:** Bevin removed population controls from all node-end settlements. Simulation settlement now returns to the map before explicit shop entry; leaving a shop returns to the map before explicit simulation entry. Final success also offers the completed map. Earlier checked pre-shop round-6 purchase criteria below are superseded by this decision; ordinary rounds 1–5 retain their controls. See the current PDD/SDD and node-navigation handoff.
 - **Status, October 17:** 14 Done (T01–T12, T14, T15); T13 In Progress 4/5 awaiting independent human visual acceptance; T16 In Progress 0/5 awaiting team self-play and accept/revise. All 16 remain selected for Active S5, October 19–November 15, 2026. Implementation is local and unpushed.
-- **October 17 correction:** route selection now previews the five-node path before a separate Start action; active Field Data screens can reopen that route map. Income modifiers are shop-only and Hare free rewards exclude generic attack upgrades. October 18 verification adds visible route cards and panel Map buttons: full suites passed 399 EditMode / 49 PlayMode with dedicated skips, followed by final graphics passes of 6/6 at 1280x720 and 1/1 at 1920x1080. See the [validation handoff](handoffs/2026-10-18-fd-route-and-reward-validation.md). Human acceptance/self-play remain open; earlier T08/T15 panel evidence remains historical.
+- **October 17 correction:** route selection now previews the five-node path before a separate Start action; active Field Data screens can reopen that route map. Income modifiers are shop-only and Rabbit free rewards exclude generic attack upgrades. October 18 verification adds visible route cards and panel Map buttons: full suites passed 399 EditMode / 49 PlayMode with dedicated skips, followed by final graphics passes of 6/6 at 1280x720 and 1/1 at 1920x1080. See the [validation handoff](handoffs/2026-10-18-fd-route-and-reward-validation.md). Human acceptance/self-play remain open; earlier T08/T15 panel evidence remains historical.
 - **October16 incoming planning checkpoint (historical):** published to Trello; all 16 retained for Active S5 priority review, October 19-November 15, 2026. At the later October 16 board check FD-T01–03 were Done, FD-T04 In Progress and FD-T05–16 in Current Work; final committed subset awaits team review.
 - **Planning baseline:** merged `BevBranch` at `dcd6bb0`
 - **Owner / reviewer:** unassigned on every ticket, as Bevin requested
@@ -43,7 +43,7 @@ amount and resulting balance.
 | FD-T04 | Run all 18 rounds in one retained journey session | FD-I02 | FD-T02 | 4–7 |
 | FD-T05 | Settle awards once and enforce the journey wallet lifecycle | FD-I02 | FD-T03, FD-T04 | 4–6 |
 | FD-T06 | Add the six atomic population controls | FD-I03 | FD-T05 | 4–7 |
-| FD-T07 | Apply the six signed Hare shop-effect families | FD-I04 | FD-T02, FD-T04 | 5–8 |
+| FD-T07 | Apply the six signed Rabbit shop-effect families | FD-I04 | FD-T02, FD-T04 | 5–8 |
 | FD-T08 | Offer and resolve free round/node rewards | FD-I04 | FD-T05 | 3–5 |
 | FD-T09 | Generate and purchase deterministic shop offers | FD-I04 | FD-T05, FD-T07 | 4–7 |
 | FD-T10 | Buy random or chosen income reorders | FD-I04 | FD-T09 | 3–5 |
@@ -108,7 +108,7 @@ session, the preview remains the sole clock forwarder, and legacy reward
 callbacks are bypassed in that mode. The focused `FieldData` EditMode suite
 passed 24/24, including 16 journey definition/session/ledger tests. Tests
 cover failure at the first 100-tick boundary without a payout. A test
-fixture now holds Hare alive so route lifecycle coverage does not imply a
+fixture now holds Rabbit alive so route lifecycle coverage does not imply a
 balance result; disposal also transitions a failed session to Closed. These
 checks do not validate rendered preview behavior or complete ticket acceptance.
 Both T04 and T05 remain In Progress with their acceptance items open. The last
@@ -125,7 +125,7 @@ the new Field Data portable-definition test methods; run those by exact test
 name after Editor compilation completes. `CellSim.Batch` builds with zero
 warnings/errors, and its self-test now completes two deterministic
 18-round Field Data replays with 18 population awards, three node-clear awards,
-a successful Hare intervention reflected at the next board boundary, a
+a successful Rabbit intervention reflected at the next board boundary, a
 successful-results discard, first-affordability records, supplied human time,
 and preserved not-executed actions. These fixtures do not stand in for the
 authored Forest Edge route or Unity parity.
@@ -176,7 +176,7 @@ explicitly identified as outstanding.
 1/1 at `artifacts/unity-tests-20261017-001949/PlayMode-results.json`, then the
 complete FieldData PlayMode subset passed 3/3 at
 `artifacts/unity-tests-20261017-002057/PlayMode-results.json`. The failure
-test drove the live UI through a natural Hare extinction, verified the round's
+test drove the live UI through a natural Rabbit extinction, verified the round's
 unsettled payout was skipped and journey FD was forfeited, then used the results
 action to start a new run/session with zero FD and unchanged progression
 currency. The success-flow test likewise verified successful remainder discard
@@ -223,7 +223,7 @@ T14's authored snapshot is
 reference contains 200 rows for seeds 10100–10299. A no-purchase headless run
 on seed 10100 completed all 18 rounds, recorded 18 population awards and three
 node awards, and discarded 52 FD at successful results. Its final populations
-(Hare 1, Fox 0, Plant 717) match the Unity reference. T14 remains In Progress
+(Rabbit 1, Fox 0, Plant 717) match the Unity reference. T14 remains In Progress
 until Unity and headless runs compare action/offer identities, receipts,
 purchase and reorder outcomes, and report compatibility on a common fixture.
 The snapshot records HEAD `acc371ac`; because the working tree was dirty, that
@@ -232,8 +232,8 @@ records the snapshot, reference and DLL hashes.
 
 T15 ran all 600 matched replays (200 seeds in each of the three frozen arms);
 all reports completed, each seed appears in every arm, and scenario/definition
-fingerprints match. Baseline survival was 45/200; the Remove Hare arm survived
-50/200, Add Hare 0/200, and save-for-second-shop-×2 45/200. These are
+fingerprints match. Baseline survival was 45/200; the Remove Rabbit arm survived
+50/200, Add Rabbit 0/200, and save-for-second-shop-×2 45/200. These are
 descriptive outputs, not a pass threshold or causal tuning conclusion.
 Individual reports and aggregates are in
 `artifacts/field-data-t15/run-20261017/cohort-200x3/`. Automated runtime totals
@@ -301,7 +301,7 @@ catalog, price, quantity, reward-cadence and eligibility data for a run.
 Implement the definition/authoring boundary and stable identities described in
 the SDD. Resolve values once at launch; keep runtime balance, offers and owned
 upgrades out of shared assets. Author the current six interventions and three
-income entries, with the explicit data shape for signed Hare offers. FD-T07
+income entries, with the explicit data shape for signed Rabbit offers. FD-T07
 finishes the twelve signed entries after their runtime mappings are available;
 an unmapped entry cannot enter a run in the meantime.
 
@@ -318,11 +318,11 @@ an unmapped entry cannot enter a run in the meantime.
 **Outcome:** Given closing populations and an ordered income list, calculate
 the exact award and numerical steps used to explain it.
 
-Implement +1 FD per Hare, ×1.5 and ×2 as population-payout operations. Preserve
+Implement +1 FD per Rabbit, ×1.5 and ×2 as population-payout operations. Preserve
 instance order and compound multipliers; floor only the final amount. Keep the
 10-FD node bonus outside this calculation. Do not award currency in the UI.
 
-- [x] With 20 Hares, +1/Hare then ×2 yields 80 FD; reversing those operations yields 60 FD.
+- [x] With 20 Rabbits, +1/Rabbit then ×2 yields 80 FD; reversing those operations yields 60 FD.
 - [x] Verify one final floor with a fractional fixture, rather than rounding every step or carrying a remainder.
 - [x] Return the base count, ordered operations, intermediate totals and final award without changing a wallet.
 - [x] Reject out-of-range/invalid arithmetic without wrapping a balance or adding an unapproved gameplay cap.
@@ -377,7 +377,7 @@ behavior where compatible and bypass the old preview's competing award paths.
 **Outcome:** Between rounds, a paid add/remove request either changes the full
 requested population and wallet together, or changes neither.
 
-Add/remove 1 Hare, add/remove 1 Fox and add/remove 5 Plants, each for 10 FD.
+Add/remove 1 Rabbit, add/remove 1 Fox and add/remove 5 Plants, each for 10 FD.
 Use deterministic random valid positions/targets. Respect separate creature
 and plant-resource cell contents and update the boundary/previous grid safely.
 
@@ -389,7 +389,7 @@ and plant-resource cell contents and update the boundary/previous grid safely.
 
 **Trace:** FD-I03; PDD P-05; SDD §7; checklist 4.08, 4.19; baseline purchase rules.
 
-### FD-T07 — Apply the six signed Hare shop-effect families
+### FD-T07 — Apply the six signed Rabbit shop-effect families
 
 **October 17 completion:** Done, 5/5 on Trello. The full clean EditMode suite
 passed 390/390 at `artifacts/unity-tests-20261017-010934/EditMode-results.xml`.
@@ -430,14 +430,14 @@ and Done-list state were visibly read back.
 Skip, using the approved source pool and activation timing.
 
 After rounds 1–5 of each simulation and after Simulation 1 and 2 clear, offer
-ordinary species upgrades only. All income modifiers are shop-only: +1 FD/Hare
+ordinary species upgrades only. All income modifiers are shop-only: +1 FD/Rabbit
 and ×1.5 from Shop 1, ×2 from Shop 2. The old source-eligibility test results
 below describe the prior rule and must not be used as evidence for this update.
 
-- [x] Draw three distinct eligible ordinary Hare skill options or fewer if needed, deterministically. Field Data income modifiers are shop-only; generic Attack is excluded for Hares.
+- [x] Draw three distinct eligible ordinary Rabbit skill options or fewer if needed, deterministically. Field Data income modifiers are shop-only; generic Attack is excluded for Rabbits.
 - [x] Choosing one resolves the source once; Skip grants no award or penalty. Reopening does not generate a fresh choice.
 - [x] Free species rewards cost no FD. Shop-acquired income appends to current execution order and first affects the next unsettled payout. (The old completion evidence predates the October 17 shop-only correction.)
-- [x] The six approved Hare skill families can repeat to level 10, with ordinary upgrade state separate from shop species-effect and income state.
+- [x] The six approved Rabbit skill families can repeat to level 10, with ordinary upgrade state separate from shop species-effect and income state.
 - [x] No free reward is offered after terminal success; test round/node timing and replay-safe resolution.
 
 **Trace:** FD-I04; PDD P-04/P-06; SDD §§4/9; checklist 4.10, 4.26.
@@ -456,7 +456,7 @@ and Done-list state were visibly read back.
 offer, and lets the player optionally reroll capped species offers.
 
 Draw five distinct equal-weight legal offers from the starter pool: signed
-Hare effects and income, with ×2 eligible only at shop 2. Price species offers
+Rabbit effects and income, with ×2 eligible only at shop 2. Price species offers
 at 30 FD and income at 20/30/50 FD. Keep population controls outside shops.
 
 - [x] A visit never displays both signs of the same family; re-entering preserves offers, purchases and exclusions.

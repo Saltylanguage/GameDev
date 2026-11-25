@@ -71,7 +71,7 @@ function Get-DeathCounts {
 function Get-Summary {
     param([object]$Report)
     $fox = [ordered]@{ opportunities = 0d; attempts = 0d; hits = 0d; blocked = 0d; damage = 0d; nonlethal = 0d; lethal = 0d; starvation = 0d; start = 0d; final = 0d; extinct = 0 }
-    $hare = [ordered]@{ totalDeaths = 0d; combatDeaths = 0d; starvationDeaths = 0d; otherDeaths = 0d; mean = 0d; auc = 0d; final = 0d }
+    $rabbit = [ordered]@{ totalDeaths = 0d; combatDeaths = 0d; starvationDeaths = 0d; otherDeaths = 0d; mean = 0d; auc = 0d; final = 0d }
     $control = [ordered]@{
         scheduled = 0d; baselineValid = 0d; blockPlusTwoValid = 0d; commonValid = 0d
         baselineOnly = 0d; blockPlusTwoOnly = 0d; pairedAttempts = 0d; mismatches = 0d; invalidated = 0d
@@ -79,7 +79,7 @@ function Get-Summary {
     }
     foreach ($run in @($Report.runs)) {
         $foxActivity = Get-Activity -Run $run -SpeciesId 'fox'
-        $hareActivity = Get-Activity -Run $run -SpeciesId 'hare'
+        $rabbitActivity = Get-Activity -Run $run -SpeciesId 'rabbit'
         $fox.opportunities += Get-Value $foxActivity 'combatOpportunities'
         $fox.attempts += Get-Value $foxActivity 'combatAttempts'
         $fox.hits += Get-Value $foxActivity 'combatHits'
@@ -92,15 +92,15 @@ function Get-Summary {
         $fox.start += $foxTrajectory.Start
         $fox.final += $foxTrajectory.Final
         if ($foxTrajectory.Final -eq 0) { $fox.extinct++ }
-        $hareDeaths = Get-DeathCounts -Run $run -SpeciesId 'hare'
-        $hare.totalDeaths += $hareDeaths.Total
-        $hare.combatDeaths += $hareDeaths.Combat
-        $hare.starvationDeaths += $hareDeaths.Starvation
-        $hare.otherDeaths += $hareDeaths.Other
-        $hareTrajectory = Get-Trajectory -Run $run -SpeciesId 'hare'
-        $hare.mean += $hareTrajectory.Mean
-        $hare.auc += $hareTrajectory.Auc
-        $hare.final += $hareTrajectory.Final
+        $rabbitDeaths = Get-DeathCounts -Run $run -SpeciesId 'rabbit'
+        $rabbit.totalDeaths += $rabbitDeaths.Total
+        $rabbit.combatDeaths += $rabbitDeaths.Combat
+        $rabbit.starvationDeaths += $rabbitDeaths.Starvation
+        $rabbit.otherDeaths += $rabbitDeaths.Other
+        $rabbitTrajectory = Get-Trajectory -Run $run -SpeciesId 'rabbit'
+        $rabbit.mean += $rabbitTrajectory.Mean
+        $rabbit.auc += $rabbitTrajectory.Auc
+        $rabbit.final += $rabbitTrajectory.Final
         $control.scheduled += Get-Control $run 'scheduled'
         $control.baselineValid += Get-Control $run 'baselineValid'
         $control.blockPlusTwoValid += Get-Control $run 'blockPlusTwoValid'
@@ -120,14 +120,14 @@ function Get-Summary {
     return [pscustomobject]@{
         Report = $Report
         Fox = $fox
-        Hare = $hare
+        Rabbit = $rabbit
         Control = $control
         FoxHitRate = if ($fox.attempts -eq 0) { 0d } else { $fox.hits / $fox.attempts }
         FoxKillRate = if ($fox.attempts -eq 0) { 0d } else { $fox.lethal / $fox.attempts }
         Lethality = if ($fox.hits -eq 0) { 0d } else { $fox.lethal / $fox.hits }
-        AverageHare = $hare.mean / $count
-        HareAuc = $hare.auc / $count
-        FinalHare = $hare.final / $count
+        AverageRabbit = $rabbit.mean / $count
+        RabbitAuc = $rabbit.auc / $count
+        FinalRabbit = $rabbit.final / $count
         AverageFoxStart = $fox.start / $count
         AverageFoxFinal = $fox.final / $count
         FoxExtinctionRate = $fox.extinct / $count
@@ -184,20 +184,20 @@ $lines.Add('')
 Add-Table $lines @('Metric', 'Baseline', 'Block +2', 'Delta') @(
     @('Fox hit rate', (Format-Rate $base.FoxHitRate), (Format-Rate $arm.FoxHitRate), (Format-Rate ($arm.FoxHitRate - $base.FoxHitRate))),
     @('Successful hits', $base.Fox.hits, $arm.Fox.hits, ($arm.Fox.hits - $base.Fox.hits)),
-    @('Fox-caused Hare deaths', $base.Fox.lethal, $arm.Fox.lethal, ($arm.Fox.lethal - $base.Fox.lethal)),
+    @('Fox-caused Rabbit deaths', $base.Fox.lethal, $arm.Fox.lethal, ($arm.Fox.lethal - $base.Fox.lethal)),
     @('Kill rate per attempt', (Format-Rate $base.FoxKillRate), (Format-Rate $arm.FoxKillRate), (Format-Rate ($arm.FoxKillRate - $base.FoxKillRate))),
     @('Lethality per hit', (Format-Rate $base.Lethality), (Format-Rate $arm.Lethality), (Format-Rate ($arm.Lethality - $base.Lethality))),
-    @('Hare total deaths', $base.Hare.totalDeaths, $arm.Hare.totalDeaths, ($arm.Hare.totalDeaths - $base.Hare.totalDeaths)),
-    @('Hare starvation deaths', $base.Hare.starvationDeaths, $arm.Hare.starvationDeaths, ($arm.Hare.starvationDeaths - $base.Hare.starvationDeaths)),
-    @('Hare other deaths', $base.Hare.otherDeaths, $arm.Hare.otherDeaths, ($arm.Hare.otherDeaths - $base.Hare.otherDeaths))
+    @('Rabbit total deaths', $base.Rabbit.totalDeaths, $arm.Rabbit.totalDeaths, ($arm.Rabbit.totalDeaths - $base.Rabbit.totalDeaths)),
+    @('Rabbit starvation deaths', $base.Rabbit.starvationDeaths, $arm.Rabbit.starvationDeaths, ($arm.Rabbit.starvationDeaths - $base.Rabbit.starvationDeaths)),
+    @('Rabbit other deaths', $base.Rabbit.otherDeaths, $arm.Rabbit.otherDeaths, ($arm.Rabbit.otherDeaths - $base.Rabbit.otherDeaths))
 )
 $lines.Add('')
 $lines.Add('## Population trajectory')
 $lines.Add('')
 Add-Table $lines @('Metric', 'Baseline', 'Block +2', 'Delta') @(
-    @('Mean Hare population', (Format-Number $base.AverageHare), (Format-Number $arm.AverageHare), (Format-Number ($arm.AverageHare - $base.AverageHare))),
-    @('Hare population AUC', (Format-Number $base.HareAuc), (Format-Number $arm.HareAuc), (Format-Number ($arm.HareAuc - $base.HareAuc))),
-    @('Final Hare population', (Format-Number $base.FinalHare), (Format-Number $arm.FinalHare), (Format-Number ($arm.FinalHare - $base.FinalHare))),
+    @('Mean Rabbit population', (Format-Number $base.AverageRabbit), (Format-Number $arm.AverageRabbit), (Format-Number ($arm.AverageRabbit - $base.AverageRabbit))),
+    @('Rabbit population AUC', (Format-Number $base.RabbitAuc), (Format-Number $arm.RabbitAuc), (Format-Number ($arm.RabbitAuc - $base.RabbitAuc))),
+    @('Final Rabbit population', (Format-Number $base.FinalRabbit), (Format-Number $arm.FinalRabbit), (Format-Number ($arm.FinalRabbit - $base.FinalRabbit))),
     @('Mean Fox start', (Format-Number $base.AverageFoxStart), (Format-Number $arm.AverageFoxStart), (Format-Number ($arm.AverageFoxStart - $base.AverageFoxStart))),
     @('Mean Fox final', (Format-Number $base.AverageFoxFinal), (Format-Number $arm.AverageFoxFinal), (Format-Number ($arm.AverageFoxFinal - $base.AverageFoxFinal))),
     @('Fox extinction rate', (Format-Rate $base.FoxExtinctionRate), (Format-Rate $arm.FoxExtinctionRate), (Format-Rate ($arm.FoxExtinctionRate - $base.FoxExtinctionRate)))
@@ -213,8 +213,8 @@ for ($index = 0; $index -lt $baseRuns.Count; $index++) {
     $t = $trialRuns[$index]
     if ($b.seed -ne $t.seed) { throw "Pair seed mismatch at index $index." }
     $ba = Get-Activity $b 'fox'; $ta = Get-Activity $t 'fox'
-    $bh = Get-DeathCounts $b 'hare'; $th = Get-DeathCounts $t 'hare'
-    $bt = Get-Trajectory $b 'hare'; $tt = Get-Trajectory $t 'hare'
+    $bh = Get-DeathCounts $b 'rabbit'; $th = Get-DeathCounts $t 'rabbit'
+    $bt = Get-Trajectory $b 'rabbit'; $tt = Get-Trajectory $t 'rabbit'
     $baseHitRate = if ((Get-Value $ba 'combatAttempts') -eq 0) { 0d } else { (Get-Value $ba 'combatHits') / (Get-Value $ba 'combatAttempts') }
     $trialHitRate = if ((Get-Value $ta 'combatAttempts') -eq 0) { 0d } else { (Get-Value $ta 'combatHits') / (Get-Value $ta 'combatAttempts') }
     $pairRows.Add(@(
@@ -236,7 +236,7 @@ for ($index = 0; $index -lt $baseRuns.Count; $index++) {
         (Format-Number ($tt.Final - $bt.Final))
     ))
 }
-Add-Table $lines @('Seed', 'Base sched.', 'Trial sched.', 'Base valid', 'Block+2 valid', 'Common', 'Base-only', 'Block+2-only', 'Paired attempts', 'Mismatches', 'Delta hit rate', 'Delta Fox deaths', 'Delta starvation', 'Delta mean Hare', 'Delta Hare AUC', 'Delta final Hare') $pairRows.ToArray()
+Add-Table $lines @('Seed', 'Base sched.', 'Trial sched.', 'Base valid', 'Block+2 valid', 'Common', 'Base-only', 'Block+2-only', 'Paired attempts', 'Mismatches', 'Delta hit rate', 'Delta Fox deaths', 'Delta starvation', 'Delta mean Rabbit', 'Delta Rabbit AUC', 'Delta final Rabbit') $pairRows.ToArray()
 $lines.Add('')
 $lines.Add('SC-1 passes only when paired attempts match exactly for every seed and paired mismatches remain zero. Scheduled equality alone is not treated as exposure isolation.')
 $lines.Add('')

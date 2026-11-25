@@ -13,7 +13,7 @@ namespace SaltyGame.Tests
             var request = new SimulationLaunchRequest(
                 "profile-1",
                 "ForestEdge",
-                "hare",
+                "rabbit",
                 10100,
                 upgrades,
                 "ruleset-1");
@@ -22,7 +22,7 @@ namespace SaltyGame.Tests
 
             Assert.That(request.ProfileId, Is.EqualTo("profile-1"));
             Assert.That(request.ScenarioId, Is.EqualTo("ForestEdge"));
-            Assert.That(request.PlayerSpeciesId, Is.EqualTo("hare"));
+            Assert.That(request.PlayerSpeciesId, Is.EqualTo("rabbit"));
             Assert.That(request.Seed, Is.EqualTo(10100));
             Assert.That(request.RulesetFingerprint, Is.EqualTo("ruleset-1"));
             Assert.That(request.OrderedUpgradeIds, Is.EqualTo(new[] { "Trailblazer" }));
@@ -45,7 +45,7 @@ namespace SaltyGame.Tests
             var request = new SimulationLaunchRequest(
                 "profile-1",
                 "ForestEdge",
-                "hare",
+                "rabbit",
                 10100,
                 orderedUpgradeSnapshots: new[] { snapshot });
 
@@ -71,7 +71,7 @@ namespace SaltyGame.Tests
             Assert.Throws<System.ArgumentException>(() => new SimulationLaunchRequest(
                 "profile-1",
                 "ForestEdge",
-                "hare",
+                "rabbit",
                 10100,
                 orderedUpgradeIds: new[] { "different-id" },
                 orderedUpgradeSnapshots: new[] { snapshot }));
@@ -323,7 +323,7 @@ namespace SaltyGame.Tests
             var upgrade = new SpeciesUpgradeSnapshot(
                 SpeciesUpgradeCatalog.PopulationReinforcementId,
                 "REINFORCEMENTS",
-                "Add one hare to the next phase.",
+                "Add one rabbit to the next phase.",
                 SpeciesIds.Herbivore,
                 5,
                 new SpeciesUpgradeModifier[0],
@@ -502,7 +502,7 @@ namespace SaltyGame.Tests
                 runDurationSeconds: 0.4f,
                 stepInterval: 0.1f).WithRunTicks(4, 0.1f);
             var original = new SimulationRunState(
-                CreateContinuityFixture(),
+                CreateContinuityFixture(wrapEdges: true),
                 SpeciesIds.Herbivore,
                 seed: 42,
                 durationSeconds: data.RunDurationSeconds);
@@ -638,11 +638,11 @@ namespace SaltyGame.Tests
             return manager;
         }
 
-        static Grid<SpeciesCell> CreateContinuityFixture()
+        static Grid<SpeciesCell> CreateContinuityFixture(bool wrapEdges = false)
         {
             return new Grid<SpeciesCell>(2, 1, (x, _) => x == 0
                 ? new SpeciesCell(SpeciesIds.Herbivore, health: 10, energy: 24)
-                : SpeciesCell.Grass(10f));
+                : SpeciesCell.Grass(10f), wrapEdges);
         }
 
         static int CountSpecies(Grid<SpeciesCell> cells, SpeciesId species)

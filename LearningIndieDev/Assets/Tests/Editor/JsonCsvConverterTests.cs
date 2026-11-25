@@ -11,11 +11,11 @@ namespace SaltyGame.EditorTests
         [Test]
         public void JsonToCsv_FlatObjects_WritesDeterministicColumns()
         {
-            const string json = "[{\"name\":\"hare\",\"age\":2},{\"age\":3,\"name\":\"fox\"}]";
+            const string json = "[{\"name\":\"rabbit\",\"age\":2},{\"age\":3,\"name\":\"fox\"}]";
 
             var result = JsonCsvConverter.ConvertJsonToCsv(json);
 
-            Assert.That(result.Content, Is.EqualTo("age,name\r\n2,hare\r\n3,fox"));
+            Assert.That(result.Content, Is.EqualTo("age,name\r\n2,rabbit\r\n3,fox"));
             Assert.That(result.RowCount, Is.EqualTo(2));
             Assert.That(result.ColumnCount, Is.EqualTo(2));
         }
@@ -23,12 +23,12 @@ namespace SaltyGame.EditorTests
         [Test]
         public void CsvToJson_FlatRows_InfersPrimitiveTypes()
         {
-            const string csv = "name,age,active,ratio\r\nhare,2,true,1.5";
+            const string csv = "name,age,active,ratio\r\nrabbit,2,true,1.5";
 
             var result = JsonCsvConverter.ConvertCsvToJson(csv);
             var row = (JObject)JArray.Parse(result.Content)[0];
 
-            Assert.That(row.Value<string>("name"), Is.EqualTo("hare"));
+            Assert.That(row.Value<string>("name"), Is.EqualTo("rabbit"));
             Assert.That(row.Value<long>("age"), Is.EqualTo(2));
             Assert.That(row.Value<bool>("active"), Is.True);
             Assert.That(row.Value<decimal>("ratio"), Is.EqualTo(1.5m));
@@ -37,11 +37,11 @@ namespace SaltyGame.EditorTests
         [Test]
         public void JsonToCsv_DifferentProperties_UsesUnionOfColumns()
         {
-            const string json = "[{\"name\":\"hare\"},{\"energy\":5}]";
+            const string json = "[{\"name\":\"rabbit\"},{\"energy\":5}]";
 
             var result = JsonCsvConverter.ConvertJsonToCsv(json);
 
-            Assert.That(result.Content, Is.EqualTo("energy,name\r\n,hare\r\n5,"));
+            Assert.That(result.Content, Is.EqualTo("energy,name\r\n,rabbit\r\n5,"));
         }
 
         [Test]
@@ -123,7 +123,7 @@ namespace SaltyGame.EditorTests
         [Test]
         public void RoundTrip_ArrayValue_PreservesArray()
         {
-            const string json = "[{\"name\":\"hare\",\"diet\":[\"fern\",\"grass\"]}]";
+            const string json = "[{\"name\":\"rabbit\",\"diet\":[\"fern\",\"grass\"]}]";
 
             var csv = JsonCsvConverter.ConvertJsonToCsv(json).Content;
             var roundTrippedJson = JsonCsvConverter.ConvertCsvToJson(csv).Content;
@@ -158,7 +158,7 @@ namespace SaltyGame.EditorTests
         [Test]
         public void CsvToJson_EmptyAndMissingFields_BecomeNullAndReportMissingField()
         {
-            const string csv = "name,energy\r\nhare,";
+            const string csv = "name,energy\r\nrabbit,";
 
             var result = JsonCsvConverter.ConvertCsvToJson(csv);
             var row = (JObject)JArray.Parse(result.Content)[0];
@@ -166,7 +166,7 @@ namespace SaltyGame.EditorTests
             Assert.That(row["energy"].Type, Is.EqualTo(JTokenType.Null));
             Assert.That(result.Warnings, Is.Empty);
 
-            var missingResult = JsonCsvConverter.ConvertCsvToJson("name,energy\r\nhare");
+            var missingResult = JsonCsvConverter.ConvertCsvToJson("name,energy\r\nrabbit");
             Assert.That(missingResult.Warnings, Has.Count.EqualTo(1));
         }
 
@@ -185,7 +185,7 @@ namespace SaltyGame.EditorTests
         [Test]
         public void CsvToJson_Utf8BomBeforeFirstHeader_IgnoresBom()
         {
-            const string csv = "\uFEFFname\r\nhare";
+            const string csv = "\uFEFFname\r\nrabbit";
 
             var result = JsonCsvConverter.ConvertCsvToJson(csv);
             var row = (JObject)JArray.Parse(result.Content)[0];
@@ -197,7 +197,7 @@ namespace SaltyGame.EditorTests
         public void JsonToCsv_NonArrayRoot_ThrowsActionableError()
         {
             var exception = Assert.Throws<FormatException>(
-                () => JsonCsvConverter.ConvertJsonToCsv("{\"name\":\"hare\"}"));
+                () => JsonCsvConverter.ConvertJsonToCsv("{\"name\":\"rabbit\"}"));
 
             Assert.That(exception.Message, Does.Contain("root must be an array"));
         }
@@ -216,7 +216,7 @@ namespace SaltyGame.EditorTests
         public void JsonToCsv_NonObjectArrayItem_ThrowsActionableError()
         {
             var exception = Assert.Throws<FormatException>(
-                () => JsonCsvConverter.ConvertJsonToCsv("[{\"name\":\"hare\"},2]"));
+                () => JsonCsvConverter.ConvertJsonToCsv("[{\"name\":\"rabbit\"},2]"));
 
             Assert.That(exception.Message, Does.Contain("array item 1"));
         }
@@ -233,7 +233,7 @@ namespace SaltyGame.EditorTests
         [Test]
         public void CsvReader_UnclosedQuotedField_ReportsLocation()
         {
-            var exception = Assert.Throws<FormatException>(() => CsvReader.Read("name\r\n\"hare"));
+            var exception = Assert.Throws<FormatException>(() => CsvReader.Read("name\r\n\"rabbit"));
 
             Assert.That(exception.Message, Does.Contain("row 2, column 1"));
         }
@@ -241,14 +241,14 @@ namespace SaltyGame.EditorTests
         [Test]
         public void CsvReader_ContentAfterClosingQuote_Throws()
         {
-            Assert.Throws<FormatException>(() => CsvReader.Read("name\r\n\"hare\"unexpected"));
+            Assert.Throws<FormatException>(() => CsvReader.Read("name\r\n\"rabbit\"unexpected"));
         }
 
         [Test]
         public void CsvToJson_TooManyFields_ReportsRowCounts()
         {
             var exception = Assert.Throws<FormatException>(
-                () => JsonCsvConverter.ConvertCsvToJson("name\r\nhare,extra"));
+                () => JsonCsvConverter.ConvertCsvToJson("name\r\nrabbit,extra"));
 
             Assert.That(exception.Message, Does.Contain("row 2 contains 2 fields"));
         }
@@ -257,7 +257,7 @@ namespace SaltyGame.EditorTests
         public void CsvToJson_ConflictingPaths_Throws()
         {
             var exception = Assert.Throws<FormatException>(
-                () => JsonCsvConverter.ConvertCsvToJson("species,species.name\r\nhare,Hazel"));
+                () => JsonCsvConverter.ConvertCsvToJson("species,species.name\r\nrabbit,Hazel"));
 
             Assert.That(exception.Message, Does.Contain("conflicts"));
         }

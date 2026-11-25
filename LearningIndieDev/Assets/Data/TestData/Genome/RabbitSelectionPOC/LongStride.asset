@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a3f0c4b7e1469aa51f2c6d8e9b3041, type: 3}
   m_Name: LongStride
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
-  upgradeId: poc.hare.long-stride
+  upgradeId: poc.rabbit.long-stride
   displayName: Long Stride
   description: 'POC: movement speed +0.25. Provisional test value, not balanced.'
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   prerequisiteNodeIds: []
   rabbitDataPrice: 1
   capacityPoints: 1

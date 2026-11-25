@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ForestEdgeJourney
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyMapAsset
   scenarioId: ForestEdge
-  playerSpeciesId: hare
+  playerSpeciesId: rabbit
   startNode: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d001, type: 2}
   nodes:
   - {fileID: 11400000, guid: fd885fa3026ee9c4b855eb7c30066df6, type: 2}

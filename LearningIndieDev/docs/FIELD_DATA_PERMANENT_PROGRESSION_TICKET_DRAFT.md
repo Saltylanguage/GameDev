@@ -1,7 +1,7 @@
 # FD2 — Permanent Progression Ticket Draft
 
 - **Prepared:** 2026-10-21
-- **Status:** Published to Trello on 2026-10-21; T01 numeric baseline now captured in the [tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md). Hare gameplay effects remain pending Salty's core-mechanics push. Breakdown derived from [PDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md) and [SDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md)
+- **Status:** Published to Trello on 2026-10-21; T01 numeric baseline now captured in the [tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md). Rabbit gameplay effects remain pending Salty's core-mechanics push. Breakdown derived from [PDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md) and [SDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md)
 - **Owners/reviewers:** Bevin (Trello account: Nick Nevins)
 - **Sprint placement:** Not assigned here; sprint planning belongs to Salty
 - **Estimates:** Omitted; size/capacity has not been planned
@@ -15,12 +15,12 @@
 | FD2-T03 | Calculate the success settlement receipt | FD2-T01, T02 |
 | FD2-T04 | Persist settlement once and retry safely | FD2-T02, T03 |
 | FD2-T05 | Apply the conversion research level to future settlements | FD2-T01, T02, T03 |
-| FD2-T06 | Purchase and persist the Hare Genome path license | FD2-T01, T02 |
-| FD2-T07 | Purchase permanent Hare Genome nodes within prerequisites and capacity | FD2-T01, T02, T06 |
+| FD2-T06 | Purchase and persist the Rabbit Genome path license | FD2-T01, T02 |
+| FD2-T07 | Purchase permanent Rabbit Genome nodes within prerequisites and capacity | FD2-T01, T02, T06 |
 | FD2-T08 | Reset and rearrange a species' active Genome loadout | FD2-T02, T07 |
 | FD2-T09 | Apply the active Genome snapshot to the next launch | FD2-T07, T08 |
 | FD2-T10 | Present settlement and failure results | FD2-T03, T04 |
-| FD2-T11 | Build the Gene Lab wallet, Research and Hare-tree interactions | FD2-T05–T09 |
+| FD2-T11 | Build the Gene Lab wallet, Research and Rabbit-tree interactions | FD2-T05–T09 |
 | FD2-T12 | Verify migration and the complete permanent progression loop | FD2-T02–T11 |
 
 ## Ticket details
@@ -61,16 +61,16 @@ Incoming POC IDs, license/node prices and reset semantics differ from this
 sheet. The incoming code is not merged into local BevBranch; T01 remains open.
 
 **Outcome:** One reviewed, versioned first-test definition supplies every price,
-cap, prerequisite and supported Hare node effect used by FD2.
+cap, prerequisite and supported Rabbit node effect used by FD2.
 
 **Trello status:** In Progress as of 2026-10-21. The numeric baseline and five-node
 topology are recorded; effect mapping remains pending Salty's core-mechanics push.
 
-**Work:** Freeze the recorded first-test baselines: Hare license 10 Hare Data;
-node price 5 Hare Data each; all five placeholder node IDs with existing
+**Work:** Freeze the recorded first-test baselines: Rabbit license 10 Rabbit Data;
+node price 5 Rabbit Data each; all five placeholder node IDs with existing
 prerequisites and 2 capacity points each; 8-point loadout capacity; 20 RD reset
 fee; and three conversion-research levels priced at 10/20/30 RD. Preserve 10
-FD → 1 Hare Data, +10% multiplicative payout per upgrade level and 10 Research
+FD → 1 Rabbit Data, +10% multiplicative payout per upgrade level and 10 Research
 Data per successful journey as provisional test baselines. Keep node effects
 undefined until Salty's core-mechanics changes are pushed, then map each node
 to a supported effect and review against SG-005. See the [tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md).
@@ -197,10 +197,10 @@ successful purchase persists; prior receipts stay unchanged; later success
 uses the new level and the defined integer rounding; tests cover costs, cap and
 non-retroactivity.
 
-### FD2-T06 — Unlock the Hare Genome path
+### FD2-T06 — Unlock the Rabbit Genome path
 
-**October 26 implementation verified locally:** `TryPurchaseHareGenomeLicense`
-charges exactly 10 Hare Data and saves access together, rejects duplicate/wrong
+**October 26 implementation verified locally:** `TryPurchaseRabbitGenomeLicense`
+charges exactly 10 Rabbit Data and saves access together, rejects duplicate/wrong
 profile/insufficient/reentrant purchases and preserves other data. No node effect
 is granted; the existing license flag uses schema v6. Focused license16/16,
 full EditMode598 passed/zero failed/one parity skip, distinct-process write/read
@@ -211,10 +211,10 @@ Gene Lab controls remain T11. See the
 Code commit `2e6fcd8` remains local. T06 is marked complete in live Trello Done
 with verification comment posted and read back on October 26.
 
-**Outcome:** A player can use Hare Data to permanently license the Hare Genome
-tree after earning it through a Hare-selected successful journey.
+**Outcome:** A player can use Rabbit Data to permanently license the Rabbit Genome
+tree after earning it through a Rabbit-selected successful journey.
 
-**Work:** Charge the provisional 10 Hare Data once. The license reveals tree
+**Work:** Charge the provisional 10 Rabbit Data once. The license reveals tree
 access but grants no node effect. Prevent duplicate purchase and path unlock
 with other species' data.
 
@@ -222,15 +222,15 @@ with other species' data.
 balance, duplicate license and wrong wallet leave state unchanged; license
 survives restart; a journey remains launchable with no license.
 
-### FD2-T07 — Purchase permanent Hare nodes
+### FD2-T07 — Purchase permanent Rabbit nodes
 
 **October 26 implementation and closeout:** Code commit `c58f7b5` remains local;
 T07 is marked complete in live Done with verification comment
 `#comment-6adffac4ab95c50adf0bc641` posted and read back. All32 new node cases,
 full EditMode630 passed/zero failed/one parity skip, independent process checks
-and focused PlayMode7/7 pass. `TryPurchaseHareGenomeNode` validates the owning
+and focused PlayMode7/7 pass. `TryPurchaseRabbitGenomeNode` validates the owning
 profile, canonical node/price, license, permanently owned ancestors and full
-catalog capacity. It saves 5 Hare Data deduction, permanent ownership and
+catalog capacity. It saves 5 Rabbit Data deduction, permanent ownership and
 activation together with the existing atomic profile commit path. No refundable
 POC allocation or schema change is added. Owned inactive duplicates, other
 wallets, invalid IDs, capacity overflow and failed saves cannot publish a
@@ -238,10 +238,10 @@ purchase. Player controls remain T11; T08/T11 use catalog capacity rather than
 the POC profile's one-point fallback. Validation/board closeout is recorded in
 the T07 handoff. Board proof: `artifacts/fd2-board-20261026/t07-done.png`.
 
-**Outcome:** Eligible Hare Genome nodes become permanently owned and active
+**Outcome:** Eligible Rabbit Genome nodes become permanently owned and active
 without exceeding capacity.
 
-**Work:** Use the T01 Hare catalog, prerequisite graph and provisional 5 Hare
+**Work:** Use the T01 Rabbit catalog, prerequisite graph and provisional 5 Rabbit
 Data/node cost. Require path license, prerequisites, sufficient wallet and
 room under the existing capacity of 8. Deduct, unlock and activate in one
 validated profile update.
@@ -285,7 +285,7 @@ T09 is complete in live Done with verification comment
 PlayMode4/4 pass; full EditMode679 pass/zero failed/one skip. Related PlayMode
 17/18 pass with only the identical incoming population-control failure remaining.
 Proof: `artifacts/fd2-board-20261027/t09-done.png`.
-Permanent Hare loadouts use the canonical FD2
+Permanent Rabbit loadouts use the canonical FD2
 owned-prerequisite resolver; other/POC profiles keep their existing catalog rules.
 The Desktop binds a profile-owned first-start capture, so direct next-journey
 commands also refresh the saved configuration. Opening Mutations are retained,
@@ -298,12 +298,12 @@ board closeout are recorded in the T09 handoff.
 simulation/journey and does not mutate a run already in progress.
 
 **Work:** Pass the validated per-species snapshot through the existing launch
-composition path. Confirm Hare node effects use supported authored simulation
+composition path. Confirm Rabbit node effects use supported authored simulation
 rules and affect every relevant population of that species.
 
 **Acceptance:** Active nodes appear in the new run's immutable snapshot;
 changes after launch do not alter the running simulation; reset/rearrangement
-is reflected only on a later launch; integration test covers the initial Hare
+is reflected only on a later launch; integration test covers the initial Rabbit
 catalog.
 
 ### FD2-T10 — Show permanent settlement and failure results
@@ -337,7 +337,7 @@ payment; result reentry does not pay again.
 
 ### FD2-T11 — Wire the Gene Lab permanent economy UI
 
-**October 27 implementation:** MainMenu profile launch uses permanent Hare
+**October 27 implementation:** MainMenu profile launch uses permanent Rabbit
 controls and shared Research purchases. The existing window shows canonical
 prices, pre/post-wallet quotes, prerequisites, ownership/active/draft state and
 8-point capacity. Reset charges20 RD without refund; select owned nodes from
@@ -356,11 +356,11 @@ T11 is complete in live Done. Local code `f2a8565`; verification comment
 rendered captures inspected; original profile/source state preserved.
 
 
-**Outcome:** The existing Gene Lab provides usable Research and Hare Genome
+**Outcome:** The existing Gene Lab provides usable Research and Rabbit Genome
 wallet/purchase/loadout controls.
 
 **Work:** Replace preview-only parts required for this slice. Display Research
-Data, Hare Data, conversion research, path license, node prerequisites,
+Data, Rabbit Data, conversion research, path license, node prerequisites,
 ownership/active state and capacity. Expose valid purchase, activation and
 reset intents through the existing view-model/Noesis boundary.
 
@@ -416,8 +416,8 @@ All 12 cards were read back in **🎯 Upcoming Work** after publication. Trello 
 | FD2-T03 | Calculate the success settlement receipt | [Open card](https://trello.com/c/LqK96MhS/139-fd2-t03-calculate-the-success-settlement-receipt) |
 | FD2-T04 | Persist success settlement exactly once | [Open card](https://trello.com/c/YhaRwN6I/140-fd2-t04-persist-success-settlement-exactly-once) |
 | FD2-T05 | Add conversion research purchases | [Open card](https://trello.com/c/KM9iNvJF/141-fd2-t05-add-conversion-research-purchases) |
-| FD2-T06 | Unlock the Hare Genome path | [Open card](https://trello.com/c/YNr1HuDw/142-fd2-t06-unlock-the-hare-genome-path) |
-| FD2-T07 | Purchase permanent Hare nodes | [Open card](https://trello.com/c/bYWmUPYV/143-fd2-t07-purchase-permanent-hare-nodes) |
+| FD2-T06 | Unlock the Rabbit Genome path | [Open card](https://trello.com/c/YNr1HuDw/142-fd2-t06-unlock-the-hare-genome-path) |
+| FD2-T07 | Purchase permanent Rabbit nodes | [Open card](https://trello.com/c/bYWmUPYV/143-fd2-t07-purchase-permanent-hare-nodes) |
 | FD2-T08 | Reset and arrange an active Genome loadout | [Open card](https://trello.com/c/TZe1J7oQ/144-fd2-t08-reset-and-arrange-an-active-genome-loadout) |
 | FD2-T09 | Apply Genome loadout to the next launch | [Open card](https://trello.com/c/4vwCZxSH/145-fd2-t09-apply-genome-loadout-to-the-next-launch) |
 | FD2-T10 | Show permanent settlement and failure results | [Open card](https://trello.com/c/Cqfr2WyU/146-fd2-t10-show-permanent-settlement-and-failure-results) |

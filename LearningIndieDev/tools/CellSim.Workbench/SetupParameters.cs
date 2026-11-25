@@ -15,11 +15,11 @@ internal static class SetupParameters
     static SetupParameter[] Build()
     {
         var result = new List<SetupParameter>();
-        foreach (var species in new[] { "plant", "hare", "fox" })
-            result.Add(new(species + "-population", Title(species) + " starting population", "Number placed at tick 0. Every combination must fit the map; Hares must start above zero.", "-startingPopulations", species, "population", true, species == "hare" ? 1 : 0));
+        foreach (var species in new[] { "plant", "rabbit", "fox" })
+            result.Add(new(species + "-population", Title(species) + " starting population", "Number placed at tick 0. Every combination must fit the map; Rabbits must start above zero.", "-startingPopulations", species, "population", true, species == "rabbit" ? 1 : 0));
         result.Add(new("map-width", "Map width", "Number of columns. Changing area changes density even when populations stay fixed.", "-gridWidth", "", "width", true, 1, 4096));
         result.Add(new("map-height", "Map height", "Number of rows. Each width and height value is crossed with all other selected values.", "-gridHeight", "", "height", true, 1, 4096));
-        foreach (var species in new[] { "hare", "fox" })
+        foreach (var species in new[] { "rabbit", "fox" })
         {
             void Stat(string id, string label, string field, string help, bool integer = true, decimal min = 0, decimal max = int.MaxValue) =>
                 result.Add(new(species + ":" + id, Title(species) + " " + label, help, "-speciesStats", species + ":" + id, field, integer, min, max));
@@ -38,7 +38,7 @@ internal static class SetupParameters
         }
         result.Add(new("plant:resource.wilt-chance", "Plant wilt chance", "Probability from 0 to 1 used by the existing plant wilt rule.", "-speciesStats", "plant:resource.wilt-chance", "wiltChance", false, 0, 1));
         result.Add(new("plant:energy.value", "Plant food energy", "Energy value of a Plant when consumed, under the existing feeding rules.", "-speciesStats", "plant:energy.value", "energyValue", true));
-        result.Add(new("hare:resource.seed-drop-chance", "Hare seed drop chance", "Probability from 0 to 1 for the existing seed-dispersal rule; placement constraints still apply.", "-speciesStats", "hare:resource.seed-drop-chance", "seedDropChance", false, 0, 1));
+        result.Add(new("rabbit:resource.seed-drop-chance", "Rabbit seed drop chance", "Probability from 0 to 1 for the existing seed-dispersal rule; placement constraints still apply.", "-speciesStats", "rabbit:resource.seed-drop-chance", "seedDropChance", false, 0, 1));
         return result.ToArray();
     }
     static string Title(string text) => char.ToUpperInvariant(text[0]) + text[1..];

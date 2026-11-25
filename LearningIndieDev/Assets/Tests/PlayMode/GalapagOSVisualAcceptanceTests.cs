@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -21,6 +22,204 @@ namespace SaltyGame.PlayModeTests
         const string LegacyDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         [UnityTest]
+        public IEnumerator FieldLedgerScrollReachesTrackingUnderRabbitLossCard()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            var preview = runtime.SpeciesPreview;
+            preview.PauseSimulation();
+            var camera = GameObject.Find("Prototype Camera");
+            var board = camera.GetComponent("SaltyGame.VM_SimulationBoard");
+            var shell = camera.GetComponent("SaltyGame.VM_SimulationShell");
+            var rabbitId = new SpeciesId("rabbit");
+            var cells = preview.Run.Cells;
+            var rabbit = cells.Topology.PlayableCoordinates.First(cell => cells.GetCell(cell.x, cell.y).SpeciesId == rabbitId);
+            Assert.That(board.GetType().GetMethod("SelectCell").Invoke(board, new object[] { rabbit.x, rabbit.y }), Is.True);
+
+            const BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
+            shell.GetType().GetMethod("ClearEventReaction", instance).Invoke(shell, null);
+            Assert.That(shell.GetType().GetMethod("PresentEventReaction", instance).Invoke(shell, new object[]
+            {
+                "RABBITS LOST",
+                "Recent Rabbit losses: 1 in combat, 0 starved, 0 other. Also 16 Rabbit and 0 Fox births.",
+                false,
+                3,
+            }), Is.True);
+            yield return null;
+
+            var content = (Noesis.FrameworkElement)GetProperty(camera.GetComponent("NoesisView"), "Content");
+            var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
+            var panel = window.Content as Noesis.FrameworkElement;
+            var ledger = (content.FindName("FieldLedgerScroll") ?? panel.FindName("FieldLedgerScroll")) as Noesis.ScrollViewer;
+            var tracking = (content.FindName("TrackCreatureButton") ?? panel.FindName("TrackCreatureButton")) as Noesis.Button;
+            var zoom = (content.FindName("BoardZoomControls") ?? panel.FindName("BoardZoomControls")) as Noesis.FrameworkElement;
+            Assert.That(ledger, Is.Not.Null);
+            Assert.That(tracking, Is.Not.Null);
+            Assert.That(zoom, Is.Not.Null);
+            Assert.That(ledger.ScrollableHeight, Is.GreaterThan(0f));
+            var viewportBottom = ledger.PointToScreen(new Noesis.Point(0, ledger.ActualHeight)).Y;
+            Assert.That(tracking.PointToScreen(new Noesis.Point(0, tracking.ActualHeight)).Y, Is.GreaterThan(viewportBottom));
+            Assert.That(viewportBottom, Is.LessThan(zoom.PointToScreen(new Noesis.Point(0, 0)).Y));
+
+            ledger.RaiseEvent(new Noesis.MouseWheelEventArgs(ledger, Noesis.UIElement.MouseWheelEvent, -120));
+            yield return null;
+            Assert.That(ledger.VerticalOffset, Is.GreaterThan(0f));
+            ledger.ScrollToVerticalOffset(ledger.ScrollableHeight);
+            yield return null;
+            Assert.That(tracking.PointToScreen(new Noesis.Point(0, tracking.ActualHeight)).Y, Is.LessThanOrEqualTo(viewportBottom));
+            Assert.That(tracking.PointToScreen(new Noesis.Point(0, 0)).Y,
+                Is.GreaterThanOrEqualTo(ledger.PointToScreen(new Noesis.Point(0, 0)).Y));
+            ExecuteCommand(tracking.Command);
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.True);
+
+            var output = TryGetVisualOutputDirectory();
+            if (output != null)
+            {
+                yield return CaptureCamera(output, "field-ledger-scrolled-with-event", camera.GetComponent<Camera>());
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator FixedCrossRendersAndInspectsOnlyPlayableCells()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            Assert.That(runtime, Is.Not.Null);
+            var preview = runtime.SpeciesPreview;
+            preview.StopSimulation();
+            var originalScenarios = preview.ScenarioOptions.ToArray();
+            var originalSelection = preview.SelectedScenarioIndex;
+            var scenario = UnityEngine.Object.Instantiate(preview.SelectedScenario);
+            try
+            {
+                JsonUtility.FromJsonOverwrite(
+                    $"{{\"height\":40,\"mapLayout\":{{\"shape\":{(int)MapTopologyDefinition.FixedShape.Cross}}}}}", scenario);
+                preview.ConfigureScenarioOptions(new[] { scenario });
+                Assert.That(preview.TrySelectScenario(0, out var message), Is.True, message);
+                preview.StartSimulation();
+                preview.PauseSimulation();
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                yield return null;
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                yield return null;
+
+                var camera = GameObject.Find("Prototype Camera");
+                var board = camera.GetComponent("SaltyGame.VM_SimulationBoard");
+                var snapshot = (SimulationBoardSnapshot)GetProperty(board, "Snapshot");
+                Assert.That(snapshot.Width, Is.EqualTo(40));
+                Assert.That(snapshot.Height, Is.EqualTo(40));
+                Assert.That(snapshot.Tick, Is.EqualTo(preview.Run.Tick));
+                Assert.That(snapshot.Tick, Is.GreaterThanOrEqualTo(2));
+                Assert.That(snapshot.TryGetCell(0, 0, out _), Is.False);
+
+                var content = (Noesis.FrameworkElement)GetProperty(camera.GetComponent("NoesisView"), "Content");
+                var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
+                var boardElement = (Noesis.UIElement)(content.FindName("SimulationBoard")
+                    ?? (window?.Content as Noesis.FrameworkElement)?.FindName("SimulationBoard"));
+                Assert.That(boardElement, Is.Not.Null);
+                boardElement.RaiseEvent(new Noesis.KeyEventArgs(boardElement, Noesis.UIElement.KeyDownEvent,
+                    Noesis.Key.Right, Noesis.KeyStates.Down));
+                var selectedX = (int)GetProperty(board, "SelectedX");
+                var selectedY = (int)GetProperty(board, "SelectedY");
+                Assert.That(snapshot.TryGetCell(selectedX, selectedY, out _), Is.True);
+                boardElement.RaiseEvent(new Noesis.KeyEventArgs(boardElement, Noesis.UIElement.KeyDownEvent,
+                    Noesis.Key.Left, Noesis.KeyStates.Down));
+                Assert.That(GetProperty(board, "SelectedX"), Is.EqualTo(selectedX));
+                Assert.That(GetProperty(board, "SelectedY"), Is.EqualTo(selectedY));
+
+                var selectCell = board.GetType().GetMethod("SelectCell");
+                Assert.That(selectCell.Invoke(board, new object[] { 0, 0 }), Is.False);
+                Assert.That(selectCell.Invoke(board, new object[] { 0, 20 }), Is.True);
+                var output = TryGetVisualOutputDirectory();
+                if (output != null)
+                {
+                    yield return CaptureCamera(output, "bev-ticket-2-wrapped-cross", camera.GetComponent<Camera>());
+                }
+
+                var trackButton = (content.FindName("TrackCreatureButton")
+                    ?? (window?.Content as Noesis.FrameworkElement)?.FindName("TrackCreatureButton")) as Noesis.Button;
+                Assert.That(trackButton, Is.Not.Null);
+                yield return TrackSameCreatureAcrossRowSeam(preview, board, trackButton, camera.GetComponent<Camera>(), output,
+                    sourceX: 0, arrivalX: snapshot.Width - 1, row: snapshot.Height / 2);
+            }
+            finally
+            {
+                preview.StopSimulation();
+                preview.ConfigureScenarioOptions(originalScenarios, originalSelection);
+                UnityEngine.Object.Destroy(scenario);
+            }
+        }
+
+        internal static IEnumerator TrackSameCreatureAcrossRowSeam(
+            SpeciesSimulationPreview preview, Component board, Noesis.Button button, Camera camera, string output,
+            int sourceX, int arrivalX, int row)
+        {
+            var run = preview.Run;
+            var initial = run.Cells.Copy(cell => cell.IsCreature ? SpeciesCell.Empty : cell);
+            var rabbit = new SpeciesId("rabbit");
+            var creature = new SpeciesCell(rabbit, energy: 10);
+            initial.SetCell(sourceX, row, creature);
+            initial.SetCell(arrivalX, row, SpeciesCell.Empty);
+            AdvancePausedRun(run, initial, preview.StepInterval);
+            yield return null;
+
+            var select = board.GetType().GetMethod("SelectCell");
+            Assert.That(select.Invoke(board, new object[] { arrivalX, row }), Is.True);
+            Assert.That(button.Command.CanExecute(null), Is.False);
+            Assert.That(select.Invoke(board, new object[] { sourceX, row }), Is.True);
+            ExecuteCommand(button.Command);
+            yield return null;
+            Assert.That(button.Content, Is.EqualTo("STOP TRACKING"));
+            Assert.That(GetProperty(board, "InspectionText"), Does.Contain($"TRACKING RABBIT #{creature.EntityId}"));
+            if (output != null)
+            {
+                yield return CaptureCamera(output, "creature-tracking-before-wrap", camera);
+            }
+
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var empty = new GridPattern(Array.Empty<Vector2Int>());
+            var rules = new Dictionary<SpeciesId, SpeciesRules>(preview.ActiveSpeciesRules)
+            {
+                [rabbit] = new SpeciesRules(1f, left, left, 0, empty, 0, left, null, empty, 0, 0f, 0),
+            };
+            var moved = SpeciesSimulation.Step(initial, rules, run.Seed);
+            Assert.That(moved.GetCell(arrivalX, row).EntityId, Is.EqualTo(creature.EntityId));
+            Assert.That(moved.GetCell(sourceX, row).IsCreature, Is.False);
+            AdvancePausedRun(run, moved, preview.StepInterval);
+            yield return null;
+
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.True);
+            Assert.That(GetProperty(board, "SelectedX"), Is.EqualTo(arrivalX));
+            Assert.That(GetProperty(board, "SelectedY"), Is.EqualTo(row));
+            Assert.That(GetProperty(board, "InspectionText"), Does.Contain($"TRACKING RABBIT #{creature.EntityId}"));
+            if (output != null)
+            {
+                yield return CaptureCamera(output, "creature-tracking-after-wrap", camera);
+            }
+
+            ExecuteCommand(button.Command);
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.False);
+            Assert.That(GetProperty(board, "SelectedX"), Is.EqualTo(arrivalX));
+            ExecuteCommand(button.Command);
+            var replacement = moved.Copy();
+            replacement.SetCell(arrivalX, row, new SpeciesCell(rabbit, energy: 10));
+            AdvancePausedRun(run, replacement, preview.StepInterval);
+            yield return null;
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.False);
+            Assert.That(GetProperty(board, "HasSelection"), Is.False);
+        }
+
+        private static void AdvancePausedRun(SimulationRunState run, Grid<SpeciesCell> cells, float stepInterval)
+        {
+            run.Resume();
+            run.Advance(cells, stepInterval);
+            run.Pause();
+        }
+
+        [UnityTest]
         public IEnumerator LiveBoardInspectionAndSpeedControlsUseCurrentRun()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
@@ -38,16 +237,16 @@ namespace SaltyGame.PlayModeTests
 
             var snapshot = (SimulationBoardSnapshot)board.GetType().GetProperty("Snapshot").GetValue(board);
             Assert.That(snapshot, Is.Not.Null);
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var found = false;
             for (var y = 0; y < snapshot.Height && !found; y++)
             for (var x = 0; x < snapshot.Width && !found; x++)
             {
                 var cell = snapshot.GetCell(x, y);
-                if (!cell.IsCreature || cell.SpeciesId != hare) continue;
+                if (!cell.IsCreature || cell.SpeciesId != rabbit) continue;
                 Assert.That(board.GetType().GetMethod("SelectCell").Invoke(board, new object[] { x, y }), Is.True);
                 var inspection = (string)board.GetType().GetProperty("InspectionText").GetValue(board);
-                Assert.That(inspection, Does.Contain("HARE").And.Contain("Health"));
+                Assert.That(inspection, Does.Contain("RABBIT").And.Contain("Health"));
                 found = true;
             }
             Assert.That(found, Is.True);
@@ -61,7 +260,7 @@ namespace SaltyGame.PlayModeTests
                     as Noesis.TextBlock;
             }
             Assert.That(inspectionText, Is.Not.Null);
-            Assert.That(inspectionText.Text, Does.Contain("HARE"));
+            Assert.That(inspectionText.Text, Does.Contain("RABBIT"));
 
             var shell = camera.GetComponent("SaltyGame.VM_SimulationShell");
             Assert.That(shell.GetType().GetProperty("ObjectiveText").GetValue(shell), Does.Contain("GOAL"));
@@ -136,6 +335,8 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(loops.Length, Is.EqualTo(2));
                 Assert.That(loops.All(source => source.loop && source.clip != null), Is.True);
                 Assert.That(loops[0].clip, Is.Not.SameAs(loops[1].clip));
+                Assert.That(loops[1].clip.name, Is.EqualTo("CalmTrack"));
+                Assert.That(loops[1].clip.loadType, Is.EqualTo(AudioClipLoadType.Streaming));
                 var createCue = palette.GetMethod("CreateCue", BindingFlags.NonPublic | BindingFlags.Static);
                 var names = new[] { "Selection", "Upgrade", "Danger", "Success", "Failure" };
                 for (var index = 0; index < names.Length; index++)
@@ -155,6 +356,83 @@ namespace SaltyGame.PlayModeTests
         public IEnumerator FreshProfileCanChooseAnOpeningResponse()
         {
             yield return VerifyProfileResearchOpening(false);
+        }
+
+        [UnityTest]
+        public IEnumerator DesktopHasAnAudioListenerAfterTheIntroChime()
+        {
+            var backup = ProfilePlayerPrefsBackup.Capture();
+            try
+            {
+                yield return SceneManager.LoadSceneAsync("MainMenu");
+                yield return null;
+                var menu = GameObject.Find("Main Camera");
+                var profile = menu.GetComponent<Helper_ProfileSession>();
+                profile.SetPlaytimeTracking(false);
+                profile.CreateProfile("Desktop audio listener check");
+                ExecuteCommand(GetProperty(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand"));
+                var deadline = Time.realtimeSinceStartup + 5f;
+                while (SceneManager.GetActiveScene().name != SceneName && Time.realtimeSinceStartup < deadline)
+                    yield return null;
+                Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(SceneName));
+                yield return new WaitForSecondsRealtime(3f);
+                var desktop = GameObject.Find(DesktopCameraName);
+                var listener = desktop.GetComponent<AudioListener>();
+                Assert.That(listener, Is.Not.Null);
+                Assert.That(listener.enabled, Is.True);
+                Assert.That(UnityEngine.Object.FindObjectsByType<AudioListener>()
+                    .Count(candidate => candidate.enabled), Is.EqualTo(1));
+                ExecuteCommand(GetProperty(desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop"),
+                    "OpenDesktopIconCommand"), "Simulation");
+                Assert.That(listener.enabled, Is.True);
+                Assert.That(desktop.transform.Find("Simulation Audio Bed")?.GetComponents<AudioSource>().Length,
+                    Is.EqualTo(2));
+            }
+            finally { backup.Restore(); }
+        }
+
+        [UnityTest]
+        public IEnumerator PlannerLaunchStartsTheSelectedSandboxSpecies()
+        {
+            yield return SceneManager.LoadSceneAsync(SceneName);
+            yield return null;
+            var desktop = GameObject.Find(DesktopCameraName);
+            var preview = desktop.GetComponent<SpeciesSimulationPreview>();
+            var desktopViewModel = desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            ExecuteCommand(GetProperty(desktopViewModel, "SelectPlannerScenarioCommand"), "FiveSpeciesSandbox");
+            ExecuteCommand(GetProperty(desktopViewModel, "SelectPlannerSpeciesCommand"), "owl");
+            ExecuteCommand(GetProperty(desktopViewModel, "LaunchPlannerCommand"));
+            Assert.That(preview.SelectedScenario.name, Is.EqualTo("FiveSpeciesSandbox"));
+            Assert.That(preview.PlayerSpecies.Value, Is.EqualTo("owl"));
+            Assert.That(GetProperty(desktop.GetComponent("SaltyGame.VM_SimulationShell"),
+                "LaunchSelectionVisibility").ToString(), Is.EqualTo("Collapsed"));
+        }
+
+        [UnityTest]
+        public IEnumerator PlannerLaunchRunsFoxSandboxForTenTicks()
+        {
+            yield return SceneManager.LoadSceneAsync(SceneName);
+            yield return null;
+            var desktop = GameObject.Find(DesktopCameraName);
+            var preview = desktop.GetComponent<SpeciesSimulationPreview>();
+            var planner = desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            ExecuteCommand(GetProperty(planner, "SelectPlannerScenarioCommand"), "FiveSpeciesSandbox");
+            ExecuteCommand(GetProperty(planner, "SelectPlannerSpeciesCommand"), "fox");
+            ExecuteCommand(GetProperty(planner, "LaunchPlannerCommand"));
+            Assert.That(preview.SelectedScenario.name, Is.EqualTo("FiveSpeciesSandbox"));
+            Assert.That(preview.PlayerSpecies.Value, Is.EqualTo("fox"));
+            if (preview.Run == null) preview.StartSimulation();
+            Assert.That(preview.Run, Is.Not.Null);
+            preview.PauseSimulation();
+            var startingTick = preview.Run.Tick;
+            for (var tick = 0; tick < 10; tick++)
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            Assert.That(preview.Run.Tick, Is.EqualTo(startingTick + 10));
+            Assert.That(preview.Run.PopulationHistory.Last().GetCount(new SpeciesId("fox")), Is.GreaterThan(0));
+            var output = TryGetVisualOutputDirectory();
+            if (output != null)
+                yield return CaptureCamera(output, "fox-sandbox-tick-10",
+                    GameObject.Find(SimulationCameraName).GetComponent<Camera>());
         }
 
         [UnityTest]
@@ -186,15 +464,15 @@ namespace SaltyGame.PlayModeTests
                 {
                     // Research bought on the Desktop must apply without reloading the scene.
                     profile = root.GetComponent<Helper_ProfileSession>();
-                    profile.AddRabbitData(15);
-                    Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
-                    Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.guarded-burrow", out error), Is.True, error);
+                    profile.AddRabbitData(20);
+                    Assert.That(profile.TryPurchaseRabbitGenomeLicense(id, out var error), Is.True, error);
+                    Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.guarded-burrow", out error), Is.True, error);
                 }
                 ExecuteCommand(GetProperty(desktop, "OpenDesktopIconCommand"), "Simulation");
                 yield return null;
                 var preview = root.GetComponent<SpeciesSimulationPreview>();
                 var shell = root.GetComponent("SaltyGame.VM_SimulationShell");
-                Assert.That(GetProperty(shell, "JourneyMapSummary"), Does.Contain("Foxes hunt your Hares"));
+                Assert.That(GetProperty(shell, "JourneyMapSummary"), Does.Contain("Foxes hunt your Rabbits"));
                 var opening = preview.JourneyMap.StartNode;
                 Assert.That(preview.ChooseJourneyNode(opening.NodeId), Is.True);
                 Assert.That(preview.JourneyRewardOptionCount, Is.EqualTo(3));
@@ -228,27 +506,31 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP reproduction visual").ProfileId;
-                profile.AddRabbitData(15);
-                Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
-                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.reproductive-drive", out error), Is.True, error);
+                profile.AddRabbitData(60);
+                Assert.That(profile.TryPurchaseRabbitGenomeLicense(id, out var error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.crowding-tolerance", out error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.reproductive-drive", out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(preview, false);
                 typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(preview, 10100);
                 SpeciesPresentationPlayModeTests.ConfigureAuthoredFieldDataScenario(preview);
                 ExecuteCommand(GetProperty(desktop, "OpenDesktopIconCommand"), "Simulation");
                 yield return null;
-                var hare = new SpeciesId("hare");
-                var rules = preview.GetSpeciesRuleEditValues(hare);
+                var rabbit = new SpeciesId("rabbit");
+                var rules = preview.GetSpeciesRuleEditValues(rabbit);
                 rules.ReproductionChance = "0.5";
-                Assert.That(preview.TryApplySpeciesRuleEditValues(hare, rules, out error), Is.True, error);
+                Assert.That(preview.TryApplySpeciesRuleEditValues(rabbit, rules, out error), Is.True, error);
                 ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
                 ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
                 preview.PauseSimulation();
                 Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.ReproductiveDriveId), Is.Zero);
                 for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
                 var choices = preview.FieldDataSession.GetCurrentRoundRewardChoices();
-                Assert.That(choices.Choices, Has.Count.EqualTo(1));
-                var choice = choices.Choices.Single();
+                Assert.That(choices.Choices.Select(choice => choice.OrdinaryUpgrade.Id),
+                    Does.Contain(SpeciesUpgradeCatalog.CrowdingToleranceId)
+                        .And.Contain(SpeciesUpgradeCatalog.ReproductiveDriveId));
+                var choice = choices.Choices.Single(choice =>
+                    choice.OrdinaryUpgrade.Id == SpeciesUpgradeCatalog.ReproductiveDriveId);
                 Assert.That(choice.OrdinaryUpgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.ReproductiveDriveId));
                 var output = TryGetVisualOutputDirectory();
                 if (output != null)
@@ -277,9 +559,9 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP crowding visual").ProfileId;
-                profile.AddRabbitData(15);
-                Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
-                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.crowding-tolerance", out error), Is.True, error);
+                profile.AddRabbitData(20);
+                Assert.That(profile.TryPurchaseRabbitGenomeLicense(id, out var error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.crowding-tolerance", out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(preview, false);
                 typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(preview, 10100);
@@ -322,9 +604,16 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP seed visual").ProfileId;
-                profile.AddRabbitData(15);
-                Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
-                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.seed-dispersal", out error), Is.True, error);
+                profile.AddRabbitData(150);
+                Assert.That(profile.TryPurchaseRabbitGenomeLicense(id, out var error), Is.True, error);
+                foreach (var prerequisite in new[] { "rabbit.open-ground-sprint", "rabbit.keen-hearing",
+                             "rabbit.crowding-tolerance", "rabbit.reproductive-drive", "rabbit.escape-instinct" })
+                    Assert.That(profile.TryPurchaseRabbitGenomeNode(id, prerequisite, out error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.seed-dispersal", out error), Is.True, error);
+                profile.AddResearchData(FieldDataPermanentProgressionDefinition.ResetResearchDataFee);
+                Assert.That(profile.TryResetGenomeLoadout(id, new SpeciesId("rabbit"), 0, out error), Is.True, error);
+                Assert.That(profile.TryArrangeGenomeLoadout(id, new SpeciesId("rabbit"), 1,
+                    new[] { "rabbit.seed-dispersal" }, out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
                     .SetValue(preview, false);
@@ -339,8 +628,9 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.SeedDispersalId), Is.Zero);
                 for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
                 var choices = preview.FieldDataSession.GetCurrentRoundRewardChoices();
-                Assert.That(choices.Choices, Has.Count.EqualTo(1));
-                var seed = choices.Choices.Single();
+                Assert.That(choices.Choices.Select(choice => choice.OrdinaryUpgrade.Id),
+                    Does.Contain(SpeciesUpgradeCatalog.SeedDispersalId));
+                var seed = choices.Choices.Single(choice => choice.OrdinaryUpgrade.Id == SpeciesUpgradeCatalog.SeedDispersalId);
                 Assert.That(seed.OrdinaryUpgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.SeedDispersalId));
                 var output = TryGetVisualOutputDirectory();
                 if (output != null)
@@ -352,7 +642,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator LongStrideResearchAppearsInFieldDataAndCanBeChosen()
+        public IEnumerator LongStrideResearchAddsFasterMovementToEligibleJourneyPool()
         {
             var backup = ProfilePlayerPrefsBackup.Capture();
             try
@@ -368,31 +658,35 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP Long Stride visual").ProfileId;
-                profile.AddRabbitData(20);
-                Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
-                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.guarded-burrow", out error), Is.True, error);
-                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.swift-digging", out error), Is.True, error);
+                profile.AddRabbitData(60);
+                Assert.That(profile.TryPurchaseRabbitGenomeLicense(id, out var error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.open-ground-sprint", out error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.keen-hearing", out error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.swift-digging", out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
+                Assert.That(FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile.Current,
+                    new SpeciesId("rabbit"))(SpeciesUpgradeCatalog.FasterMovementId), Is.True,
+                    "Long Stride research must unlock Faster Movement as a journey Mutation.");
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
                     .SetValue(preview, false);
                 typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .SetValue(preview, 10100);
+                    .SetValue(preview, 10102);
                 SpeciesPresentationPlayModeTests.ConfigureAuthoredFieldDataScenario(preview);
                 ExecuteCommand(GetProperty(desktop, "OpenDesktopIconCommand"), "Simulation");
                 yield return null;
                 ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
                 ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
                 preview.PauseSimulation();
-                for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
-                var choices = preview.FieldDataSession.GetCurrentRoundRewardChoices();
-                var stride = choices.Choices.Single(choice => choice.OrdinaryUpgrade.Id == SpeciesUpgradeCatalog.FasterMovementId);
-                Assert.That(stride.DisplayName, Is.EqualTo("LONG STRIDE"));
-                var output = TryGetVisualOutputDirectory();
-                if (output != null)
-                    yield return CaptureCamera(output, "gljp-long-stride-choice", GameObject.Find(SimulationCameraName).GetComponent<Camera>());
-                var before = preview.Progression.CurrentRules.MovementSpeed;
-                Assert.That(preview.FieldDataSession.ResolveRewardChoice(choices.SourceId, stride.Id, out error), Is.True, error);
-                Assert.That(preview.Progression.CurrentRules.MovementSpeed, Is.GreaterThan(before));
+                var poolField = typeof(FieldDataJourneySession).GetField("ordinaryRewardPool",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                var pool = (List<SpeciesUpgradeSnapshot>)poolField.GetValue(preview.FieldDataSession);
+                Assert.That(pool.Select(upgrade => upgrade.Id), Does.Contain(SpeciesUpgradeCatalog.FasterMovementId),
+                    "Long Stride must add Faster Movement to the randomized journey reward pool.");
+                var eligible = typeof(FieldDataJourneySession).GetMethod("IsOrdinaryRewardEligible",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That((bool)eligible.Invoke(preview.FieldDataSession,
+                    new object[] { pool.Single(upgrade => upgrade.Id == SpeciesUpgradeCatalog.FasterMovementId) }), Is.True,
+                    "Faster Movement remains eligible when the current randomized three-choice offer omits it.");
             }
             finally { backup.Restore(); }
         }
@@ -414,10 +708,11 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP senses visual").ProfileId;
-                profile.AddRabbitData(20);
-                Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
-                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.guarded-burrow", out error), Is.True, error);
-                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.keen-hearing", out error), Is.True, error);
+                profile.AddRabbitData(50);
+                Assert.That(profile.TryPurchaseRabbitGenomeLicense(id, out var error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.guarded-burrow", out error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.open-ground-sprint", out error), Is.True, error);
+                Assert.That(profile.TryPurchaseRabbitGenomeNode(id, "rabbit.keen-hearing", out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
                     .SetValue(preview, false);
@@ -444,7 +739,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator FieldDataRoundCapturesMutationAndRemainingHarePurchases()
+        public IEnumerator FieldDataRoundCapturesMutationAndUnspentRabbitAllowance()
         {
             var backup = ProfilePlayerPrefsBackup.Capture();
             try
@@ -483,14 +778,16 @@ namespace SaltyGame.PlayModeTests
                 var output = TryGetVisualOutputDirectory();
                 if (output != null) yield return CaptureCamera(output, "gljp-journey-mutation", camera);
                 ExecuteCommand(GetProperty(shell, "ContinueWithoutUpgradeCommand"));
-                Assert.That(GetProperty(shell, "AddHaresText").ToString(), Does.Contain("10 LEFT"));
-                ExecuteCommand(GetProperty(shell, "AddHaresCommand"));
-                Assert.That(GetProperty(shell, "AddHaresText").ToString(), Does.Contain("9 LEFT"));
-                Assert.That(preview.FieldDataSession.PurchasedHaresThisSimulation, Is.EqualTo(1));
+                Assert.That(GetProperty(shell, "AddRabbitsText").ToString(), Does.Contain("10 LEFT"));
+                ExecuteCommand(GetProperty(shell, "AddRabbitsCommand"));
+                yield return null;
+                Assert.That(GetProperty(shell, "AddRabbitsText").ToString(), Does.Contain("10 LEFT"));
+                Assert.That(preview.FieldDataSession.PurchasedRabbitsThisSimulation, Is.Zero);
+                Assert.That(GetProperty(shell, "FieldDataStatusText").ToString(), Does.Contain("not enough Field Data"));
                 if (output != null)
                 {
                     yield return BringFieldDataElementIntoView(camera, "FieldDataIncomePanel");
-                    yield return CaptureCamera(output, "gljp-hare-purchases-remaining", camera);
+                    yield return CaptureCamera(output, "gljp-rabbit-purchases-remaining", camera);
                 }
             }
             finally { backup.Restore(); }
@@ -526,6 +823,8 @@ namespace SaltyGame.PlayModeTests
                     .SetValue(preview, 10100);
                 SpeciesPresentationPlayModeTests.ConfigureAuthoredFieldDataScenario(preview);
                 ExecuteCommand(GetProperty(desktop, "OpenDesktopIconCommand"), "Simulation");
+                ExecuteCommand(GetProperty(shell, "ContinueLaunchSelectionCommand"));
+                Assert.That(GetProperty(shell, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Collapsed"));
                 yield return null;
                 yield return null;
                 var camera = GameObject.Find(SimulationCameraName).GetComponent<Camera>();
@@ -552,14 +851,14 @@ namespace SaltyGame.PlayModeTests
                         if (!advanced)
                         {
                             var run = preview.Run;
-                            var hareDeaths = run.Metrics.DeathEvents.Where(death =>
+                            var rabbitDeaths = run.Metrics.DeathEvents.Where(death =>
                                 death.IsCreature && death.Species == run.PlayerSpeciesId).ToArray();
                             var populationRows = run.PopulationHistory.Select(population => FormattableString.Invariant(
                                 $"{population.Tick},{population.Plants},{population.GetCount(run.PlayerSpeciesId)},{population.GetCount(new SpeciesId("fox"))}"));
                             File.WriteAllLines(Path.Combine(outputDirectory, "authored-route-populations.csv"),
-                                new[] { "tick,plants,hares,foxes" }.Concat(populationRows));
-                            File.WriteAllLines(Path.Combine(outputDirectory, "authored-route-hare-deaths.csv"),
-                                new[] { "tick,cause,x,y" }.Concat(hareDeaths.Select(death => FormattableString.Invariant(
+                                new[] { "tick,plants,rabbits,foxes" }.Concat(populationRows));
+                            File.WriteAllLines(Path.Combine(outputDirectory, "authored-route-rabbit-deaths.csv"),
+                                new[] { "tick,cause,x,y" }.Concat(rabbitDeaths.Select(death => FormattableString.Invariant(
                                     $"{death.Tick},{death.Cause},{death.X},{death.Y}"))));
                             var resourceDeaths = run.Metrics.DeathEvents.Where(death => !death.IsCreature);
                             File.WriteAllLines(Path.Combine(outputDirectory, "authored-route-resource-deaths.csv"),
@@ -744,13 +1043,13 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                     "36", "20", "10100", "2000", "0", "1800", "0.2", "0", "0", "0", false,
                     "300", "200", "0", out var error), Is.True, error);
-                var hare = new SpeciesId("hare");
-                var rules = preview.GetSpeciesRuleEditValues(hare);
+                var rabbit = new SpeciesId("rabbit");
+                var rules = preview.GetSpeciesRuleEditValues(rabbit);
                 rules.MovementEnabled = false;
                 rules.ReproductionEnabled = false;
                 rules.Metabolism = "0";
                 ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
-                Assert.That(preview.TryApplySpeciesRuleEditValues(hare, rules, out error), Is.True, error);
+                Assert.That(preview.TryApplySpeciesRuleEditValues(rabbit, rules, out error), Is.True, error);
                 ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
                 preview.PauseSimulation();
                 var session = preview.FieldDataSession;
@@ -769,7 +1068,7 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(visit.Offers, Has.Count.EqualTo(2));
                 Assert.That((string)GetProperty(shell, "FieldDataShopSummaryText"), Does.Contain("2 offers · Wallet"));
                 Assert.That(visit.Offers.All(offer => offer.Kind == FieldDataShopOfferKind.IncomeModifier), Is.True);
-                var plusIndex = visit.Offers.ToList().FindIndex(offer => offer.Id == "income-plus-one-per-hare");
+                var plusIndex = visit.Offers.ToList().FindIndex(offer => offer.Id == "income-plus-one-per-rabbit");
                 var tierIndex = visit.Offers.ToList().FindIndex(offer => offer.Id == "income-multiply-one-point-five");
                 Assert.That(plusIndex, Is.GreaterThanOrEqualTo(0));
                 Assert.That(tierIndex, Is.GreaterThanOrEqualTo(0));
@@ -823,8 +1122,8 @@ namespace SaltyGame.PlayModeTests
                 ExecuteCommand(GetProperty(shell, "PurchaseRewardOption1Command"));
                 Assert.That(session.GetCurrentRoundRewardChoices().Resolved, Is.True);
                 Assert.That(session.Ledger.Balance, Is.EqualTo(beforeReward));
-                Assert.That(GetProperty(shell, "CanAddHares"), Is.EqualTo(true));
-                ExecuteCommand(GetProperty(shell, "AddHaresCommand"));
+                Assert.That(GetProperty(shell, "CanAddRabbits"), Is.EqualTo(true));
+                ExecuteCommand(GetProperty(shell, "AddRabbitsCommand"));
                 Assert.That(session.Ledger.Balance, Is.EqualTo(beforeReward - 10));
                 yield return BringFieldDataElementIntoView(camera, "FieldDataIncomePanel");
                 yield return CaptureCamera(outputDirectory, "fd-round-7-after-shop-population-purchase", camera);
@@ -918,6 +1217,8 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(((UnityEngine.Object)GetProperty(preview, "SelectedScenario")).name, Is.EqualTo("ForestEdge"));
 
                 preview.SaveCurrentSettingsAsDefault();
+                var expectedWidth = preview.GridWidth;
+                var expectedHeight = preview.GridHeight;
                 var authoredSettings = PlayerPrefs.GetString(CurrentDefaultSettingsKey);
                 var legacySettings = authoredSettings
                     .Replace($"\"width\":{(int)GetProperty(preview, "GridWidth")}", "\"width\":64")
@@ -934,11 +1235,11 @@ namespace SaltyGame.PlayModeTests
 
                 desktopRoot = GameObject.Find(DesktopCameraName);
                 preview = desktopRoot.GetComponent<SpeciesSimulationPreview>();
-                Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(36));
-                Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(20));
+                Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(expectedWidth));
+                Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(expectedHeight));
                 var migratedSettings = PlayerPrefs.GetString(CurrentDefaultSettingsKey);
-                StringAssert.Contains("\"width\":36", migratedSettings);
-                StringAssert.Contains("\"height\":20", migratedSettings);
+                StringAssert.Contains($"\"width\":{expectedWidth}", migratedSettings);
+                StringAssert.Contains($"\"height\":{expectedHeight}", migratedSettings);
             }
             finally
             {
@@ -1009,6 +1310,9 @@ namespace SaltyGame.PlayModeTests
             Assert.That(desktop, Is.Not.Null);
             Assert.That(session, Is.Not.Null);
             session.SetPlaytimeTracking(false);
+            // This visual fixture enters the permanent Gene Lab flow explicitly rather than
+            // the standalone desktop's legacy POC default.
+            desktop.GetType().GetMethod("BindProfileSession")?.Invoke(desktop, new object[] { session, true });
             var backup = ProfilePlayerPrefsBackup.Capture();
             session.CreateProfile("Gene Lab visual");
             var open = GetProperty(desktop, "OpenDesktopIconCommand");
@@ -1020,7 +1324,7 @@ namespace SaltyGame.PlayModeTests
             if (outputDirectory != null)
                 yield return CaptureCamera(outputDirectory, "gene-lab-locked", desktopRoot.GetComponent<Camera>());
 
-            session.AddRabbitData(2);
+            session.AddRabbitData(20);
             session.AddResearchData(1);
             for (var index = 1; index <= 3; index++)
                 session.RecordCompletedRun($"visual-genome-{index}");
@@ -1031,7 +1335,7 @@ namespace SaltyGame.PlayModeTests
                 ?.Invoke(GetProperty(lab, "PurchaseNodeCommand"), new object[] { null });
             Assert.That(GetProperty(windows[0], "ActiveGenomeCapacityText"), Is.EqualTo("1 / 8"));
             if (outputDirectory != null)
-                yield return CaptureCamera(outputDirectory, "gene-lab-fertile-droppings-active", desktopRoot.GetComponent<Camera>());
+                yield return CaptureCamera(outputDirectory, "gene-lab-permanent-node-active", desktopRoot.GetComponent<Camera>());
 
             yield return SceneManager.LoadSceneAsync("MainMenu");
             backup.Restore();
@@ -1090,6 +1394,15 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview, Is.Not.Null);
             Assert.That(simulationViewModel, Is.Not.Null);
             Assert.That(GetProperty(preview, "State").ToString(), Is.EqualTo("Ready"));
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(GetProperty(simulationViewModel, "JourneyMapVisibility").ToString(), Is.EqualTo("Collapsed"));
+            yield return CaptureCamera(outputDirectory, "03-galapagos-species-scenario-selection", simulationCamera);
+            ExecuteCommand(GetProperty(simulationViewModel, "LeaveLaunchSelectionCommand"));
+            Assert.That(desktopRoot.GetComponent<Camera>().enabled, Is.True);
+            ExecuteCommand(openCommand, "Simulation");
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Visible"));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Collapsed"));
             Assert.That(GetProperty(simulationViewModel, "JourneyMapVisibility").ToString(), Is.EqualTo("Visible"));
             for (var frame = 0; frame < 10; frame++) yield return null;
             ResetJourneyHover(simulationViewModel, ((SpeciesSimulationPreview)preview).JourneyMap.StartNode.NodeId);
@@ -1119,6 +1432,8 @@ namespace SaltyGame.PlayModeTests
             yield return CaptureCamera(outputDirectory, "03c-galapagos-journey-right", simulationCamera, settleFrames: 0);
             ExecuteCommand(GetProperty(simulationViewModel, "CloseJourneyMapCommand"));
             ExecuteCommand(openCommand, "Simulation");
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Visible"));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
             yield return null;
             yield return null;
             Assert.That(scrollViewer.HorizontalOffset, Is.EqualTo(0f).Within(1f),
@@ -1150,17 +1465,19 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetProperty(preview, "State").ToString(), Is.EqualTo("Running"));
             Assert.That(GetProperty(simulationViewModel, "SettingsVisibility").ToString(), Is.EqualTo("Collapsed"));
             Assert.That(GetProperty(simulationViewModel, "RunningVisibility").ToString(), Is.EqualTo("Visible"));
-            Assert.That(((UnityEngine.Object)GetProperty(preview, "SelectedScenario")).name, Is.EqualTo("ForestEdge"));
-            Assert.That(GetProperty(GetProperty(preview, "PlayerSpecies"), "Value"), Is.EqualTo("hare"));
-            Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(36));
-            Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(20));
+            var authoredScenario = ((SpeciesSimulationPreview)preview).SelectedScenario;
+            Assert.That(authoredScenario.name, Is.EqualTo("ForestEdge"));
+            var authoredData = authoredScenario.CreateRuntimeData();
+            Assert.That(GetProperty(GetProperty(preview, "PlayerSpecies"), "Value"), Is.EqualTo("rabbit"));
+            Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(authoredData.Width));
+            Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(authoredData.Height));
 
             var boardViewModel = desktopRoot.GetComponent("SaltyGame.VM_SimulationBoard");
             Assert.That(boardViewModel, Is.Not.Null);
             var snapshot = GetProperty(boardViewModel, "Snapshot");
             Assert.That(snapshot, Is.Not.Null);
-            Assert.That(GetProperty(snapshot, "Width"), Is.EqualTo(36));
-            Assert.That(GetProperty(snapshot, "Height"), Is.EqualTo(20));
+            Assert.That(GetProperty(snapshot, "Width"), Is.EqualTo(authoredData.Width));
+            Assert.That(GetProperty(snapshot, "Height"), Is.EqualTo(authoredData.Height));
 
             Assert.That(GetProperty(simulationViewModel, "HerbivorePopulation"), Is.GreaterThan(0));
             Assert.That(GetProperty(simulationViewModel, "CarnivorePopulation"), Is.GreaterThan(0));
@@ -1225,13 +1542,13 @@ namespace SaltyGame.PlayModeTests
             yield return null;
             yield return CaptureCamera(outputDirectory, "06-mating-before", simulationCamera, settleFrames: 1);
 
-            var hareId = new SpeciesId("hare");
-            var hareFound = false;
-            for (var y = 0; y < boardSnapshot.Height && !hareFound; y++)
+            var rabbitId = new SpeciesId("rabbit");
+            var rabbitFound = false;
+            for (var y = 0; y < boardSnapshot.Height && !rabbitFound; y++)
             {
                 for (var x = 0; x < boardSnapshot.Width; x++)
                 {
-                    if (boardSnapshot.GetCell(x, y).SpeciesId != hareId)
+                    if (boardSnapshot.GetCell(x, y).SpeciesId != rabbitId)
                     {
                         continue;
                     }
@@ -1239,12 +1556,12 @@ namespace SaltyGame.PlayModeTests
                     var mateX = x + 1 < boardSnapshot.Width ? x + 1 : x - 1;
                     var childY = y + 1 < boardSnapshot.Height ? y + 1 : y - 1;
                     setMatingCue.Invoke(board, new object[] { x, y, mateX, y, x, childY, boardSnapshot.Tick + 2 });
-                    hareFound = true;
+                    rabbitFound = true;
                     break;
                 }
             }
 
-            Assert.That(hareFound, Is.True, "Visual proof needs a Hare on the board.");
+            Assert.That(rabbitFound, Is.True, "Visual proof needs a Rabbit on the board.");
             presentBirthReaction.Invoke(simulationViewModel, new object[] { 1, false });
             Assert.That(GetProperty(simulationViewModel, "EventReactionVisibility").ToString(), Is.EqualTo("Visible"));
             Assert.That(GetProperty(simulationViewModel, "EventReactionRabbitVisibility").ToString(), Is.EqualTo("Visible"));
@@ -1269,6 +1586,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.TryApplyContinuousPhases(true, "1", out var message), Is.True, message);
 
             ExecuteCommand(GetProperty(desktopViewModel, "OpenDesktopIconCommand"), "Simulation");
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Visible"));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
             Assert.That(GetProperty(simulationViewModel, "JourneyMapVisibility").ToString(), Is.EqualTo("Visible"));
             ExecuteCommand(GetProperty(FindJourneyNode(simulationViewModel, "forest-edge-start"), "ChooseCommand"));
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.JourneyNodeReward));
@@ -1366,6 +1685,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.TryApplyContinuousPhases(true, "1", out var phaseMessage), Is.True, phaseMessage);
             ExecuteCommand(openCommand, "Simulation");
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
             ExecuteCommand(GetProperty(FindJourneyNode(simulationViewModel, "forest-edge-start"), "ChooseCommand"));
             var rewards = (Array)GetProperty(simulationViewModel, "JourneyRewardItems");
             ExecuteCommand(GetProperty(rewards.GetValue(0), "ChooseCommand"));
@@ -1381,6 +1701,7 @@ namespace SaltyGame.PlayModeTests
             ExecuteCommand(openCommand, "Simulation");
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
             Assert.That(preview.Run, Is.Not.SameAs(completedRun));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
             ExecuteCommand(GetProperty(FindJourneyNode(simulationViewModel, "forest-edge-start"), "ChooseCommand"));
             var secondRewards = (Array)GetProperty(simulationViewModel, "JourneyRewardItems");
             ExecuteCommand(GetProperty(secondRewards.GetValue(0), "ChooseCommand"));
@@ -1429,6 +1750,18 @@ namespace SaltyGame.PlayModeTests
             var parameters = arguments.Length == 0 ? new object[] { null } : arguments;
             Assert.That((bool)command.GetType().GetMethod("CanExecute")?.Invoke(command, parameters), Is.True);
             command.GetType().GetMethod("Execute")?.Invoke(command, parameters);
+        }
+
+        internal static void ChooseFirstForestEdgeCycle(Component simulationShell)
+        {
+            Assert.That(simulationShell, Is.Not.Null);
+            ExecuteCommand(GetProperty(simulationShell, "ContinueLaunchSelectionCommand"));
+            Assert.That(GetProperty(simulationShell, "JourneyMapVisibility").ToString(), Is.EqualTo("Visible"));
+            ExecuteCommand(GetProperty(FindJourneyNode(simulationShell, "forest-edge-start"), "ChooseCommand"));
+            var rewards = (Array)GetProperty(simulationShell, "JourneyRewardItems");
+            ExecuteCommand(GetProperty(rewards.GetValue(0), "ChooseCommand"));
+            ExecuteCommand(GetProperty(FindJourneyNode(simulationShell, "first-cycle"), "ChooseCommand"));
+            Assert.That(GetProperty(simulationShell, "JourneyMapVisibility").ToString(), Is.EqualTo("Collapsed"));
         }
 
         static object FindJourneyNode(object simulationViewModel, string nodeId)

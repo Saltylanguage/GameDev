@@ -20,6 +20,7 @@ namespace SaltyGame
         SimulationBoardSnapshot snapshot;
         int selectedX = -1;
         int selectedY = -1;
+        private long trackedCreatureId;
         readonly List<HuntFootprint> huntFootprints = new List<HuntFootprint>(4);
         long trackedHuntingFoxId;
         int trackedHuntingFoxX;
@@ -44,6 +45,9 @@ namespace SaltyGame
         public bool HasSelection => snapshot != null && snapshot.TryGetCell(selectedX, selectedY, out _);
         public int SelectedX => selectedX;
         public int SelectedY => selectedY;
+        public bool IsTrackingCreature => trackedCreatureId != 0;
+        public string TrackCreatureButtonText => IsTrackingCreature ? "STOP TRACKING" : "TRACK CREATURE";
+        public DelegateCommand TrackCreatureCommand { get; private set; }
         public SimulationCellSnapshot SelectedCell => HasSelection
             ? snapshot.GetCell(selectedX, selectedY)
             : default;
@@ -55,13 +59,25 @@ namespace SaltyGame
                 var cell = SelectedCell;
                 var location = $"CELL {selectedX + 1}, {selectedY + 1}";
                 if (cell.IsCreature)
-                    return $"{location}  {cell.SpeciesId.Value.ToUpperInvariant()}\nHealth {cell.Health}  Energy {cell.Energy}\n{cell.BehaviorState}";
+                {
+                    var species = cell.SpeciesId.Value.ToUpperInvariant();
+                    var heading = IsTrackingCreature
+                        ? $"TRACKING {species} #{trackedCreatureId}\n{location}"
+                        : $"{location}  {species}";
+                    return $"{heading}\nHealth {cell.Health}  Energy {cell.Energy}\n{cell.BehaviorState}";
+                }
                 if (cell.IsMeatResource)
                     return $"{location}  CARCASS\nFood {cell.FoodReserve.ToString("0.#", CultureInfo.InvariantCulture)}";
                 if (cell.IsPlantResource || cell.IsTerrainResource)
                     return $"{location}  FOOD\nAvailable {(cell.IsTerrainResource ? cell.TerrainEnergy : cell.FoodReserve).ToString("0.#", CultureInfo.InvariantCulture)}";
                 return $"{location}  {(cell.TerrainId.IsValid ? cell.TerrainId.Value.ToUpperInvariant() : "GROUND")}\nNo creature or food here.";
             }
+        }
+
+        private void Awake()
+        {
+            TrackCreatureCommand = new DelegateCommand(
+                ToggleCreatureTracking, () => IsTrackingCreature || SelectedCell is { IsCreature: true, EntityId: > 0 });
         }
 
         public void Initialize(SpeciesSimulationPreview simulationPreview)
@@ -82,13 +98,10 @@ namespace SaltyGame
                 return true;
             }
 
+            SetTrackedCreature(0);
             selectedX = x;
             selectedY = y;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedX)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedY)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSelection)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCell)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InspectionText)));
+            NotifySelectionChanged(coordinatesChanged: true);
             return true;
         }
 
@@ -99,13 +112,69 @@ namespace SaltyGame
                 return;
             }
 
+            SetTrackedCreature(0);
             selectedX = -1;
             selectedY = -1;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedX)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedY)));
+            NotifySelectionChanged(coordinatesChanged: true);
+        }
+
+        private void ToggleCreatureTracking()
+        {
+            SetTrackedCreature(IsTrackingCreature ? 0 : SelectedCell.EntityId);
+            NotifySelectionChanged(coordinatesChanged: false);
+        }
+
+        private void SetTrackedCreature(long entityId)
+        {
+            if (trackedCreatureId == entityId)
+            {
+                return;
+            }
+
+            trackedCreatureId = entityId;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTrackingCreature)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TrackCreatureButtonText)));
+        }
+
+        private void NotifySelectionChanged(bool coordinatesChanged)
+        {
+            if (coordinatesChanged)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedX)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedY)));
+            }
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSelection)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCell)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InspectionText)));
+            TrackCreatureCommand?.RaiseCanExecuteChanged();
+        }
+
+        private void UpdateTrackedSelection()
+        {
+            if (!IsTrackingCreature)
+            {
+                return;
+            }
+
+            var current = SelectedCell;
+            if (current.IsCreature && current.EntityId == trackedCreatureId)
+            {
+                return;
+            }
+
+            var cells = snapshot.Cells;
+            for (var index = 0; index < cells.Count; index++)
+            {
+                if (cells[index].IsCreature && cells[index].EntityId == trackedCreatureId)
+                {
+                    selectedX = index % snapshot.Width;
+                    selectedY = index / snapshot.Width;
+                    return;
+                }
+            }
+
+            ClearSelection();
         }
 
         void Update()
@@ -194,16 +263,17 @@ namespace SaltyGame
 
             lastRun = run;
             lastTick = tick;
+            var previousX = selectedX;
+            var previousY = selectedY;
             snapshot = SimulationBoardSnapshot.Create(run, preview.ActiveSpeciesRules, preview.PlayerSpecies);
+            UpdateTrackedSelection();
             if (!HasSelection)
             {
                 ClearSelection();
             }
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Snapshot)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSelection)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCell)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InspectionText)));
+            NotifySelectionChanged(previousX != selectedX || previousY != selectedY);
         }
 
         static SpeciesBirthEvent[] SelectBirthCues(
@@ -230,11 +300,11 @@ namespace SaltyGame
 
         static bool IsCurrentHuntingFox(Grid<SpeciesCell> cells, SpeciesBehaviorTransition transition)
         {
-            if (!cells.IsInBounds(transition.X, transition.Y))
+            if (!cells.IsInBounds(transition.X, transition.Y)
+                || !cells.TryGetCell(transition.X, transition.Y, out var cell))
             {
                 return false;
             }
-            var cell = cells.GetCell(transition.X, transition.Y);
             return cell.IsCreature
                 && cell.SpeciesId == FoxSpeciesId
                 && cell.EntityId == transition.EntityId
@@ -258,8 +328,8 @@ namespace SaltyGame
             {
                 for (var x = 0; x < run.Cells.Width; x++)
                 {
-                    var cell = run.Cells.GetCell(x, y);
-                    if (!cell.IsCreature || cell.SpeciesId != FoxSpeciesId
+                    if (!run.Cells.TryGetCell(x, y, out var cell)
+                        || !cell.IsCreature || cell.SpeciesId != FoxSpeciesId
                         || cell.BehaviorState != SpeciesBehaviorState.Hunting)
                     {
                         continue;

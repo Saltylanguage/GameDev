@@ -231,7 +231,7 @@ MonoBehaviour:
   height: 20
   seed: 12345
   randomizeSeedOnStart: 1
-  playerSpeciesKey: hare
+  playerSpeciesKey: rabbit
   plantProbability: 0.4
   herbivoreProbability: 0.02
   carnivoreProbability: 0.004

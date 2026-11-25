@@ -19,7 +19,7 @@ namespace SaltyGame.EditorTools
         // experiment schedules remain the single simulation implementation.
         public static readonly string[] PortableSourceFiles = new[]
         {
-            "Assets/Scripts/Game/Grid/Grid.cs",
+            "Assets/Scripts/Game/Grid/Grid.cs", "Assets/Scripts/Game/Grid/MapTopology.cs",
             "Assets/Scripts/Game/Grid/GridPattern.cs",
             "Assets/Scripts/Game/Grid/GridPatternTemplates.cs",
             "Assets/Scripts/Game/Grid/GridSimulation.cs",
@@ -71,8 +71,8 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Simulation/SpeciesSimulation.cs",
             "Assets/Scripts/Game/Simulation/SpeciesSimulationMetrics.cs",
             "Assets/Scripts/Game/Simulation/SpeciesSimulationRunner.cs",
-            "Assets/Scripts/Game/Simulation/HareLineage.cs",
-            "Assets/Scripts/Game/Simulation/HareBurrows.cs",
+            "Assets/Scripts/Game/Simulation/RabbitLineage.cs",
+            "Assets/Scripts/Game/Simulation/RabbitBurrows.cs",
             "Assets/Editor/SimulationTools/CellularSimulationExperimentRunner.cs",
             "Assets/Editor/SimulationTools/SimulationReportSerialization.cs",
             "Assets/Editor/SimulationTools/CellSimPortable.cs"
@@ -89,7 +89,7 @@ namespace SaltyGame.EditorTools
             WrapEdgesArgument, GridWidthArgument, GridHeightArgument, StartingPopulationsArgument,
             NodeStartingPopulationsArgument,
             RunTicksArgument, PhaseLengthTicksArgument, PhasesPerNodeArgument, PhaseUpgradeScheduleArgument,
-            PhaseUpgradeAssetScheduleArgument, MutationPolicyArgument, "-harePurchasePolicy",
+            PhaseUpgradeAssetScheduleArgument, MutationPolicyArgument, "-rabbitPurchasePolicy",
             MutationPolicyEarlyFirstChoiceArgument, RunDurationArgument, StepIntervalArgument, "-speciesStats",
             FoxIntroductionTicksArgument
         };
@@ -122,15 +122,16 @@ namespace SaltyGame.EditorTools
             var positions = new Dictionary<long, int>();
             for (var y = 0; y < cells.Height; y++)
                 for (var x = 0; x < cells.Width; x++)
-                    if (cells.GetCell(x, y).IsCreature)
+                    if (cells.IsPlayableCell(x, y) && cells.GetCell(x, y).IsCreature)
                         positions[cells.GetCell(x, y).EntityId] = x + y * cells.Width + 1;
             var fields = typeof(SpeciesCell).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .OrderBy(field => field.Name, StringComparer.Ordinal).ToArray();
             var builder = new StringBuilder();
-            builder.Append(cells.Width).Append('|').Append(cells.Height).Append('|').Append(cells.WrapEdges);
+            builder.Append(cells.Width).Append('|').Append(cells.Height).Append('|').Append(cells.Topology.Fingerprint);
             for (var y = 0; y < cells.Height; y++)
                 for (var x = 0; x < cells.Width; x++)
                 {
+                    if (!cells.IsPlayableCell(x, y)) continue;
                     var cell = cells.GetCell(x, y);
                     foreach (var field in fields)
                     {
@@ -162,8 +163,8 @@ namespace SaltyGame.EditorTools
         public static string PortableRunStateDigest(SimulationRunState run)
         {
             var surface = PortableStateDigest(run.Cells);
-            var hareJourneyState = run.GetHareJourneyStateFingerprint();
-            return hareJourneyState == null ? surface : PortableHash(surface + "|" + hareJourneyState);
+            var rabbitJourneyState = run.GetRabbitJourneyStateFingerprint();
+            return rabbitJourneyState == null ? surface : PortableHash(surface + "|" + rabbitJourneyState);
         }
 
         public static SpeciesGenomeMapSnapshot CaptureRabbitGenomeCatalog(string assetPath)
@@ -189,7 +190,7 @@ namespace SaltyGame.EditorTools
             var map = frozenCatalog ?? CaptureRabbitGenomeCatalog(catalogPath);
             if (map.SpeciesId != GenomeContract.RabbitSpeciesId)
             {
-                throw new ArgumentException("The Rabbit Genome catalog must target 'hare'.");
+                throw new ArgumentException("The Rabbit Genome catalog must target 'rabbit'.");
             }
             var genome = new GenomeSimulationSnapshot(new[] { new SpeciesGenomeSnapshot(map.SpeciesId, ids) })
                 .Resolve(new GenomeCatalogSnapshot(new[] { map }));
@@ -238,6 +239,7 @@ namespace SaltyGame.EditorTools
                 fingerprint = genome.Fingerprint, capacityLimit = GenomeContract.ActiveCapacity,
                 capacityUsed = rabbit.ResolvedNodes.Sum(node => node.CapacityPoints),
                 populationReservesRank = rabbit.PopulationReservesRank,
+                foundingHaresRank = rabbit.FoundingRabbitsRank,
                 orderedNodeIds = rabbit.ActiveNodeIds.ToArray(),
                 nodes = rabbit.ResolvedNodes.Select(GenomeNodeData.Create).ToArray(),
                 fertileDroppings = rabbit.HasActiveNode(SpeciesSimulation.FertileDroppingsNodeId)
@@ -550,11 +552,15 @@ namespace SaltyGame.EditorTools
         [Serializable]
         public sealed class PortableSnapshot
         {
-            public int schemaVersion = 1;
+            public int schemaVersion = 2;
             public string sourceHash, sourceCommit, scenarioPath, fingerprint, catalogPath;
             public string[] arguments;
             public int width, height, maxPopulation, minPopulation;
             public bool wrapEdges;
+            public bool hasTopology, rectangularTopology, mapIsRectangle;
+            public string generationInputs;
+            public Vector2Int[] mapCells;
+            public MapBoundaryConnection[] mapConnections;
             public float runDurationSeconds, stepInterval;
             public SpeciesData[] species;
             public TerrainData[] terrain;
@@ -567,9 +573,14 @@ namespace SaltyGame.EditorTools
 
             public static PortableSnapshot Create(CellularSimData data)
             {
+                if (!(data.Topology is RectangularGridTopology) && !(data.Topology is MapTopology))
+                    throw new NotSupportedException("Portable snapshots require a concrete map definition.");
+                var map = data.Topology as MapTopology;
                 return new PortableSnapshot
                 {
                     fingerprint = data.Fingerprint, width = data.Width, height = data.Height,
+                    hasTopology = true, rectangularTopology = map == null,
+                    mapIsRectangle = map?.IsRectangle ?? false, generationInputs = map?.GenerationInputs, mapCells = map?.CopyCells(), mapConnections = map?.CopyConnections(),
                     wrapEdges = data.WrapEdges, maxPopulation = data.MaxPopulation, minPopulation = data.MinPopulation,
                     runDurationSeconds = data.RunDurationSeconds, stepInterval = data.StepInterval,
                     species = data.SpeciesRules.OrderBy(entry => entry.Key.Value, StringComparer.Ordinal).Select(entry => new SpeciesData
@@ -596,8 +607,12 @@ namespace SaltyGame.EditorTools
 
             public CellularSimData Restore()
             {
-                if (schemaVersion != 1 || species == null || terrain == null || alpha == null)
+                if ((schemaVersion != 1 && schemaVersion != 2) || species == null || terrain == null || alpha == null)
                     throw new ArgumentException("Unsupported or incomplete portable snapshot.");
+                if (schemaVersion == 2 && (!hasTopology || (!rectangularTopology && !mapIsRectangle && (mapCells == null || mapConnections == null))))
+                    throw new ArgumentException("Portable snapshot is missing map topology.");
+                IGridTopology topology = !hasTopology || rectangularTopology ? new RectangularGridTopology(width, height, wrapEdges)
+                    : new MapTopology(width, height, mapIsRectangle ? null : mapCells, mapIsRectangle ? null : mapConnections, generationInputs);
                 var data = new CellularSimData(width, height,
                     species.Where(entry => entry.hasProbability).ToDictionary(entry => new SpeciesId(entry.id), entry => entry.probability),
                     species.ToDictionary(entry => new SpeciesId(entry.id), entry => entry.rules.Restore()),
@@ -606,7 +621,7 @@ namespace SaltyGame.EditorTools
                         entry.isPassable, entry.movementCost, entry.providesResource, entry.color, entry.regrowthPerTick, entry.growthIntervalSeconds)),
                     alpha.ToDictionary(entry => new SpeciesId(entry.species), entry => new AlphaOffspringRule(new SpeciesId(entry.species),
                         entry.chance, entry.healthBonus, entry.energyBonus)),
-                    species.Where(entry => entry.hasPopulation).ToDictionary(entry => new SpeciesId(entry.id), entry => entry.population), wrapEdges);
+                    species.Where(entry => entry.hasPopulation).ToDictionary(entry => new SpeciesId(entry.id), entry => entry.population), wrapEdges, topology);
                 if (data.Fingerprint != fingerprint) throw new InvalidOperationException("Snapshot round-trip fingerprint mismatch.");
                 return data;
             }
@@ -699,7 +714,7 @@ namespace SaltyGame.EditorTools
         {
             public string contractVersion, genomeContractVersion, nodeContractVersion, registryFingerprint;
             public string catalogPath, catalogFingerprint, fingerprint;
-            public int capacityUsed, capacityLimit, populationReservesRank;
+            public int capacityUsed, capacityLimit, populationReservesRank, foundingHaresRank;
             public string[] orderedNodeIds;
             public GenomeNodeData[] nodes;
             public FertileDroppingsInputRecord fertileDroppings;
@@ -773,6 +788,7 @@ namespace SaltyGame.EditorTools
             public float reproductionChance;
             public int reproductionFoodRequired;
             public int maxReproductionGroupSize;
+            public int maximumPopulation;
             public int startingEnergy;
             public float wiltChance;
             public int crowdingMetabolismMultiplier;
@@ -820,6 +836,7 @@ namespace SaltyGame.EditorTools
                     reproductionChance = value.ReproductionChance,
                     reproductionFoodRequired = value.ReproductionFoodRequired,
                     maxReproductionGroupSize = value.MaxReproductionGroupSize,
+                    maximumPopulation = value.MaximumPopulation,
                     startingEnergy = value.StartingEnergy,
                     wiltChance = value.WiltChance,
                     crowdingMetabolismMultiplier = value.CrowdingMetabolismMultiplier,
@@ -866,6 +883,7 @@ namespace SaltyGame.EditorTools
                 reproductionChance: reproductionChance,
                 reproductionFoodRequired: reproductionFoodRequired,
                 maxReproductionGroupSize: maxReproductionGroupSize,
+                maximumPopulation: maximumPopulation,
                 startingEnergy: startingEnergy,
                 wiltChance: wiltChance,
                 crowdingMetabolismMultiplier: crowdingMetabolismMultiplier,

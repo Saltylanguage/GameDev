@@ -243,7 +243,7 @@ cleanup a normal lifecycle transition instead of a forensic project.
 
 ### 4. Generalize the research before increasing automation
 
-The accepted predictive results remain concentrated on Forest Edge, Hare, a
+The accepted predictive results remain concentrated on Forest Edge, Rabbit, a
 small set of upgrades, and narrow seed panels. The next valuable proof is not a
 more autonomous recommender. It is one clean transfer study across a different
 species, scenario, or class of mechanic with a pre-registered prediction and
@@ -490,7 +490,7 @@ The priorities describe order, not importance:
 
 ### P1 — Prove the next capabilities
 
-4. **Test whether a finding transfers beyond Forest Edge and Hare.**
+4. **Test whether a finding transfers beyond Forest Edge and Rabbit.**
 
    **Progress:** EX-011's bounded result was accepted on 2026-09-17. The
    combined movement-and-crowding intervention moved to Open Range/Deer and the

@@ -45,10 +45,10 @@ namespace SaltyGame.Tests
 
             var left = new GridPattern(new[] { Vector2Int.left });
             var foxRules = Rules(left, SpeciesRole.Carnivore, SpeciesIds.Herbivore, attack: 5, vision: 1);
-            var hareRules = Rules(left, vision: 1);
+            var rabbitRules = Rules(left, vision: 1);
             var combatRules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [SpeciesIds.Carnivore] = foxRules, [SpeciesIds.Herbivore] = hareRules,
+                [SpeciesIds.Carnivore] = foxRules, [SpeciesIds.Herbivore] = rabbitRules,
             };
             var combat = new Grid<SpeciesCell>(5, 3, true);
             combat.SetCell(0, 1, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
@@ -269,6 +269,7 @@ namespace SaltyGame.Tests
 
             Assert.That(first.SpeciesRules.Count, Is.EqualTo(3));
             Assert.That(first.SpeciesRules.ContainsKey(SpeciesIds.Herbivore), Is.True);
+            Assert.That(first.WrapEdges, Is.True);
             Assert.That(second, Is.Not.SameAs(first));
             Assert.That(second.Fingerprint, Is.EqualTo(first.Fingerprint));
 
@@ -290,6 +291,7 @@ namespace SaltyGame.Tests
             {
                 new ScenarioDefinitionAsset.SpeciesEntry(species, 0.7f),
             });
+            SetPrivateField(denseScenario, "wrapEdges", true);
 
             var sparse = sparseScenario.CreateRuntimeData();
             var dense = denseScenario.CreateRuntimeData();
@@ -298,6 +300,8 @@ namespace SaltyGame.Tests
             Assert.That(dense.TryGetStartingProbability(species.Id, out var denseProbability), Is.True);
             Assert.That(sparseProbability, Is.EqualTo(0.1f));
             Assert.That(denseProbability, Is.EqualTo(0.7f));
+            Assert.That(sparse.WrapEdges, Is.False);
+            Assert.That(dense.WrapEdges, Is.True);
 
             Object.DestroyImmediate(sparseScenario);
             Object.DestroyImmediate(denseScenario);
@@ -493,12 +497,12 @@ namespace SaltyGame.Tests
         public void TrackingPersistencePursuesLastKnownFoodPositionAfterVisionLoss()
         {
             var fox = new SpeciesId("fox");
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var right = new GridPattern(new[] { Vector2Int.right });
             var foxCell = new SpeciesCell(fox, energy: 0)
                 .WithTrackingTarget(99, 3, 0, 4);
-            var hareCell = new SpeciesCell(hare, energy: 1)
-                .WithEntity(hare, health: 1, energy: 1, age: 0, foodEaten: 0, foodReserve: 0f, entityId: 99);
+            var rabbitCell = new SpeciesCell(rabbit, energy: 1)
+                .WithEntity(rabbit, health: 1, energy: 1, age: 0, foodEaten: 0, foodReserve: 0f, entityId: 99);
             var foxRules = new SpeciesRules(
                 awareness: new SpeciesAwarenessRules(visionRange: 1),
                 movementSpeed: 1f,
@@ -508,7 +512,7 @@ namespace SaltyGame.Tests
                 blockPattern: EmptyPattern,
                 blockAmount: 0,
                 dietPattern: right,
-                dietTarget: hare,
+                dietTarget: rabbit,
                 reproductionPattern: EmptyPattern,
                 reproductionNeighborCount: 0,
                 metabolism: 0,
@@ -517,7 +521,7 @@ namespace SaltyGame.Tests
                 trackingPersistenceSteps: 4);
             var source = new Grid<SpeciesCell>(5, 1);
             source.SetCell(0, 0, foxCell);
-            source.SetCell(2, 0, hareCell);
+            source.SetCell(2, 0, rabbitCell);
 
             var next = SpeciesSimulation.Step(
                 source,
@@ -535,10 +539,10 @@ namespace SaltyGame.Tests
         [Test]
         public void KeenSensesDetectsPredatorsOneTileBeyondVisionRange()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var fox = new SpeciesId("fox");
-            var hareRules = CreateRules(awareness: new SpeciesAwarenessRules(visionRange: 2));
-            var keenHareRules = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.KeenSensesId).Apply(hareRules);
+            var rabbitRules = CreateRules(awareness: new SpeciesAwarenessRules(visionRange: 2));
+            var keenRabbitRules = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.KeenSensesId).Apply(rabbitRules);
             var foxRules = new SpeciesRules(
                 movementSpeed: 0f,
                 movementPattern: EmptyPattern,
@@ -547,25 +551,25 @@ namespace SaltyGame.Tests
                 blockPattern: EmptyPattern,
                 blockAmount: 0,
                 dietPattern: EmptyPattern,
-                dietTarget: hare,
+                dietTarget: rabbit,
                 reproductionPattern: EmptyPattern,
                 reproductionNeighborCount: 0,
                 metabolism: 0,
                 role: SpeciesRole.Carnivore);
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = hareRules,
+                [rabbit] = rabbitRules,
                 [fox] = foxRules,
             };
             var cells = new Grid<SpeciesCell>(5, 1);
-            cells.SetCell(0, 0, new SpeciesCell(hare, energy: 10));
+            cells.SetCell(0, 0, new SpeciesCell(rabbit, energy: 10));
             cells.SetCell(3, 0, new SpeciesCell(fox, energy: 10));
 
             Assert.That(SpeciesPerception.TryFindThreatTarget(
-                cells, 0, 0, hare, rules, new System.Random(17), out _), Is.False);
-            rules[hare] = keenHareRules;
+                cells, 0, 0, rabbit, rules, new System.Random(17), out _), Is.False);
+            rules[rabbit] = keenRabbitRules;
             Assert.That(SpeciesPerception.TryFindThreatTarget(
-                cells, 0, 0, hare, rules, new System.Random(17), out var threat), Is.True);
+                cells, 0, 0, rabbit, rules, new System.Random(17), out var threat), Is.True);
             Assert.That(threat.Location, Is.EqualTo(new Vector2Int(3, 0)));
         }
 
@@ -573,7 +577,7 @@ namespace SaltyGame.Tests
         public void ThirdLargerLitterRankRaisesMinimumToTwoAndIsCapped()
         {
             var rules = CreateRules(litterMinimum: 1, litterMaximum: 2);
-            var progression = new SpeciesProgression(new SpeciesDefinition(new SpeciesId("hare"), rules));
+            var progression = new SpeciesProgression(new SpeciesDefinition(new SpeciesId("rabbit"), rules));
             var largerLitters = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMaximumLitterId);
 
             Assert.That(progression.TryApplyFreeUpgrade(largerLitters), Is.True);
@@ -654,7 +658,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void MovementAppearsInBothHareOffersAndIsFilteredAtItsCap()
+        public void MovementAppearsInBothRabbitOffersAndIsFilteredAtItsCap()
         {
             var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, CreateRules()));
             var movement = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId);
@@ -1011,17 +1015,17 @@ namespace SaltyGame.Tests
                 startingEnergy: 1, metabolism: 0, role: SpeciesRole.Carnivore,
                 awareness: new SpeciesAwarenessRules(visionRange: 1), forageBelowEnergy: 5,
                 attackModifier: blocked ? 0 : 20, damageAmount: 1);
-            var hare = new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
+            var rabbit = new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
                 EmptyPattern, null, EmptyPattern, 0, reproductionChance: 0f,
                 energyValue: 3, metabolism: 0, role: SpeciesRole.Herbivore);
             if (blocked)
             {
-                hare = new SpeciesUpgrade("test-block", 0, SpeciesUpgradeType.BlockAmount, 20f).Apply(hare);
+                rabbit = new SpeciesUpgrade("test-block", 0, SpeciesUpgradeType.BlockAmount, 20f).Apply(rabbit);
             }
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
                 [SpeciesIds.Carnivore] = fox,
-                [SpeciesIds.Herbivore] = hare,
+                [SpeciesIds.Herbivore] = rabbit,
             };
             var source = new Grid<SpeciesCell>(5, 1);
             source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
@@ -1049,9 +1053,9 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void ToughHideLetsAHareSurviveOneBaseFoxAttack()
+        public void ToughHideLetsARabbitSurviveOneBaseFoxAttack()
         {
-            var hareId = new SpeciesId("hare");
+            var rabbitId = new SpeciesId("rabbit");
             var foxId = new SpeciesId("fox");
             var right = new GridPattern(new[] { Vector2Int.right });
             var foxRules = new SpeciesRules(
@@ -1062,7 +1066,7 @@ namespace SaltyGame.Tests
                 blockPattern: EmptyPattern,
                 blockAmount: 0,
                 dietPattern: right,
-                dietTarget: hareId,
+                dietTarget: rabbitId,
                 reproductionPattern: EmptyPattern,
                 reproductionNeighborCount: 0,
                 reproductionChance: 0f,
@@ -1072,26 +1076,26 @@ namespace SaltyGame.Tests
                 damageAmount: 2,
                 forageBelowEnergy: 20,
                 awareness: new SpeciesAwarenessRules(visionRange: 1));
-            var hareRules = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).Apply(
+            var rabbitRules = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).Apply(
                 new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
                     EmptyPattern, null, EmptyPattern, 0, reproductionChance: 0f, metabolism: 0));
             var cells = new Grid<SpeciesCell>(2, 1);
             cells.SetCell(0, 0, new SpeciesCell(foxId, energy: 10));
-            cells.SetCell(1, 0, new SpeciesCell(hareId, health: hareRules.MaximumHealth));
+            cells.SetCell(1, 0, new SpeciesCell(rabbitId, health: rabbitRules.MaximumHealth));
 
             var metrics = new SpeciesSimulationMetrics();
             typeof(SpeciesSimulationMetrics).GetMethod("ConfigureMutationEffects",
                     BindingFlags.Instance | BindingFlags.NonPublic)
-                .Invoke(metrics, new object[] { hareId, new[] {
-                    SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).CreateSnapshot(hareId) } });
+                .Invoke(metrics, new object[] { rabbitId, new[] {
+                    SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).CreateSnapshot(rabbitId) } });
 
             var next = SpeciesSimulation.Step(cells, new Dictionary<SpeciesId, SpeciesRules>
             {
                 [foxId] = foxRules,
-                [hareId] = hareRules,
+                [rabbitId] = rabbitRules,
             }, seed: 42, metrics: metrics);
 
-            Assert.That(hareRules.MaximumHealth, Is.EqualTo(3));
+            Assert.That(rabbitRules.MaximumHealth, Is.EqualTo(3));
             Assert.That(next.GetCell(1, 0).IsCreature, Is.True);
             Assert.That(next.GetCell(1, 0).Health, Is.EqualTo(1));
             Assert.That(metrics.MutationEffects.DecisiveFullHealthHits, Is.EqualTo(1));
@@ -1100,10 +1104,10 @@ namespace SaltyGame.Tests
         [Test]
         public void ReproductiveDriveCountsOnlyRollsItsChanceChanged()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var baselineRules = CreateReproductionRules(reproductionChance: 0.01f);
             var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId)
-                .CreateSnapshot(hare);
+                .CreateSnapshot(rabbit);
             var upgradedRules = upgrade.Apply(baselineRules);
             var configure = typeof(SpeciesSimulationMetrics).GetMethod("ConfigureMutationEffects",
                 BindingFlags.Instance | BindingFlags.NonPublic);
@@ -1111,19 +1115,19 @@ namespace SaltyGame.Tests
             for (var seed = 0; seed < 128; seed++)
             {
                 var cells = new Grid<SpeciesCell>(3, 1);
-                cells.SetCell(1, 0, new SpeciesCell(hare, energy: 10));
+                cells.SetCell(1, 0, new SpeciesCell(rabbit, energy: 10));
                 var baseline = new SpeciesSimulationMetrics();
                 var upgraded = new SpeciesSimulationMetrics();
-                configure.Invoke(upgraded, new object[] { hare, new[] { upgrade } });
-                SpeciesSimulation.Step(cells, new Dictionary<SpeciesId, SpeciesRules> { [hare] = baselineRules },
+                configure.Invoke(upgraded, new object[] { rabbit, new[] { upgrade } });
+                SpeciesSimulation.Step(cells, new Dictionary<SpeciesId, SpeciesRules> { [rabbit] = baselineRules },
                     seed, metrics: baseline);
-                SpeciesSimulation.Step(cells, new Dictionary<SpeciesId, SpeciesRules> { [hare] = upgradedRules },
+                SpeciesSimulation.Step(cells, new Dictionary<SpeciesId, SpeciesRules> { [rabbit] = upgradedRules },
                     seed, metrics: upgraded);
                 var extraRolls = upgraded.MutationEffects.ChangedReproductionRolls;
                 Assert.That(extraRolls, Is.InRange(0, 1));
                 if (extraRolls == 0) continue;
                 changed += extraRolls;
-                Assert.That(baseline.GetActivity(hare).Births, Is.Zero);
+                Assert.That(baseline.GetActivity(rabbit).Births, Is.Zero);
             }
             Assert.That(changed, Is.GreaterThan(0));
         }
@@ -1134,12 +1138,12 @@ namespace SaltyGame.Tests
             var metrics = new SpeciesSimulationMetrics();
             var type = typeof(SpeciesSimulationMetrics);
             var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var configure = type.GetMethod("ConfigureMutationEffects", flags);
-            configure.Invoke(metrics, new object[] { hare, new[] {
-                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId).CreateSnapshot(hare),
-                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).CreateSnapshot(hare),
-                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId).CreateSnapshot(hare) } });
+            configure.Invoke(metrics, new object[] { rabbit, new[] {
+                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId).CreateSnapshot(rabbit),
+                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).CreateSnapshot(rabbit),
+                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId).CreateSnapshot(rabbit) } });
             Assert.That(type.GetProperty("MutationAvoidanceBonus", flags).GetValue(metrics), Is.EqualTo(0.08f));
             Assert.That(type.GetProperty("MutationHealthBonus", flags).GetValue(metrics), Is.EqualTo(2f));
             Assert.That(type.GetProperty("MutationReproductionBonus", flags).GetValue(metrics), Is.EqualTo(0.1f));
@@ -1153,7 +1157,7 @@ namespace SaltyGame.Tests
             Assert.That(window.MutationEffects.AvoidedContacts, Is.EqualTo(1));
             Assert.That(window.MutationEffects.DecisiveFullHealthHits, Is.EqualTo(1));
             Assert.That(window.MutationEffects.ChangedReproductionRolls, Is.EqualTo(1));
-            configure.Invoke(metrics, new object[] { hare, Array.Empty<SpeciesUpgradeSnapshot>() });
+            configure.Invoke(metrics, new object[] { rabbit, Array.Empty<SpeciesUpgradeSnapshot>() });
             Assert.That(type.GetProperty("MutationAvoidanceBonus", flags).GetValue(metrics), Is.EqualTo(0f));
         }
 
@@ -1195,7 +1199,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void FirstPhaseMutationOfferIncludesEachHarePathAndRespectsCaps()
+        public void FirstPhaseMutationOfferIncludesEachRabbitPathAndRespectsCaps()
         {
             var paths = new[]
             {
@@ -1206,13 +1210,13 @@ namespace SaltyGame.Tests
             foreach (var seed in new[] { int.MinValue, -1, 0, 1, 2, 42, 11100, int.MaxValue })
             {
                 var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, seed,
-                    introductoryHareMutations: true);
+                    introductoryRabbitMutations: true);
                 Assert.That(offer, Has.Length.EqualTo(3));
                 foreach (var path in paths)
                     Assert.That(Array.FindAll(offer, upgrade => Array.IndexOf(path, upgrade.Id) >= 0), Has.Length.EqualTo(1));
                 var capped = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, seed,
                     upgrade => Array.IndexOf(paths[0], upgrade.Id) < 0,
-                    introductoryHareMutations: true);
+                    introductoryRabbitMutations: true);
                 Assert.That(capped, Has.Length.EqualTo(3));
                 Assert.That(new HashSet<string>(Array.ConvertAll(capped, upgrade => upgrade.Id)), Has.Count.EqualTo(3));
                 Assert.That(Array.Exists(capped, upgrade => Array.IndexOf(paths[0], upgrade.Id) >= 0), Is.False);
@@ -1512,11 +1516,11 @@ namespace SaltyGame.Tests
         public void FoxesShareCarcassEnergyAndLeaveTheUnusedRemainder()
         {
             var fox = SpeciesIds.Carnivore;
-            var hare = SpeciesIds.Herbivore;
+            var rabbit = SpeciesIds.Herbivore;
             var horizontal = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
             var source = new Grid<SpeciesCell>(3, 1);
             source.SetCell(0, 0, new SpeciesCell(fox, energy: 8));
-            source.SetCell(1, 0, SpeciesCell.Empty.WithMeatResource(hare, 6f));
+            source.SetCell(1, 0, SpeciesCell.Empty.WithMeatResource(rabbit, 6f));
             source.SetCell(2, 0, new SpeciesCell(fox, energy: 8));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
@@ -1528,7 +1532,7 @@ namespace SaltyGame.Tests
                     blockPattern: EmptyPattern,
                     blockAmount: 0,
                     dietPattern: horizontal,
-                    dietTarget: hare,
+                    dietTarget: rabbit,
                     reproductionPattern: EmptyPattern,
                     reproductionNeighborCount: 0,
                     reproductionChance: 0f,
@@ -1550,7 +1554,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void OneHareCarcassCarriesTwoFoxesThroughA600TickNode()
+        public void OneRabbitCarcassCarriesTwoFoxesThroughA600TickNode()
         {
             var horizontal = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
             var source = new Grid<SpeciesCell>(3, 1);
@@ -2018,10 +2022,10 @@ namespace SaltyGame.Tests
         public void BevExperimentalFoxCooldownBlocksOnlyFollowUpAttacks()
         {
             var fox = new SpeciesId("fox");
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var source = new Grid<SpeciesCell>(2, 1);
             source.SetCell(0, 0, new SpeciesCell(fox, energy: 1));
-            source.SetCell(1, 0, new SpeciesCell(hare, health: 3));
+            source.SetCell(1, 0, new SpeciesCell(rabbit, health: 3));
             var right = new GridPattern(new[] { Vector2Int.right });
             var left = new GridPattern(new[] { Vector2Int.left });
             var rules = new Dictionary<SpeciesId, SpeciesRules>
@@ -2034,7 +2038,7 @@ namespace SaltyGame.Tests
                     blockPattern: EmptyPattern,
                     blockAmount: 0,
                     dietPattern: right,
-                    dietTarget: hare,
+                    dietTarget: rabbit,
                     reproductionPattern: EmptyPattern,
                     reproductionNeighborCount: 0,
                     reproductionChance: 0f,
@@ -2042,7 +2046,7 @@ namespace SaltyGame.Tests
                     forageBelowEnergy: 5,
                     metabolism: 0,
                     awareness: new SpeciesAwarenessRules(visionRange: 1)),
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
                     attackPattern: EmptyPattern,
@@ -2151,7 +2155,7 @@ namespace SaltyGame.Tests
             const int episodeCount = 1000;
             const int maximumAttempts = 100;
             var fox = SpeciesIds.Carnivore;
-            var hare = SpeciesIds.Herbivore;
+            var rabbit = SpeciesIds.Herbivore;
             var right = new GridPattern(new[] { Vector2Int.right });
             var averageAttemptsByBlock = new List<float>();
             var experimental = new SpeciesExperimentalOptions(
@@ -2164,7 +2168,7 @@ namespace SaltyGame.Tests
                 {
                     var source = new Grid<SpeciesCell>(2, 1);
                     source.SetCell(0, 0, new SpeciesCell(fox, energy: 0));
-                    source.SetCell(1, 0, new SpeciesCell(hare, health: 1));
+                    source.SetCell(1, 0, new SpeciesCell(rabbit, health: 1));
                     var rules = new Dictionary<SpeciesId, SpeciesRules>
                     {
                         [fox] = new SpeciesRules(
@@ -2175,13 +2179,13 @@ namespace SaltyGame.Tests
                             blockPattern: EmptyPattern,
                             blockAmount: 0,
                             dietPattern: right,
-                            dietTarget: hare,
+                            dietTarget: rabbit,
                             reproductionPattern: EmptyPattern,
                             reproductionNeighborCount: 0,
                             reproductionChance: 0f,
                             forageBelowEnergy: 0,
                             metabolism: 0),
-                        [hare] = new SpeciesRules(
+                        [rabbit] = new SpeciesRules(
                             movementSpeed: 0f,
                             movementPattern: EmptyPattern,
                             attackPattern: EmptyPattern,
@@ -2464,14 +2468,14 @@ namespace SaltyGame.Tests
         [Test]
         public void FullEnergyForagerWaitsToMateUntilFull()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var source = new Grid<SpeciesCell>(3, 1);
-            source.SetCell(0, 0, new SpeciesCell(hare, energy: 17));
-            source.SetCell(1, 0, new SpeciesCell(hare, energy: 17));
+            source.SetCell(0, 0, new SpeciesCell(rabbit, energy: 17));
+            source.SetCell(1, 0, new SpeciesCell(rabbit, energy: 17));
             var horizontal = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
                     attackPattern: EmptyPattern,
@@ -2493,25 +2497,25 @@ namespace SaltyGame.Tests
             var hungryPair = SpeciesSimulation.Step(source, rules, seed: 42);
             Assert.That(hungryPair.GetCell(2, 0).IsCreature, Is.False);
 
-            source.SetCell(0, 0, new SpeciesCell(hare, energy: 24));
-            source.SetCell(1, 0, new SpeciesCell(hare, energy: 24));
+            source.SetCell(0, 0, new SpeciesCell(rabbit, energy: 24));
+            source.SetCell(1, 0, new SpeciesCell(rabbit, energy: 24));
             var fullPair = SpeciesSimulation.Step(source, rules, seed: 42);
             Assert.That(fullPair.GetCell(2, 0).IsCreature, Is.True);
         }
 
         [TestCase(2, 24)]
         [TestCase(6, 8)]
-        public void HareMatingAtSeventyFivePercentPaysFixedCostAndSharesEnergyAcrossLitter(
+        public void RabbitMatingAtSeventyFivePercentPaysFixedCostAndSharesEnergyAcrossLitter(
             int litterSize,
             int expectedOffspringEnergy)
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var source = new Grid<SpeciesCell>(5, 5);
-            source.SetCell(2, 2, new SpeciesCell(hare, energy: 36, age: 1));
-            source.SetCell(2, 3, new SpeciesCell(hare, energy: 36, age: 1));
+            source.SetCell(2, 2, new SpeciesCell(rabbit, energy: 36, age: 1));
+            source.SetCell(2, 3, new SpeciesCell(rabbit, energy: 36, age: 1));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
                     attackPattern: EmptyPattern,
@@ -2549,7 +2553,7 @@ namespace SaltyGame.Tests
                 for (var x = 0; x < next.Width; x++)
                 {
                     var cell = next.GetCell(x, y);
-                    if (cell.IsCreature && cell.SpeciesId == hare
+                    if (cell.IsCreature && cell.SpeciesId == rabbit
                         && !(x == 2 && (y == 2 || y == 3)))
                     {
                         offspringCount++;
@@ -2566,15 +2570,15 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void HareBelowSeventyFivePercentDoesNotEnterMatingIntention()
+        public void RabbitBelowSeventyFivePercentDoesNotEnterMatingIntention()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var source = new Grid<SpeciesCell>(3, 1);
-            source.SetCell(0, 0, new SpeciesCell(hare, energy: 35));
-            source.SetCell(1, 0, new SpeciesCell(hare, energy: 35));
+            source.SetCell(0, 0, new SpeciesCell(rabbit, energy: 35));
+            source.SetCell(1, 0, new SpeciesCell(rabbit, energy: 35));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
                     attackPattern: EmptyPattern,
@@ -2605,13 +2609,13 @@ namespace SaltyGame.Tests
         [Test]
         public void FullEnergyForagerRefillsToItsCapAndWaitsUntilBelowThresholdToEatAgain()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var source = new Grid<SpeciesCell>(2, 1);
-            source.SetCell(0, 0, new SpeciesCell(hare, energy: 5));
+            source.SetCell(0, 0, new SpeciesCell(rabbit, energy: 5));
             source.SetCell(1, 0, SpeciesCell.Grass(10f));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 1f,
                     movementPattern: new GridPattern(new[] { Vector2Int.left, Vector2Int.right }),
                     attackPattern: EmptyPattern,
@@ -2668,12 +2672,12 @@ namespace SaltyGame.Tests
         [Test]
         public void MetabolismConsumesOneEnergyEveryConfiguredTenTicks()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var cells = new Grid<SpeciesCell>(1, 1);
-            cells.SetCell(0, 0, new SpeciesCell(hare, energy: 10));
+            cells.SetCell(0, 0, new SpeciesCell(rabbit, energy: 10));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
                     attackPattern: EmptyPattern,
@@ -2710,14 +2714,14 @@ namespace SaltyGame.Tests
         [Test]
         public void FullEnergyForagerAtMaximumReserveSeeksMateWithoutEatingOnTheWay()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var source = new Grid<SpeciesCell>(5, 1);
-            source.SetCell(0, 0, new SpeciesCell(hare, energy: 24));
+            source.SetCell(0, 0, new SpeciesCell(rabbit, energy: 24));
             source.SetCell(1, 0, SpeciesCell.Grass(10f));
-            source.SetCell(4, 0, new SpeciesCell(hare, energy: 24));
+            source.SetCell(4, 0, new SpeciesCell(rabbit, energy: 24));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 1f,
                     movementPattern: new GridPattern(new[] { Vector2Int.right }),
                     attackPattern: EmptyPattern,
@@ -2756,23 +2760,23 @@ namespace SaltyGame.Tests
             var next = SpeciesSimulation.Step(source, rules, seed: 42);
 
             Assert.That(next.GetCell(0, 0).IsCreature, Is.False);
-            Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(rabbit));
             Assert.That(next.GetCell(1, 0).TerrainEnergy, Is.EqualTo(10f));
-            Assert.That(next.GetCell(4, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(next.GetCell(4, 0).SpeciesId, Is.EqualTo(rabbit));
         }
 
         [Test]
-        public void ReadyHareTravelsToDistantMateInsteadOfForaging()
+        public void ReadyRabbitTravelsToDistantMateInsteadOfForaging()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var right = new GridPattern(new[] { Vector2Int.right });
             var source = new Grid<SpeciesCell>(11, 1);
-            source.SetCell(0, 0, new SpeciesCell(hare, energy: 5));
+            source.SetCell(0, 0, new SpeciesCell(rabbit, energy: 5));
             source.SetCell(1, 0, SpeciesCell.Grass(10f));
-            source.SetCell(10, 0, new SpeciesCell(hare, energy: 5));
+            source.SetCell(10, 0, new SpeciesCell(rabbit, energy: 5));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 1f,
                     movementPattern: right,
                     attackPattern: EmptyPattern,
@@ -2814,22 +2818,22 @@ namespace SaltyGame.Tests
             var next = SpeciesSimulation.Step(source, rules, seed: 42);
 
             Assert.That(next.GetCell(1, 0).IsCreature, Is.True);
-            Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(rabbit));
             Assert.That(next.GetCell(1, 0).Energy, Is.EqualTo(5));
             Assert.That(next.GetCell(1, 0).TerrainEnergy, Is.EqualTo(10f));
         }
 
         [Test]
-        public void ThreeHaresCanReproduceWithinTheirLocalGroupLimit()
+        public void ThreeRabbitsCanReproduceWithinTheirLocalGroupLimit()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var source = new Grid<SpeciesCell>(5, 5);
-            source.SetCell(1, 2, new SpeciesCell(hare, energy: 24));
-            source.SetCell(2, 2, new SpeciesCell(hare, energy: 24));
-            source.SetCell(3, 2, new SpeciesCell(hare, energy: 24));
+            source.SetCell(1, 2, new SpeciesCell(rabbit, energy: 24));
+            source.SetCell(2, 2, new SpeciesCell(rabbit, energy: 24));
+            source.SetCell(3, 2, new SpeciesCell(rabbit, energy: 24));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
                     attackPattern: EmptyPattern,
@@ -2854,32 +2858,32 @@ namespace SaltyGame.Tests
             };
 
             var next = SpeciesSimulation.Step(source, rules, seed: 42);
-            var hareCount = 0;
+            var rabbitCount = 0;
             for (var y = 0; y < next.Height; y++)
             {
                 for (var x = 0; x < next.Width; x++)
                 {
-                    if (next.GetCell(x, y).IsCreature && next.GetCell(x, y).SpeciesId == hare)
+                    if (next.GetCell(x, y).IsCreature && next.GetCell(x, y).SpeciesId == rabbit)
                     {
-                        hareCount++;
+                        rabbitCount++;
                     }
                 }
             }
 
-            Assert.That(hareCount, Is.EqualTo(5));
+            Assert.That(rabbitCount, Is.EqualTo(5));
         }
 
         [Test]
-        public void ThreeSeparatedHaresSeekAcrossVisionRangeAndProduceAFirstLitter()
+        public void ThreeSeparatedRabbitsSeekAcrossVisionRangeAndProduceAFirstLitter()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var source = new Grid<SpeciesCell>(17, 5);
-            source.SetCell(1, 2, new SpeciesCell(hare, energy: 24));
-            source.SetCell(8, 2, new SpeciesCell(hare, energy: 24));
-            source.SetCell(15, 2, new SpeciesCell(hare, energy: 24));
+            source.SetCell(1, 2, new SpeciesCell(rabbit, energy: 24));
+            source.SetCell(8, 2, new SpeciesCell(rabbit, energy: 24));
+            source.SetCell(15, 2, new SpeciesCell(rabbit, energy: 24));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 1f,
                     movementPattern: SpeciesRuleDefaults.CreateMoorePattern(),
                     attackPattern: EmptyPattern,
@@ -2909,19 +2913,19 @@ namespace SaltyGame.Tests
                 source = SpeciesSimulation.Step(source, rules, seed: 42);
             }
 
-            var hareCount = 0;
+            var rabbitCount = 0;
             for (var y = 0; y < source.Height; y++)
             {
                 for (var x = 0; x < source.Width; x++)
                 {
-                    if (source.GetCell(x, y).IsCreature && source.GetCell(x, y).SpeciesId == hare)
+                    if (source.GetCell(x, y).IsCreature && source.GetCell(x, y).SpeciesId == rabbit)
                     {
-                        hareCount++;
+                        rabbitCount++;
                     }
                 }
             }
 
-            Assert.That(hareCount, Is.GreaterThan(3));
+            Assert.That(rabbitCount, Is.GreaterThan(3));
         }
 
         [Test]
@@ -3214,13 +3218,13 @@ namespace SaltyGame.Tests
 
         [TestCase(0)]
         [TestCase(1)]
-        public void HareJourneyTracksBothParentsThroughBirthAndCheckpoint(int gestationTicks)
+        public void RabbitJourneyTracksBothParentsThroughBirthAndCheckpoint(int gestationTicks)
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var pattern = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
                     attackPattern: EmptyPattern,
@@ -3237,13 +3241,13 @@ namespace SaltyGame.Tests
                     gestationTicks: gestationTicks),
             };
             var cells = new Grid<SpeciesCell>(5, 1);
-            var parent = new SpeciesCell(hare, energy: 10);
-            var mate = new SpeciesCell(hare, energy: 10);
-            var unrelated = new SpeciesCell(hare, energy: 10);
+            var parent = new SpeciesCell(rabbit, energy: 10);
+            var mate = new SpeciesCell(rabbit, energy: 10);
+            var unrelated = new SpeciesCell(rabbit, energy: 10);
             cells.SetCell(1, 0, parent);
             cells.SetCell(2, 0, mate);
             cells.SetCell(4, 0, unrelated);
-            var run = new SimulationRunState(cells, hare, seed: 11, durationSeconds: 10f);
+            var run = new SimulationRunState(cells, rabbit, seed: 11, durationSeconds: 10f);
             run.ConfigureContinuousPhases(gestationTicks + 1);
             run.Metrics.CaptureDetailedEvents = false;
             var runner = new SpeciesSimulationRunner(run, rules, stepSeconds: 0.1f);
@@ -3260,20 +3264,20 @@ namespace SaltyGame.Tests
             if (!child.IsCreature) child = run.Cells.GetCell(2, 0);
             Assert.That(child.IsCreature, Is.True);
             Assert.That(run.Metrics.BirthEvents, Is.Empty);
-            Assert.That(run.IsHareDescendant(child.EntityId, parent.EntityId), Is.True);
-            Assert.That(run.IsHareDescendant(child.EntityId, mate.EntityId), Is.True);
-            Assert.That(run.IsHareDescendant(child.EntityId, unrelated.EntityId), Is.False);
+            Assert.That(run.IsRabbitDescendant(child.EntityId, parent.EntityId), Is.True);
+            Assert.That(run.IsRabbitDescendant(child.EntityId, mate.EntityId), Is.True);
+            Assert.That(run.IsRabbitDescendant(child.EntityId, unrelated.EntityId), Is.False);
 
             var checkpoint = runner.CreateCheckpoint();
             runner.Restart();
-            Assert.That(run.IsHareDescendant(child.EntityId, mate.EntityId), Is.False);
+            Assert.That(run.IsRabbitDescendant(child.EntityId, mate.EntityId), Is.False);
 
             var restored = checkpoint.Restore();
-            Assert.That(restored.IsHareDescendant(child.EntityId, mate.EntityId), Is.True);
+            Assert.That(restored.IsRabbitDescendant(child.EntityId, mate.EntityId), Is.True);
             for (var x = 0; x < restored.Cells.Width; x++)
                 restored.Cells.SetCell(x, 0, SpeciesCell.Empty);
             restored.Cells.SetCell(1, 0, SpeciesCell.Empty.WithEntity(
-                hare, health: 1, energy: 10, age: 0, foodEaten: 0, foodReserve: 0, entityId: child.EntityId));
+                rabbit, health: 1, energy: 10, age: 0, foodEaten: 0, foodReserve: 0, entityId: child.EntityId));
             restored.Cells.SetCell(2, 0, unrelated);
             var restoredRunner = new SpeciesSimulationRunner(restored, rules, stepSeconds: 0.1f);
             Assert.That(restored.ContinueWithoutUpgrade(), Is.True);
@@ -3282,9 +3286,9 @@ namespace SaltyGame.Tests
 
             var grandchild = restored.Cells.GetCell(0, 0);
             Assert.That(grandchild.IsCreature, Is.True);
-            Assert.That(restored.IsHareDescendant(grandchild.EntityId, mate.EntityId), Is.True);
-            Assert.That(restored.IsHareDescendant(grandchild.EntityId, unrelated.EntityId), Is.True);
-            Assert.That(checkpoint.Restore().IsHareDescendant(grandchild.EntityId, mate.EntityId), Is.False);
+            Assert.That(restored.IsRabbitDescendant(grandchild.EntityId, mate.EntityId), Is.True);
+            Assert.That(restored.IsRabbitDescendant(grandchild.EntityId, unrelated.EntityId), Is.True);
+            Assert.That(checkpoint.Restore().IsRabbitDescendant(grandchild.EntityId, mate.EntityId), Is.False);
         }
 
         [Test]
@@ -3570,15 +3574,15 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void HareFleesApproachingFoxWhileFoxPursuesVisibleHare()
+        public void RabbitFleesApproachingFoxWhileFoxPursuesVisibleRabbit()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var fox = new SpeciesId("fox");
             var leftRight = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
             var right = new GridPattern(new[] { Vector2Int.right });
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 1f,
                     movementPattern: leftRight,
                     attackPattern: EmptyPattern,
@@ -3601,7 +3605,7 @@ namespace SaltyGame.Tests
                     blockPattern: EmptyPattern,
                     blockAmount: 0,
                     dietPattern: right,
-                    dietTarget: hare,
+                    dietTarget: rabbit,
                     reproductionPattern: EmptyPattern,
                     reproductionNeighborCount: 0,
                     reproductionChance: 0f,
@@ -3617,19 +3621,19 @@ namespace SaltyGame.Tests
 
             var fleeing = new Grid<SpeciesCell>(3, 1);
             fleeing.SetCell(0, 0, SpeciesCell.Grass(2f));
-            var fleeingHare = new SpeciesCell(hare, energy: 8);
+            var fleeingRabbit = new SpeciesCell(rabbit, energy: 8);
             var fleeingFox = new SpeciesCell(fox, energy: 8);
-            fleeing.SetCell(1, 0, fleeingHare);
+            fleeing.SetCell(1, 0, fleeingRabbit);
             fleeing.SetCell(2, 0, fleeingFox);
             var previousThreatened = new Grid<SpeciesCell>(3, 1);
-            previousThreatened.SetCell(0, 0, fleeingHare.WithEntity(
-                hare,
-                fleeingHare.Health,
-                fleeingHare.Energy,
-                fleeingHare.Age,
-                fleeingHare.FoodEaten,
-                fleeingHare.FoodReserve,
-                entityId: fleeingHare.EntityId));
+            previousThreatened.SetCell(0, 0, fleeingRabbit.WithEntity(
+                rabbit,
+                fleeingRabbit.Health,
+                fleeingRabbit.Energy,
+                fleeingRabbit.Age,
+                fleeingRabbit.FoodEaten,
+                fleeingRabbit.FoodReserve,
+                entityId: fleeingRabbit.EntityId));
             previousThreatened.SetCell(2, 0, fleeingFox.WithEntity(
                 fox,
                 fleeingFox.Health,
@@ -3644,7 +3648,7 @@ namespace SaltyGame.Tests
                 seed: 11,
                 previousSource: previousThreatened);
 
-            Assert.That(escaped.GetCell(0, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(escaped.GetCell(0, 0).SpeciesId, Is.EqualTo(rabbit));
             Assert.That(escaped.GetCell(0, 0).IsTerrainResource, Is.True);
             Assert.That(escaped.GetCell(2, 0).SpeciesId, Is.EqualTo(fox));
 
@@ -3653,23 +3657,23 @@ namespace SaltyGame.Tests
             pursuing.SetCell(
                 2,
                 0,
-                new SpeciesCell(hare, energy: 8)
+                new SpeciesCell(rabbit, energy: 8)
                     .WithBehaviorState(SpeciesBehaviorState.Sleeping));
             var hunted = SpeciesSimulation.Step(pursuing, rules, seed: 11);
 
             Assert.That(hunted.GetCell(1, 0).SpeciesId, Is.EqualTo(fox));
-            Assert.That(hunted.GetCell(2, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(hunted.GetCell(2, 0).SpeciesId, Is.EqualTo(rabbit));
 
             var movementUpgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId);
             var fasterRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
             {
-                [hare] = movementUpgrade.Apply(movementUpgrade.Apply(rules[hare])),
+                [rabbit] = movementUpgrade.Apply(movementUpgrade.Apply(rules[rabbit])),
             };
             var fasterThreatened = new Grid<SpeciesCell>(5, 1);
             var fasterFox = new SpeciesCell(fox, energy: 8);
-            var fasterHare = new SpeciesCell(hare, energy: 8);
+            var fasterRabbit = new SpeciesCell(rabbit, energy: 8);
             fasterThreatened.SetCell(1, 0, fasterFox);
-            fasterThreatened.SetCell(2, 0, fasterHare);
+            fasterThreatened.SetCell(2, 0, fasterRabbit);
             var previousFasterThreatened = new Grid<SpeciesCell>(5, 1);
             previousFasterThreatened.SetCell(1, 0, fasterFox.WithEntity(
                 fox,
@@ -3679,14 +3683,14 @@ namespace SaltyGame.Tests
                 fasterFox.FoodEaten,
                 fasterFox.FoodReserve,
                 entityId: fasterFox.EntityId));
-            previousFasterThreatened.SetCell(3, 0, fasterHare.WithEntity(
-                hare,
-                fasterHare.Health,
-                fasterHare.Energy,
-                fasterHare.Age,
-                fasterHare.FoodEaten,
-                fasterHare.FoodReserve,
-                entityId: fasterHare.EntityId));
+            previousFasterThreatened.SetCell(3, 0, fasterRabbit.WithEntity(
+                rabbit,
+                fasterRabbit.Health,
+                fasterRabbit.Energy,
+                fasterRabbit.Age,
+                fasterRabbit.FoodEaten,
+                fasterRabbit.FoodReserve,
+                entityId: fasterRabbit.EntityId));
 
             var escapedTwice = SpeciesSimulation.Step(
                 fasterThreatened,
@@ -3694,13 +3698,13 @@ namespace SaltyGame.Tests
                 seed: 11,
                 previousSource: previousFasterThreatened);
 
-            Assert.That(escapedTwice.GetCell(4, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(escapedTwice.GetCell(4, 0).SpeciesId, Is.EqualTo(rabbit));
         }
 
         [Test]
-        public void HareFoxFixtureStartsWithAmpleGrassAndReciprocalDietRules()
+        public void RabbitFoxFixtureStartsWithAmpleGrassAndReciprocalDietRules()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var fox = new SpeciesId("fox");
             var movement = SpeciesRuleDefaults.CreateCardinalPattern();
             var grassRules = CreateRules(
@@ -3708,7 +3712,7 @@ namespace SaltyGame.Tests
                 role: SpeciesRole.Plant,
                 metabolism: -1,
                 startingFoodReserve: 1f);
-            var hareRules = new SpeciesRules(
+            var rabbitRules = new SpeciesRules(
                 movementSpeed: 2.2f,
                 movementPattern: movement,
                 attackPattern: EmptyPattern,
@@ -3734,7 +3738,7 @@ namespace SaltyGame.Tests
                 blockPattern: movement,
                 blockAmount: 0,
                 dietPattern: SpeciesRuleDefaults.CreateMoorePattern(),
-                dietTarget: hare,
+                dietTarget: rabbit,
                 reproductionPattern: movement,
                 reproductionNeighborCount: 1,
                 reproductionChance: 0.02f,
@@ -3751,13 +3755,13 @@ namespace SaltyGame.Tests
                 new Dictionary<SpeciesId, float>
                 {
                     [SpeciesIds.Plant] = 0.65f,
-                    [hare] = 0.15f,
+                    [rabbit] = 0.15f,
                     [fox] = 0.015f,
                 },
                 new Dictionary<SpeciesId, SpeciesRules>
                 {
                     [SpeciesIds.Plant] = grassRules,
-                    [hare] = hareRules,
+                    [rabbit] = rabbitRules,
                     [fox] = foxRules,
                 },
                 runDurationSeconds: 20f,
@@ -3765,7 +3769,7 @@ namespace SaltyGame.Tests
 
             var grid = SpeciesInitialGridFactory.Create(data, runSeed: 11);
             var grassCount = 0;
-            var hareCount = 0;
+            var rabbitCount = 0;
             var foxCount = 0;
             for (var y = 0; y < grid.Height; y++)
             {
@@ -3776,9 +3780,9 @@ namespace SaltyGame.Tests
                     {
                         grassCount++;
                     }
-                    else if (cell.IsCreature && cell.SpeciesId == hare)
+                    else if (cell.IsCreature && cell.SpeciesId == rabbit)
                     {
-                        hareCount++;
+                        rabbitCount++;
                     }
                     else if (cell.IsCreature && cell.SpeciesId == fox)
                     {
@@ -3787,10 +3791,10 @@ namespace SaltyGame.Tests
                 }
             }
 
-            Assert.That(grassCount, Is.GreaterThan(hareCount + foxCount));
-            Assert.That(data.StartingProbabilities[SpeciesIds.Plant], Is.GreaterThan(data.StartingProbabilities[hare]));
-            Assert.That(hareRules.DietTargetId, Is.EqualTo(SpeciesIds.Plant));
-            Assert.That(foxRules.DietTargetId, Is.EqualTo(hare));
+            Assert.That(grassCount, Is.GreaterThan(rabbitCount + foxCount));
+            Assert.That(data.StartingProbabilities[SpeciesIds.Plant], Is.GreaterThan(data.StartingProbabilities[rabbit]));
+            Assert.That(rabbitRules.DietTargetId, Is.EqualTo(SpeciesIds.Plant));
+            Assert.That(foxRules.DietTargetId, Is.EqualTo(rabbit));
         }
 
         [Test]
@@ -4157,7 +4161,7 @@ namespace SaltyGame.Tests
             Assert.That(metrics.GetActivity(SpeciesIds.Plant).WiltDeaths, Is.EqualTo(1));
         }
 
-        [TestCase("hare")]
+        [TestCase("rabbit")]
         [TestCase("fox")]
         public void PlantsWiltUnderCreaturesWithoutAnimalDeath(string speciesId)
         {
@@ -4191,14 +4195,14 @@ namespace SaltyGame.Tests
         [Test]
         public void PopulationLimitReportsRemovedLayerOnSharedTiles()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var source = new Grid<SpeciesCell>(1, 1);
             source.SetCell(0, 0, SpeciesCell.FromTerrain(TerrainDefaults.Grass, 5f, SpeciesIds.Plant)
-                .WithEntity(hare, health: 1, energy: 5, age: 4, foodEaten: 0, foodReserve: 0f));
+                .WithEntity(rabbit, health: 1, energy: 5, age: 4, foodEaten: 0, foodReserve: 0f));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
                 [SpeciesIds.Plant] = CreateRules(role: SpeciesRole.Plant, metabolism: 0),
-                [hare] = CreateRules(movementSpeed: 0f, metabolism: 0),
+                [rabbit] = CreateRules(movementSpeed: 0f, metabolism: 0),
             };
             var removedLayers = new HashSet<bool>();
             for (var seed = 0; seed < 16; seed++)
@@ -4210,11 +4214,11 @@ namespace SaltyGame.Tests
                 var creatureDied = !next.GetCell(0, 0).IsCreature;
                 removedLayers.Add(creatureDied);
                 Assert.That(death.IsCreature, Is.EqualTo(creatureDied));
-                Assert.That(death.Species, Is.EqualTo(creatureDied ? hare : SpeciesIds.Plant));
+                Assert.That(death.Species, Is.EqualTo(creatureDied ? rabbit : SpeciesIds.Plant));
                 Assert.That(death.EntityId, Is.EqualTo(creatureDied ? source.GetCell(0, 0).EntityId : 0L));
                 Assert.That(death.Cause, Is.EqualTo(SpeciesDeathCause.PopulationLimit));
                 Assert.That(metrics.GetActivity(death.Species).PopulationLimitRemovals, Is.EqualTo(1));
-                Assert.That(metrics.GetActivity(creatureDied ? SpeciesIds.Plant : hare).Deaths, Is.Zero);
+                Assert.That(metrics.GetActivity(creatureDied ? SpeciesIds.Plant : rabbit).Deaths, Is.Zero);
             }
             Assert.That(removedLayers, Is.EquivalentTo(new[] { true, false }));
         }
@@ -4224,9 +4228,9 @@ namespace SaltyGame.Tests
         [TestCase(SpeciesDeathCause.Starvation, false)]
         public void SharedTileDeathTelemetryPreservesTheRemovedLayersIdentity(SpeciesDeathCause cause, bool resourceLayer)
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var cell = SpeciesCell.FromTerrain(TerrainDefaults.Grass, 5f, SpeciesIds.Plant)
-                .WithEntity(hare, health: 1, energy: 5, age: 4, foodEaten: 0, foodReserve: 0f);
+                .WithEntity(rabbit, health: 1, energy: 5, age: 4, foodEaten: 0, foodReserve: 0f);
             var metrics = new SpeciesSimulationMetrics();
 
             typeof(SpeciesSimulationMetrics).GetMethod("RecordDeath", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -4234,7 +4238,7 @@ namespace SaltyGame.Tests
 
             Assert.That(metrics.DeathEvents, Has.Count.EqualTo(1));
             var death = metrics.DeathEvents[0];
-            Assert.That(death.Species, Is.EqualTo(resourceLayer ? SpeciesIds.Plant : hare));
+            Assert.That(death.Species, Is.EqualTo(resourceLayer ? SpeciesIds.Plant : rabbit));
             Assert.That(death.EntityId, Is.EqualTo(resourceLayer ? 0L : cell.EntityId));
             Assert.That(death.Age, Is.EqualTo(resourceLayer ? 0 : 4));
             Assert.That(death.IsCreature, Is.EqualTo(!resourceLayer));
@@ -4242,24 +4246,24 @@ namespace SaltyGame.Tests
             Assert.That(death.Y, Is.EqualTo(3));
             Assert.That(death.Cause, Is.EqualTo(cause));
             Assert.That(metrics.GetActivity(death.Species).Deaths, Is.EqualTo(1));
-            Assert.That(metrics.GetActivity(resourceLayer ? hare : SpeciesIds.Plant).Deaths, Is.Zero);
+            Assert.That(metrics.GetActivity(resourceLayer ? rabbit : SpeciesIds.Plant).Deaths, Is.Zero);
         }
 
         [Test]
         public void StartingBetweenHungerAndMatingThresholdsDelaysFeedingDespiteAvailableFood()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var cardinal = new GridPattern(new[] { Vector2Int.up, Vector2Int.right, Vector2Int.down, Vector2Int.left });
             var source = new Grid<SpeciesCell>(3, 3);
             for (var y = 0; y < source.Height; y++)
                 for (var x = 0; x < source.Width; x++)
                     source.SetCell(x, y, SpeciesCell.FromTerrain(TerrainDefaults.Grass, 100f, SpeciesIds.Plant));
             source.SetCell(1, 1, source.GetCell(1, 1)
-                .WithEntity(hare, health: 1, energy: 12, age: 0, foodEaten: 0, foodReserve: 0f));
+                .WithEntity(rabbit, health: 1, energy: 12, age: 0, foodEaten: 0, foodReserve: 0f));
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
                 [SpeciesIds.Plant] = CreateRules(role: SpeciesRole.Plant, metabolism: 0),
-                [hare] = new SpeciesRules(1f, cardinal, EmptyPattern, 0, EmptyPattern, 0,
+                [rabbit] = new SpeciesRules(1f, cardinal, EmptyPattern, 0, EmptyPattern, 0,
                     cardinal, SpeciesIds.Plant, EmptyPattern, 0, reproductionChance: 0f,
                     metabolism: 1, forageBelowEnergy: 6, maximumEnergy: 48,
                     foragesUntilFull: true, energyLossIntervalTicks: 8,
@@ -4269,14 +4273,14 @@ namespace SaltyGame.Tests
             for (var tick = 1; tick <= 56; tick++)
             {
                 source = SpeciesSimulation.Step(source, rules, seed: tick, metrics: metrics);
-                Assert.That(metrics.GetActivity(hare).FoodActionSuccesses, Is.Zero, $"tick {tick}");
+                Assert.That(metrics.GetActivity(rabbit).FoodActionSuccesses, Is.Zero, $"tick {tick}");
             }
 
             SpeciesSimulation.Step(source, rules, seed: 57, metrics: metrics);
 
-            Assert.That(rules[hare].HasMatingEnergy(12), Is.False);
-            Assert.That(rules[hare].HasMatingEnergy(24), Is.True);
-            Assert.That(metrics.GetActivity(hare).FoodActionSuccesses, Is.GreaterThan(0));
+            Assert.That(rules[rabbit].HasMatingEnergy(12), Is.False);
+            Assert.That(rules[rabbit].HasMatingEnergy(24), Is.True);
+            Assert.That(metrics.GetActivity(rabbit).FoodActionSuccesses, Is.GreaterThan(0));
         }
 
         [Test]
@@ -4505,20 +4509,20 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void FertileDroppingsNeedsActiveGenomeAndKeepsHareIdentityOnTheTile()
+        public void FertileDroppingsNeedsActiveGenomeAndKeepsRabbitIdentityOnTheTile()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var right = new GridPattern(new[] { Vector2Int.right });
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(0f, right, EmptyPattern, 0, EmptyPattern, 0,
+                [rabbit] = new SpeciesRules(0f, right, EmptyPattern, 0, EmptyPattern, 0,
                     right, SpeciesIds.Plant, EmptyPattern, 0,
                     seedDropChance: 0f, metabolism: 0),
                 [SpeciesIds.Plant] = CreateRules(
                     role: SpeciesRole.Plant, startingFoodReserve: 3.25f),
             };
             var source = new Grid<SpeciesCell>(2, 1);
-            source.SetCell(0, 0, new SpeciesCell(hare, foodReserve: 1f));
+            source.SetCell(0, 0, new SpeciesCell(rabbit, foodReserve: 1f));
             var ownerId = source.GetCell(0, 0).EntityId;
             var resolve = typeof(SpeciesSimulation).GetMethod(
                 "ResolveSeedDrops", BindingFlags.Static | BindingFlags.NonPublic);
@@ -4529,13 +4533,13 @@ namespace SaltyGame.Tests
             Assert.That(control.GetCell(0, 0).ScentMarker.IsActive, Is.False);
 
             var active = new GenomeSimulationSnapshot(new[] {
-                new SpeciesGenomeSnapshot(hare, new[] { SpeciesSimulation.FertileDroppingsNodeId }) });
+                new SpeciesGenomeSnapshot(rabbit, new[] { SpeciesSimulation.FertileDroppingsNodeId }) });
             resolve.Invoke(null, new object[] {
                 source, rules, TerrainDefaults.Create(), new ZeroRollRandom(), null, active });
             var mark = source.GetCell(0, 0).ScentMarker;
             Assert.That(source.GetCell(1, 0).IsPlantResource, Is.True);
             Assert.That(source.GetCell(0, 0).FoodReserve, Is.Zero);
-            Assert.That(mark.OwnerSpeciesId, Is.EqualTo(hare));
+            Assert.That(mark.OwnerSpeciesId, Is.EqualTo(rabbit));
             Assert.That(mark.OwnerEntityId, Is.EqualTo(ownerId));
             Assert.That(mark.TicksRemaining, Is.EqualTo(SpeciesPerception.DroppingScentDurationTicks));
             Assert.That(source.GetCell(0, 0).WithoutEntity().ScentMarker.OwnerEntityId,
@@ -4545,21 +4549,21 @@ namespace SaltyGame.Tests
         [Test]
         public void RunnerAppliesFertileDroppingsFromFrozenGenomeSnapshot()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var right = new GridPattern(new[] { Vector2Int.right });
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(0f, right, EmptyPattern, 0, EmptyPattern, 0,
+                [rabbit] = new SpeciesRules(0f, right, EmptyPattern, 0, EmptyPattern, 0,
                     right, SpeciesIds.Plant, EmptyPattern, 0,
                     seedDropChance: 1f, metabolism: 0),
                 [SpeciesIds.Plant] = CreateRules(
                     role: SpeciesRole.Plant, startingFoodReserve: 3.25f),
             };
             var grid = new Grid<SpeciesCell>(2, 1);
-            grid.SetCell(0, 0, new SpeciesCell(hare, foodReserve: 1f));
+            grid.SetCell(0, 0, new SpeciesCell(rabbit, foodReserve: 1f));
             var genome = new GenomeSimulationSnapshot(new[] {
-                new SpeciesGenomeSnapshot(hare, new[] { SpeciesSimulation.FertileDroppingsNodeId }) });
-            var run = new SimulationRunState(grid, hare, seed: 42,
+                new SpeciesGenomeSnapshot(rabbit, new[] { SpeciesSimulation.FertileDroppingsNodeId }) });
+            var run = new SimulationRunState(grid, rabbit, seed: 42,
                 durationSeconds: 0.1f, targetTicks: 1, activeGenomeSnapshot: genome);
             var runner = new SpeciesSimulationRunner(run, rules, stepSeconds: 0.1f);
 
@@ -4571,17 +4575,17 @@ namespace SaltyGame.Tests
         [Test]
         public void DroppingScentExpiresAfterFortyTicksAndHasExtendedDetectionRange()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var mark = new SpeciesScentMarker(
-                hare, 77, SpeciesPerception.DroppingScentDurationTicks, isDropping: true);
+                rabbit, 77, SpeciesPerception.DroppingScentDurationTicks, isDropping: true);
             var grid = new Grid<SpeciesCell>(40, 1);
             grid.SetCell(24, 0, SpeciesCell.Empty.WithScentMarker(mark));
             Assert.That(SpeciesPerception.TryFindDroppingScent(
-                grid, 0, 0, hare, out _, out _), Is.True);
+                grid, 0, 0, rabbit, out _, out _), Is.True);
             grid.SetCell(24, 0, SpeciesCell.Empty);
             grid.SetCell(25, 0, SpeciesCell.Empty.WithScentMarker(mark));
             Assert.That(SpeciesPerception.TryFindDroppingScent(
-                grid, 0, 0, hare, out _, out _), Is.False);
+                grid, 0, 0, rabbit, out _, out _), Is.False);
 
             grid.SetCell(0, 0, SpeciesCell.Empty.WithScentMarker(mark));
             grid.SetCell(25, 0, SpeciesCell.Empty);
@@ -4597,7 +4601,7 @@ namespace SaltyGame.Tests
             var fox = new SpeciesId("fox");
             var moving = new Grid<SpeciesCell>(2, 1);
             moving.SetCell(0, 0, new SpeciesCell(fox, energy: 1)
-                .WithScentMarker(new SpeciesScentMarker(hare, 77, 1, true)));
+                .WithScentMarker(new SpeciesScentMarker(rabbit, 77, 1, true)));
             var right = new GridPattern(new[] { Vector2Int.right });
             var mobileRules = new Dictionary<SpeciesId, SpeciesRules> {
                 [fox] = new SpeciesRules(1f, right, EmptyPattern, 0, EmptyPattern, 0,
@@ -4608,44 +4612,44 @@ namespace SaltyGame.Tests
             Assert.That(moving.GetCell(0, 0).ScentMarker.IsActive, Is.False,
                 "Moving off the tile must not restore an already expired marker.");
 
-            var hareMoving = new Grid<SpeciesCell>(2, 1);
-            hareMoving.SetCell(0, 0, new SpeciesCell(hare, energy: 1));
-            var hareId = hareMoving.GetCell(0, 0).EntityId;
-            var hareRules = new Dictionary<SpeciesId, SpeciesRules> {
-                [hare] = new SpeciesRules(1f, right, EmptyPattern, 0, EmptyPattern, 0,
+            var rabbitMoving = new Grid<SpeciesCell>(2, 1);
+            rabbitMoving.SetCell(0, 0, new SpeciesCell(rabbit, energy: 1));
+            var rabbitId = rabbitMoving.GetCell(0, 0).EntityId;
+            var rabbitRules = new Dictionary<SpeciesId, SpeciesRules> {
+                [rabbit] = new SpeciesRules(1f, right, EmptyPattern, 0, EmptyPattern, 0,
                     EmptyPattern, (SpeciesId?)null, EmptyPattern, 0, metabolism: 0) };
-            hareMoving = SpeciesSimulation.Step(hareMoving, hareRules, 42);
-            Assert.That(hareMoving.GetCell(0, 0).ScentMarker.OwnerEntityId, Is.EqualTo(hareId));
-            Assert.That(hareMoving.GetCell(0, 0).ScentMarker.IsDropping, Is.False);
-            Assert.That(hareMoving.GetCell(0, 0).ScentMarker.TicksRemaining,
+            rabbitMoving = SpeciesSimulation.Step(rabbitMoving, rabbitRules, 42);
+            Assert.That(rabbitMoving.GetCell(0, 0).ScentMarker.OwnerEntityId, Is.EqualTo(rabbitId));
+            Assert.That(rabbitMoving.GetCell(0, 0).ScentMarker.IsDropping, Is.False);
+            Assert.That(rabbitMoving.GetCell(0, 0).ScentMarker.TicksRemaining,
                 Is.EqualTo(SpeciesPerception.BaseScentDurationTicks));
-            Assert.That(hareMoving.GetCell(1, 0).ScentMarker.OwnerEntityId, Is.EqualTo(hareId),
-                "The occupied tile must carry scent so a stationary Hare remains trackable.");
+            Assert.That(rabbitMoving.GetCell(1, 0).ScentMarker.OwnerEntityId, Is.EqualTo(rabbitId),
+                "The occupied tile must carry scent so a stationary Rabbit remains trackable.");
 
-            var hareStanding = new Grid<SpeciesCell>(1, 1);
-            hareStanding.SetCell(0, 0, new SpeciesCell(hare, energy: 1));
-            var standingId = hareStanding.GetCell(0, 0).EntityId;
-            hareStanding = SpeciesSimulation.Step(hareStanding, hareRules, 43);
-            Assert.That(hareStanding.GetCell(0, 0).ScentMarker.OwnerEntityId,
+            var rabbitStanding = new Grid<SpeciesCell>(1, 1);
+            rabbitStanding.SetCell(0, 0, new SpeciesCell(rabbit, energy: 1));
+            var standingId = rabbitStanding.GetCell(0, 0).EntityId;
+            rabbitStanding = SpeciesSimulation.Step(rabbitStanding, rabbitRules, 43);
+            Assert.That(rabbitStanding.GetCell(0, 0).ScentMarker.OwnerEntityId,
                 Is.EqualTo(standingId));
         }
 
         [Test]
-        public void HungryPredatorSniffsDroppingThenSamplesOnlyThatHareAtLongerRange()
+        public void HungryPredatorSniffsDroppingThenSamplesOnlyThatRabbitAtLongerRange()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var fox = new SpeciesId("fox");
             var right = new GridPattern(new[] { Vector2Int.right });
             var foxRules = new SpeciesRules(1f, right, right, 0, EmptyPattern, 0,
-                right, hare, EmptyPattern, 0, metabolism: 0,
+                right, rabbit, EmptyPattern, 0, metabolism: 0,
                 awareness: new SpeciesAwarenessRules(visionRange: 1),
                 role: SpeciesRole.Carnivore, forageBelowEnergy: 100);
             var rules = new Dictionary<SpeciesId, SpeciesRules> { [fox] = foxRules };
             var grid = new Grid<SpeciesCell>(40, 1);
-            var hareCell = new SpeciesCell(hare, energy: 1);
-            grid.SetCell(34, 0, hareCell);
+            var rabbitCell = new SpeciesCell(rabbit, energy: 1);
+            grid.SetCell(34, 0, rabbitCell);
             grid.SetCell(20, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
-                hare, hareCell.EntityId, SpeciesPerception.DroppingScentDurationTicks, true)));
+                rabbit, rabbitCell.EntityId, SpeciesPerception.DroppingScentDurationTicks, true)));
             grid.SetCell(0, 0, new SpeciesCell(fox, energy: 0));
             var scentMetrics = new SpeciesSimulationMetrics();
             var metricsStart = typeof(SpeciesSimulationMetrics)
@@ -4653,7 +4657,7 @@ namespace SaltyGame.Tests
                 .Invoke(scentMetrics, null);
             var first = SpeciesSimulation.Step(grid, rules, seed: 11, metrics: scentMetrics);
             var seeking = first.GetCell(1, 0);
-            Assert.That(seeking.ScentMemory.TargetEntityId, Is.EqualTo(hareCell.EntityId));
+            Assert.That(seeking.ScentMemory.TargetEntityId, Is.EqualTo(rabbitCell.EntityId));
             Assert.That(seeking.ScentMemory.X, Is.EqualTo(20));
             Assert.That(seeking.ScentMemory.SniffedDropping, Is.False);
             Assert.That(scentMetrics.GetActivity(fox).ScentDroppingDetections, Is.EqualTo(1));
@@ -4671,16 +4675,16 @@ namespace SaltyGame.Tests
             Assert.That(wellFedNext.GetCell(0, 0).ScentMemory.IsActive, Is.False);
 
             Assert.That(SpeciesPerception.TryFindSniffedTarget(
-                grid, 0, 0, hare, hareCell.EntityId, out _), Is.False,
-                "The live Hare cannot be located remotely without its movement scent.");
+                grid, 0, 0, rabbit, rabbitCell.EntityId, out _), Is.False,
+                "The live Rabbit cannot be located remotely without its movement scent.");
 
             var near = new Grid<SpeciesCell>(40, 1);
             near.SetCell(20, 0, grid.GetCell(20, 0));
-            near.SetCell(34, 0, hareCell.WithScentMarker(new SpeciesScentMarker(
-                hare, hareCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
+            near.SetCell(34, 0, rabbitCell.WithScentMarker(new SpeciesScentMarker(
+                rabbit, rabbitCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
             near.SetCell(19, 0, new SpeciesCell(fox, energy: 0)
                 .WithEntity(fox, 1, 0, 10, 0, 0f)
-                .WithScentMemory(new SpeciesScentMemory(hareCell.EntityId, 20, 0, 10, false)));
+                .WithScentMemory(new SpeciesScentMemory(rabbitCell.EntityId, 20, 0, 10, false)));
             var perceived = near.Copy();
             var sniffMetrics = new SpeciesSimulationMetrics();
             SpeciesBehaviorSystem.Update(near, perceived, rules, new System.Random(11), sniffMetrics);
@@ -4691,52 +4695,52 @@ namespace SaltyGame.Tests
             Assert.That(sniffMetrics.GetActivity(fox).ScentTrackSamples, Is.EqualTo(1));
 
             var distant = new Grid<SpeciesCell>(40, 1);
-            distant.SetCell(1, 0, new SpeciesCell(hare, energy: 1));
-            distant.SetCell(36, 0, hareCell.WithScentMarker(new SpeciesScentMarker(
-                hare, hareCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
+            distant.SetCell(1, 0, new SpeciesCell(rabbit, energy: 1));
+            distant.SetCell(36, 0, rabbitCell.WithScentMarker(new SpeciesScentMarker(
+                rabbit, rabbitCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
             Assert.That(SpeciesPerception.TryFindSniffedTarget(
-                distant, 0, 0, hare, hareCell.EntityId, out var identified), Is.True);
+                distant, 0, 0, rabbit, rabbitCell.EntityId, out var identified), Is.True);
             Assert.That(identified.Location.x, Is.EqualTo(36),
-                "The closer Hare must not replace the identified scent owner.");
+                "The closer Rabbit must not replace the identified scent owner.");
             distant.SetCell(36, 0, SpeciesCell.Empty);
-            distant.SetCell(37, 0, hareCell.WithScentMarker(new SpeciesScentMarker(
-                hare, hareCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
+            distant.SetCell(37, 0, rabbitCell.WithScentMarker(new SpeciesScentMarker(
+                rabbit, rabbitCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
             Assert.That(SpeciesPerception.TryFindSniffedTarget(
-                distant, 0, 0, hare, hareCell.EntityId, out _), Is.False);
+                distant, 0, 0, rabbit, rabbitCell.EntityId, out _), Is.False);
 
-            var movedHare = near.Copy();
-            movedHare.SetCell(34, 0, SpeciesCell.Empty);
-            movedHare.SetCell(35, 0, hareCell.WithScentMarker(new SpeciesScentMarker(
-                hare, hareCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
-            movedHare.SetCell(19, 0, near.GetCell(19, 0)
+            var movedRabbit = near.Copy();
+            movedRabbit.SetCell(34, 0, SpeciesCell.Empty);
+            movedRabbit.SetCell(35, 0, rabbitCell.WithScentMarker(new SpeciesScentMarker(
+                rabbit, rabbitCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
+            movedRabbit.SetCell(19, 0, near.GetCell(19, 0)
                 .WithEntity(fox, 1, 0, 11, 0, 0f)
                 .WithScentMemory(sniffed));
-            perceived = movedHare.Copy();
-            SpeciesBehaviorSystem.Update(movedHare, perceived, rules, new System.Random(11));
+            perceived = movedRabbit.Copy();
+            SpeciesBehaviorSystem.Update(movedRabbit, perceived, rules, new System.Random(11));
             Assert.That(perceived.GetCell(19, 0).ScentMemory.X, Is.EqualTo(34),
                 "Scent position should stay stale between ten-tick samples.");
-            movedHare.SetCell(19, 0, movedHare.GetCell(19, 0)
+            movedRabbit.SetCell(19, 0, movedRabbit.GetCell(19, 0)
                 .WithEntity(fox, 1, 0, 20, 0, 0f));
-            perceived = movedHare.Copy();
-            SpeciesBehaviorSystem.Update(movedHare, perceived, rules, new System.Random(11));
+            perceived = movedRabbit.Copy();
+            SpeciesBehaviorSystem.Update(movedRabbit, perceived, rules, new System.Random(11));
             Assert.That(perceived.GetCell(19, 0).ScentMemory.X, Is.EqualTo(35));
         }
 
         [Test]
         public void HungryPredatorSamplesOrdinaryScentAtShorterRangeButPrefersDroppings()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var fox = new SpeciesId("fox");
             var right = new GridPattern(new[] { Vector2Int.right });
             var rules = new Dictionary<SpeciesId, SpeciesRules> {
                 [fox] = new SpeciesRules(1f, right, right, 0, EmptyPattern, 0,
-                    right, hare, EmptyPattern, 0, metabolism: 0,
+                    right, rabbit, EmptyPattern, 0, metabolism: 0,
                     awareness: new SpeciesAwarenessRules(visionRange: 1),
                     role: SpeciesRole.Carnivore, forageBelowEnergy: 100) };
             var grid = new Grid<SpeciesCell>(30, 1);
             grid.SetCell(0, 0, new SpeciesCell(fox, energy: 0));
             grid.SetCell(16, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
-                hare, 101, SpeciesPerception.BaseScentDurationTicks, false)));
+                rabbit, 101, SpeciesPerception.BaseScentDurationTicks, false)));
             var next = grid.Copy();
             var scentMetrics = new SpeciesSimulationMetrics();
             SpeciesBehaviorSystem.Update(grid, next, rules, new System.Random(11), scentMetrics);
@@ -4759,15 +4763,15 @@ namespace SaltyGame.Tests
 
             grid.SetCell(16, 0, SpeciesCell.Empty);
             grid.SetCell(17, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
-                hare, 101, SpeciesPerception.BaseScentDurationTicks, false)));
+                rabbit, 101, SpeciesPerception.BaseScentDurationTicks, false)));
             next = grid.Copy();
             SpeciesBehaviorSystem.Update(grid, next, rules, new System.Random(11));
             Assert.That(next.GetCell(0, 0).ScentMemory.IsActive, Is.False);
 
             grid.SetCell(16, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
-                hare, 101, SpeciesPerception.BaseScentDurationTicks, false)));
+                rabbit, 101, SpeciesPerception.BaseScentDurationTicks, false)));
             grid.SetCell(24, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
-                hare, 202, SpeciesPerception.DroppingScentDurationTicks, true)));
+                rabbit, 202, SpeciesPerception.DroppingScentDurationTicks, true)));
             next = grid.Copy();
             SpeciesBehaviorSystem.Update(grid, next, rules, new System.Random(11), scentMetrics);
             Assert.That(next.GetCell(0, 0).ScentMemory.TargetEntityId, Is.EqualTo(202));
@@ -4813,10 +4817,10 @@ namespace SaltyGame.Tests
             var pattern = situation == "no-pattern" ? EmptyPattern : new GridPattern(new[] {
                 situation == "out-of-bounds" ? Vector2Int.left : Vector2Int.right });
             var chance = situation == "disabled" ? 0f : situation == "chance-failed" ? 0.01f : 1f;
-            var hare = new SpeciesRules(0f, pattern, EmptyPattern, 0, EmptyPattern, 0, EmptyPattern,
+            var rabbit = new SpeciesRules(0f, pattern, EmptyPattern, 0, EmptyPattern, 0, EmptyPattern,
                 (SpeciesId?)null, EmptyPattern, 0, seedDropChance: chance, metabolism: 0);
             var rules = new Dictionary<SpeciesId, SpeciesRules> {
-                [SpeciesIds.Herbivore] = hare,
+                [SpeciesIds.Herbivore] = rabbit,
                 [SpeciesIds.Plant] = CreateRules(role: SpeciesRole.Plant,
                     startingFoodReserve: situation == "no-plant-food" ? 0f : 3.25f) };
             var metrics = new SpeciesSimulationMetrics();
@@ -5375,7 +5379,7 @@ namespace SaltyGame.Tests
         public void FoxPrioritizesPreyBelowItsForageThresholdAndCanMateAtTwentyFivePercent()
         {
             var fox = new SpeciesId("fox");
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var neighbors = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
             var foxRules = new SpeciesRules(
                 movementSpeed: 0f,
@@ -5385,7 +5389,7 @@ namespace SaltyGame.Tests
                 blockPattern: EmptyPattern,
                 blockAmount: 0,
                 dietPattern: EmptyPattern,
-                dietTarget: hare,
+                dietTarget: rabbit,
                 reproductionPattern: neighbors,
                 reproductionNeighborCount: 1,
                 reproductionChance: 1f,
@@ -5406,7 +5410,7 @@ namespace SaltyGame.Tests
             hungry.SetCell(1, 0, new SpeciesCell(fox, energy: 179)
                 .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
             hungry.SetCell(2, 0, new SpeciesCell(fox, energy: 179));
-            hungry.SetCell(4, 0, new SpeciesCell(hare, energy: 10));
+            hungry.SetCell(4, 0, new SpeciesCell(rabbit, energy: 10));
             var hungryNext = hungry.Copy();
 
             SpeciesBehaviorSystem.Update(hungry, hungryNext, rules, new System.Random(7));
@@ -5423,7 +5427,7 @@ namespace SaltyGame.Tests
             var satiated = new Grid<SpeciesCell>(5, 1);
             satiated.SetCell(1, 0, new SpeciesCell(fox, energy: 180));
             satiated.SetCell(2, 0, new SpeciesCell(fox, energy: 180));
-            satiated.SetCell(4, 0, new SpeciesCell(hare, energy: 10));
+            satiated.SetCell(4, 0, new SpeciesCell(rabbit, energy: 10));
             var satiatedNext = satiated.Copy();
 
             SpeciesBehaviorSystem.Update(satiated, satiatedNext, rules, new System.Random(7));
@@ -5768,19 +5772,19 @@ namespace SaltyGame.Tests
         {
             var rules = SpeciesRuleDefaults.Create();
             var source = new Grid<SpeciesCell>(3, 1);
-            var hare = new SpeciesCell(SpeciesIds.Herbivore, energy: 6);
+            var rabbit = new SpeciesCell(SpeciesIds.Herbivore, energy: 6);
             var carnivore = new SpeciesCell(SpeciesIds.Carnivore, energy: 6);
-            source.SetCell(0, 0, hare);
+            source.SetCell(0, 0, rabbit);
             source.SetCell(1, 0, carnivore);
             var previous = new Grid<SpeciesCell>(3, 1);
-            previous.SetCell(0, 0, hare.WithEntity(
-                hare.SpeciesId,
-                hare.Health,
-                hare.Energy,
-                hare.Age,
-                hare.FoodEaten,
-                hare.FoodReserve,
-                entityId: hare.EntityId));
+            previous.SetCell(0, 0, rabbit.WithEntity(
+                rabbit.SpeciesId,
+                rabbit.Health,
+                rabbit.Energy,
+                rabbit.Age,
+                rabbit.FoodEaten,
+                rabbit.FoodReserve,
+                entityId: rabbit.EntityId));
             previous.SetCell(2, 0, carnivore.WithEntity(
                 carnivore.SpeciesId,
                 carnivore.Health,
@@ -5806,9 +5810,9 @@ namespace SaltyGame.Tests
         {
             var rules = SpeciesRuleDefaults.Create();
             var source = new Grid<SpeciesCell>(3, 1);
-            var hare = new SpeciesCell(SpeciesIds.Herbivore, energy: 6);
+            var rabbit = new SpeciesCell(SpeciesIds.Herbivore, energy: 6);
             var carnivore = new SpeciesCell(SpeciesIds.Carnivore, energy: 6);
-            source.SetCell(0, 0, hare);
+            source.SetCell(0, 0, rabbit);
             source.SetCell(1, 0, carnivore);
             var previous = source.Copy();
             var next = source.Copy();
@@ -5828,19 +5832,19 @@ namespace SaltyGame.Tests
         {
             var rules = SpeciesRuleDefaults.Create();
             var source = new Grid<SpeciesCell>(4, 1);
-            var hare = new SpeciesCell(SpeciesIds.Herbivore, energy: 6);
+            var rabbit = new SpeciesCell(SpeciesIds.Herbivore, energy: 6);
             var carnivore = new SpeciesCell(SpeciesIds.Carnivore, energy: 6);
-            source.SetCell(0, 0, hare);
+            source.SetCell(0, 0, rabbit);
             source.SetCell(2, 0, carnivore);
             var previous = new Grid<SpeciesCell>(4, 1);
-            previous.SetCell(0, 0, hare.WithEntity(
-                hare.SpeciesId,
-                hare.Health,
-                hare.Energy,
-                hare.Age,
-                hare.FoodEaten,
-                hare.FoodReserve,
-                entityId: hare.EntityId));
+            previous.SetCell(0, 0, rabbit.WithEntity(
+                rabbit.SpeciesId,
+                rabbit.Health,
+                rabbit.Energy,
+                rabbit.Age,
+                rabbit.FoodEaten,
+                rabbit.FoodReserve,
+                entityId: rabbit.EntityId));
             previous.SetCell(3, 0, carnivore.WithEntity(
                 carnivore.SpeciesId,
                 carnivore.Health,
@@ -5862,7 +5866,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void HareMovesAwayFromAVisibleStationaryFox()
+        public void RabbitMovesAwayFromAVisibleStationaryFox()
         {
             var rules = SpeciesRuleDefaults.Create();
             var source = new Grid<SpeciesCell>(3, 1);
@@ -5880,14 +5884,14 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void OvercrowdedHareDispersesIntoALessCrowdedCellEvenIfItRemainsOverTheLimit()
+        public void OvercrowdedRabbitDispersesIntoALessCrowdedCellEvenIfItRemainsOverTheLimit()
         {
-            var hare = new SpeciesId("hare");
-            var mover = new SpeciesCell(hare, energy: 10);
+            var rabbit = new SpeciesId("rabbit");
+            var mover = new SpeciesCell(rabbit, energy: 10);
             var right = new GridPattern(new[] { Vector2Int.right });
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
-                [hare] = new SpeciesRules(
+                [rabbit] = new SpeciesRules(
                     movementSpeed: 1f,
                     movementPattern: right,
                     attackPattern: EmptyPattern,
@@ -5907,21 +5911,21 @@ namespace SaltyGame.Tests
             };
             var source = new Grid<SpeciesCell>(4, 3);
             source.SetCell(1, 1, mover);
-            source.SetCell(0, 0, new SpeciesCell(hare, energy: 1)
+            source.SetCell(0, 0, new SpeciesCell(rabbit, energy: 1)
                 .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
-            source.SetCell(0, 1, new SpeciesCell(hare, energy: 1)
+            source.SetCell(0, 1, new SpeciesCell(rabbit, energy: 1)
                 .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
-            source.SetCell(1, 0, new SpeciesCell(hare, energy: 1)
+            source.SetCell(1, 0, new SpeciesCell(rabbit, energy: 1)
                 .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
-            source.SetCell(2, 0, new SpeciesCell(hare, energy: 1)
+            source.SetCell(2, 0, new SpeciesCell(rabbit, energy: 1)
                 .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
 
             var next = SpeciesSimulation.Step(source, rules, seed: 17);
 
             Assert.That(next.GetCell(1, 1).IsCreature, Is.False);
             Assert.That(next.GetCell(2, 1).EntityId, Is.EqualTo(mover.EntityId));
-            Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(hare));
-            Assert.That(next.GetCell(2, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(rabbit));
+            Assert.That(next.GetCell(2, 0).SpeciesId, Is.EqualTo(rabbit));
         }
 
         [Test]
@@ -6460,7 +6464,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void CrowdingDoublesMetabolismInsteadOfKillingHaresDirectly()
+        public void CrowdingDoublesMetabolismInsteadOfKillingRabbitsDirectly()
         {
             var neighborhood = new GridPattern(new[]
             {
@@ -6504,19 +6508,19 @@ namespace SaltyGame.Tests
 
             Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).CrowdingDeaths, Is.Zero);
             Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).StarvationDeaths, Is.Zero);
-            var survivingHares = 0;
+            var survivingRabbits = 0;
             for (var y = 0; y < next.Height; y++)
             {
                 for (var x = 0; x < next.Width; x++)
                 {
                     if (next.GetCell(x, y).IsCreature)
                     {
-                        survivingHares++;
+                        survivingRabbits++;
                     }
                 }
             }
 
-            Assert.That(survivingHares, Is.EqualTo(4));
+            Assert.That(survivingRabbits, Is.EqualTo(4));
             Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(1));
             SpeciesSimulation.Step(next, rules, seed: 7, metrics: metrics);
             Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).StarvationDeaths, Is.EqualTo(4));

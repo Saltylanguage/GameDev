@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: LargerMinimumLitter
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.SpeciesUpgradeAsset
   upgradeId: larger-minimum-litter
-  displayName: 'Hare: Larger Minimum Litter'
+  displayName: 'Rabbit: Larger Minimum Litter'
   description: Increase the minimum number of offspring in each litter by one.
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   cost: 5
   modifiers:
   - attributeId: reproduction.litter-minimum

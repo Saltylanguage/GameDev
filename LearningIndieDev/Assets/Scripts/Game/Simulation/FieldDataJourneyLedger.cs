@@ -148,7 +148,7 @@ namespace SaltyGame
 
             if (!FieldDataIncome.TryCalculate(
                 selectedPopulation,
-                GetHareCount(populationCounts),
+                GetRabbitCount(populationCounts),
                 orderedModifiers,
                 out var income,
                 out error))
@@ -321,9 +321,9 @@ namespace SaltyGame
                 round.ToString(System.Globalization.CultureInfo.InvariantCulture), "/", kind);
         }
 
-        static int GetHareCount(IReadOnlyDictionary<SpeciesId, int> counts)
+        static int GetRabbitCount(IReadOnlyDictionary<SpeciesId, int> counts)
         {
-            return counts.TryGetValue(new SpeciesId("hare"), out var hareCount) ? hareCount : 0;
+            return counts.TryGetValue(new SpeciesId("rabbit"), out var rabbitCount) ? rabbitCount : 0;
         }
 
         int CheckedBalance(int balance, int amount, out string error)

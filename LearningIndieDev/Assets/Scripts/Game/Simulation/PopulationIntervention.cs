@@ -54,6 +54,29 @@ namespace SaltyGame
                 reason = "Keep at least one of your species.";
                 return false;
             }
+            if (amount > 0 && rules.MaximumPopulation > 0)
+            {
+                var speciesPopulation = snapshot.GetCount(species);
+                for (var y = 0; y < run.Cells.Height; y++)
+                {
+                    for (var x = 0; x < run.Cells.Width; x++)
+                    {
+                        if (!run.Cells.IsPlayableCell(x, y)) continue;
+                        var cell = run.Cells.GetCell(x, y);
+                        if (cell.IsCreature && cell.SpeciesId == species)
+                        {
+                            speciesPopulation += cell.PendingLitterSize;
+                        }
+                    }
+                }
+
+                if (amount > rules.MaximumPopulation - speciesPopulation)
+                {
+                    reason = "Species population limit reached.";
+                    return false;
+                }
+            }
+
             var total = 0;
             foreach (var count in snapshot.Counts.Values) total += count;
             if (amount > 0 && maximumPopulation > 0 && total + amount > maximumPopulation)
@@ -64,6 +87,7 @@ namespace SaltyGame
             for (var y = 0; y < run.Cells.Height; y++)
             for (var x = 0; x < run.Cells.Width; x++)
             {
+                if (!run.Cells.IsPlayableCell(x, y)) continue;
                 var cell = run.Cells.GetCell(x, y);
                 var plant = rules.Role == SpeciesRole.Plant;
                 var matches = plant

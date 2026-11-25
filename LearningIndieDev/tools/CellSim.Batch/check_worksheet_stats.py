@@ -36,9 +36,9 @@ class StatisticalChecks(unittest.TestCase):
         self.assertEqual(stats['Goal met'], 2)
         self.assertEqual(stats['Goal success rate'], .5)
         self.assertEqual(stats['Median endpoint tick'], 600)
-        self.assertEqual(stats['Mean final Hares'], 8)
-        self.assertEqual(stats['Mean purchased Hares'], 5)
-        self.assertEqual(stats['Goal met with no purchased Hares'], 0)
+        self.assertEqual(stats['Mean final Rabbits'], 8)
+        self.assertEqual(stats['Mean purchased Rabbits'], 5)
+        self.assertEqual(stats['Goal met with no purchased Rabbits'], 0)
 
     def test_success_floors_and_missing_outcomes_are_not_invented(self):
         run = fixture()
@@ -48,24 +48,24 @@ class StatisticalChecks(unittest.TestCase):
         self.assertIsNone(result['Goal success rate'])
         self.assertIsNone(result['Goal 95% lower'])
         self.assertEqual(result['Unknown goal outcomes'], 1)
-        self.assertEqual(result['Mean final Hares'], 12)
+        self.assertEqual(result['Mean final Rabbits'], 12)
         self.assertIsNone(result['Mean final Plants'])
         for goals in ((0,1,1), (True,1,1), (1.5,1,1), (1,1), (1,1,2147483648)):
             with self.assertRaises(ValueError):
                 self.report([fixture()], goals=goals)
 
-    def test_hare_births_keep_zero_and_missing_evidence_distinct(self):
+    def test_rabbit_births_keep_zero_and_missing_evidence_distinct(self):
         first, second = fixture(seed=1), fixture(seed=2)
-        first['herbivoreStatLines'] = [{'speciesId': 'hare', 'BIR': 0}]
-        second['herbivoreStatLines'] = [{'speciesId': 'hare', 'BIR': 4}]
+        first['herbivoreStatLines'] = [{'speciesId': 'rabbit', 'BIR': 0}]
+        second['herbivoreStatLines'] = [{'speciesId': 'rabbit', 'BIR': 4}]
         stats = self.report([first, second])['groups'][0]['statistics']
-        self.assertEqual(stats['Mean Hare births'], 2)
-        self.assertEqual(stats['Runs with no Hare births'], 1)
+        self.assertEqual(stats['Mean Rabbit births'], 2)
+        self.assertEqual(stats['Runs with no Rabbit births'], 1)
         del second['herbivoreStatLines']
         second.pop('herbivoreStatLine', None)
         stats = self.report([first, second])['groups'][0]['statistics']
-        self.assertIsNone(stats['Mean Hare births'])
-        self.assertIsNone(stats['Runs with no Hare births'])
+        self.assertIsNone(stats['Mean Rabbit births'])
+        self.assertIsNone(stats['Runs with no Rabbit births'])
 
     def test_shortlist_is_order_independent_and_prefers_success_without_reinforcement(self):
         purchased, independent, failed = fixture(seed=99,final=50), fixture(seed=90,final=12), fixture(seed=1,final=0)
@@ -77,15 +77,15 @@ class StatisticalChecks(unittest.TestCase):
         self.assertEqual(content(result['rows']),content(reordered['rows']))
         table = result['runData']
         self.assertEqual([r[table['headers'].index('Shortlist rank')] for r in table['rows']], [1,2])
-        self.assertEqual([r[table['headers'].index('Goal met without purchased Hares (0/1)')] for r in table['rows']], [1,0])
+        self.assertEqual([r[table['headers'].index('Goal met without purchased Rabbits (0/1)')] for r in table['rows']], [1,0])
 
     def test_absent_purchase_ledger_is_not_unassisted_success(self):
         run = fixture()
         del run['purchaseWindows']
         stats = self.report([run])['groups'][0]['statistics']
         self.assertEqual(stats['Goal met'], 1)
-        self.assertIsNone(stats['Goal met with no purchased Hares'])
-        self.assertIsNone(stats['Mean purchased Hares'])
+        self.assertIsNone(stats['Goal met with no purchased Rabbits'])
+        self.assertIsNone(stats['Mean purchased Rabbits'])
 
     def paired(self, missing=False, ambiguous=False, match='choices', unknown=False):
         contexts = {}
@@ -95,7 +95,7 @@ class StatisticalChecks(unittest.TestCase):
             cases.append(('control-copy','skip-all','none','36'))
         rows = []
         for key, strategy, policy, width in cases:
-            args = {'-harePurchasePolicy':policy,'-gridWidth':width,'-gridHeight':'20','-phaseLengthTicks':'100'}
+            args = {'-rabbitPurchasePolicy':policy,'-gridWidth':width,'-gridHeight':'20','-phaseLengthTicks':'100'}
             args.update({'-phaseUpgradeSchedule':'none;none;none;none;none;none'} if strategy=='skip-all' else {'-mutationPolicy':strategy})
             contexts[key] = dict(label=key,condition=key,source='one-batch/runs.jsonl',horizon=600,phaseLength=100,arguments=args,identity='same-batch',sourceHash='same-revision')
             finals = [0,12,0,12] if strategy=='skip-all' else [12,0,0,12]
@@ -141,7 +141,7 @@ class StatisticalChecks(unittest.TestCase):
         purchase=next(r for r in rows if r['Comparison']=='Purchases')
         self.assertEqual(purchase['Control condition ID'],'choices')
         self.assertEqual(purchase['Matched seeds'],4)
-        self.assertEqual(purchase['Pairs with purchased Hares'],4)
+        self.assertEqual(purchase['Pairs with purchased Rabbits'],4)
         self.assertEqual([purchase['Goal wins'],purchase['Goal losses'],purchase['Goal ties']],[0,0,4])
         different=next(r for r in rows if r['Condition ID']=='other-map')
         self.assertEqual(different['Status'],'Control not available')
