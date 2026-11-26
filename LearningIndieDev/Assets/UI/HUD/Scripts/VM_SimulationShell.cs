@@ -355,6 +355,7 @@ namespace SaltyGame
         Visibility journeyDetailRewardIconVisibility = Visibility.Collapsed;
         JourneyRewardChoiceItem[] journeyRewardItems = Array.Empty<JourneyRewardChoiceItem>();
         bool journeyMapPreviewOpen;
+        bool launchSelectionOpen;
         bool resumeAfterJourneyMap;
         enum FieldDataNodeNavigation { Settlement, MapToShop, Shopping, MapToSimulation }
         FieldDataNodeNavigation fieldDataNodeNavigation;
@@ -468,6 +469,8 @@ namespace SaltyGame
         public DelegateCommand PlayNextSimulationCommand { get; private set; }
         public DelegateCommand RetryPermanentSettlementCommand { get; private set; }
         public DelegateCommand OpenJourneyMapCommand { get; private set; }
+        public DelegateCommand ContinueLaunchSelectionCommand { get; private set; }
+        public DelegateCommand LeaveLaunchSelectionCommand { get; private set; }
         public DelegateCommand StartFieldDataTestJourneyCommand { get; private set; }
         public DelegateCommand CloseJourneyMapCommand { get; private set; }
         public DelegateCommand StartNewJourneyCommand { get; private set; }
@@ -885,6 +888,7 @@ namespace SaltyGame
         public Visibility FieldDataPanelVisibility => fieldDataPanelVisibility;
         public Visibility FieldDataPopulationControlsVisibility => fieldDataPopulationControlsVisibility;
         public Visibility JourneyMapVisibility => journeyMapVisibility;
+        public Visibility LaunchSelectionVisibility => launchSelectionOpen ? Visibility.Visible : Visibility.Collapsed;
         public Visibility JourneyMapPreviewButtonVisibility => journeyMapPreviewButtonVisibility;
         public Visibility FieldDataTestRouteVisibility => fieldDataTestRouteVisibility;
         public Visibility JourneyMapHudButtonVisibility => journeyMapHudButtonVisibility;
@@ -944,6 +948,20 @@ namespace SaltyGame
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ReturnDestinationText)));
             CloseWindowCommand?.RaiseCanExecuteChanged();
             ReturnToLabCommand?.RaiseCanExecuteChanged();
+        }
+
+        public void OpenLaunchSelection()
+        {
+            if (preview == null || preview.State != SpeciesPreviewState.Ready || preview.JourneyMap == null)
+                return;
+            if (preview.SelectedScenario?.name != VM_ExpeditionSetup.DefaultScenarioId
+                || preview.PlayerSpecies.Value != VM_ExpeditionSetup.DefaultPlayerSpeciesId)
+            {
+                OpenJourneyMapCommand.Execute(null);
+                return;
+            }
+            launchSelectionOpen = true;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LaunchSelectionVisibility)));
         }
 
         public void SetSpriteVisuals(
@@ -1446,6 +1464,21 @@ namespace SaltyGame
                     Refresh(true);
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(JourneyMapFocusX)));
                 }
+            });
+            ContinueLaunchSelectionCommand = new DelegateCommand(() =>
+            {
+                if (!launchSelectionOpen) return;
+                OpenJourneyMapCommand.Execute(null);
+                if (!journeyMapPreviewOpen) return;
+                launchSelectionOpen = false;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LaunchSelectionVisibility)));
+            });
+            LeaveLaunchSelectionCommand = new DelegateCommand(() =>
+            {
+                if (!launchSelectionOpen) return;
+                launchSelectionOpen = false;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LaunchSelectionVisibility)));
+                desktopClose?.Invoke();
             });
             CloseJourneyMapCommand = new DelegateCommand(() =>
             {
@@ -2040,7 +2073,7 @@ namespace SaltyGame
                     ? Visibility.Visible : Visibility.Collapsed,
                 nameof(JourneyMapPreviewButtonVisibility));
             Set(ref fieldDataTestRouteVisibility,
-                journeyMapPreviewOpen && state == SpeciesPreviewState.Ready && preview.HasFieldDataTestJourney
+                DeveloperMode && journeyMapPreviewOpen && state == SpeciesPreviewState.Ready && preview.HasFieldDataTestJourney
                     ? Visibility.Visible : Visibility.Collapsed,
                 nameof(FieldDataTestRouteVisibility));
             Set(ref journeyMapHudButtonVisibility,

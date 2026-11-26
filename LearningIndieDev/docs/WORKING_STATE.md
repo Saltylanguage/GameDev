@@ -2,7 +2,15 @@
 
 **November 25 simulation music:** The rejected "Calm Track" pilot was removed. The player chose ["Feel good slow ambient track with a beat"](https://opengameart.org/content/feel-good-slow-ambient-track-with-a-beat), imported as `CozyPond.ogg`, for bright, happy simulation music. The Desktop host supplies one enabled AudioListener after the Main Menu transition. Focused PlayMode checks passed: simulation audio palette 1/1 and Main Menu -> Desktop -> Rabbit journey -> running simulation 1/1, including an active CozyPond audio source. See the [music source and license](AUDIO_SOURCES.md) and [handoff](handoffs/2026-11-25-1629-codex-cozy-pond-simulation-music.md).
 
+**November 24 Rabbit/M2 combined check:** The Rabbit Unity fixes and Bev's M2 review changes pass together in an isolated worktree: 831 EditMode passed / 0 failed / 1 skipped and 109 PlayMode passed / 0 failed / 7 skipped. Focused 1920×1080 captures verify the Forest Edge view, a detached-island same-creature seam crossing, and a Fox test-sandbox run through tick 10. The authored seed-10100 Field Data visual route with no Mutation choices fails at tick 1712 when the last Rabbit starves; the capture fixture now clears the new launch-selection screen so its failure evidence is usable. This does not resolve water topology, player feel, the full normal-player journey, or balance. See the [combined handoff](handoffs/2026-11-24-1747-codex-rabbit-m2-merge-and-route-review.md).
+
 **November 24 Unity integration verification:** The stale, unowned Unity project lock was cleared with Josh's authorization. The Rabbit/ProjectMain branch now has a clean Unity pass: 830 EditMode passed / 0 failed / 1 skipped and 106 PlayMode passed / 0 failed / 7 skipped. The seven fixed-shape tests pass, the Desktop Fox genome asset reference is repaired, and irregular-map population counting skips non-playable cells. The authored 15-Rabbit ceiling still applies to purchases; the 50+ population pool is a separate allowance. Portable Batch build/self-test passed, and post-run Doctor reports the project closed and unlocked. Automated checks do not settle water topology, in-game visual/player review, non-Rabbit end-to-end play, or final balance. See the [verification handoff](handoffs/2026-11-23-1511-codex-unity-lock-recovery-and-rabbit-integration-verification.md).
+
+**November 24 Rabbit/M2 integration:** The normal checkout tracks the Rabbit
+branch. The five M2 corrections are integrated locally alongside the existing
+ProjectMain map and Gene Lab work. The Forest Edge playtest edit is in a
+verified stash. See the [integration handoff](handoffs/2026-11-24-1105-codex-rabbit-and-m2-integration.md)
+for the map and Genome catalog fixes, validation, and open M2 work.
 
 **November 21 Rabbit/ProjectMain integration:** `codex/rabbit-identity-rename` now includes the accepted GLJP prices, ranks and equipment gates plus Bev's fixed and irregular map layouts. Rabbit remains the canonical species ID; legacy Hare profile fields and IDs remain readable. Forest Edge and the D5 visual review scenario wrap by their authored setting; other scenarios can remain bounded. The portable Batch and Workbench builds, Runtime and Runtime Tests compilation, and Batch self-test passed. Unity test execution remains pending: `CellSim.ps1 Doctor` found a project lock with no reachable Editor. See the [integration handoff](handoffs/2026-11-21-codex-rabbit-projectmain-integration.md).
 
@@ -25,6 +33,38 @@ scenarios stay bounded. Focused code and asset checks passed, but Unity tests
 could not start because a project lock exists with no reachable Pipeline Editor.
 See the [wrapping handoff](handoffs/2026-11-19-codex-forest-edge-wrapping.md).
 
+**November 18 independent M2 review comparison:** Josh and Sim's latest
+responses have been compared without treating Sim's startup-fix history as a
+disagreement. Josh deferred Q1 profile visibility to Track B, retired Q5 and
+1280×720 from the active M2 target, adopted Sim's Q14 board-event readability
+finding, clarified that Reduced Motion showed no apparent effect to him, and
+requested investigation of the Field Data test-route return path. Josh then
+chose to hide that test route from normal players; its map button is now gated
+by Developer Mode, with a fresh-profile player check still pending. The
+[comparison record](Reviews/M2-Comparison-20261118.md) preserves the original
+responses and source-backed Q20/Q21 findings. The [Q20 handoff](handoffs/2026-11-18-1236-codex-m2-q20-reduced-motion-explanation.md)
+records the Settings explanation and unverified equivalence; the [Q21 handoff](handoffs/2026-11-18-1215-codex-m2-q21-test-route-visibility.md)
+records the route change and player check. M2 and balance decisions remain
+open; Track A work is not gated on this comparison.
+
+**November 16 vertical-slice meeting direction (recorded November 17):** Josh
+listed Track A technical foundations before balance work: wrapping,
+water, Trinket skeleton, Mutation cards, terrain upgrades, creature-scale feel
+and additional playable species. Track B defers the all-screen UI treatment,
+important-event visuals, Field Report presentation and audio until Josh finishes
+helping Sim with Track A. The reward prototype is the screen-polish benchmark.
+New and existing Trello homes, scope conflicts and open decisions are in the
+[meeting handoff](handoffs/2026-11-17-0741-codex-m2-vertical-slice-meeting-tracks.md).
+No M2 outcome or balance value was approved by this planning update.
+
+**November 16 M2 corrections, integrated locally November 24:** The Desktop
+Simulation shortcut introduces the authored Rabbit selection before Journey.
+The Expedition Planner continues to launch its selected scenario and species
+directly. A Desktop listener takes over after the menu's temporary chime
+listener ends. The [original correction handoff](handoffs/2026-11-16-1939-codex-m2-selection-audio-listener.md)
+records focused PlayMode and visual checks on the sibling branch. Human
+listening checks remain open.
+
 **November 18 Rabbit identity:** Josh confirmed Rabbit, Fox, Owl, Deer, and
 Wolf as the planned playable test roster. Rabbit is the canonical gameplay
 species name and ID; the former `hare` identity is retained only for profile
@@ -40,8 +80,6 @@ The November 18 clean Unity check passed 779 EditMode tests (one skipped) and
 101 PlayMode tests (seven skipped). The sole PlayMode failure is the previously
 recorded authored Forest Edge seed 10101 route, which loses the player species
 before the first shop; the rename did not close that M2 blocker.
-
-**M2 independent manual review:** Josh and Sim can use the same [questionnaire](M2_MANUAL_REVIEW_QUESTIONNAIRE.md), [run packet](M2_INDEPENDENT_REVIEW_PACKET.md), and separate copies of the [response template](M2_MANUAL_REVIEW_RESPONSE_TEMPLATE.md). They answer before comparing results; no human answers are recorded yet. A failed authored Rabbit route is blocked evidence, not a completed journey. Josh retains the factual-report and M2 closeout decisions.
 
 **November 16 M2 art review and sharing:** Chrono's latest Hero and Rabbit originals now occupy the existing runtime art paths, with the Rabbit 32/64/128 and atlas-compatible exports rebuilt in Unity. The remaining delivered UI and animal PNGs are packaged as source candidates for Josh and Sim. Focused Desktop/board visual tests passed and were inspected at 1280×720 and 1920×1080. All M2 items remain open pending human validation; the known Rabbit route blocker and M2-04 report review remain separate. See the [M2 review handoff](handoffs/2026-11-16-1055-codex-m2-05-art-and-m2-review-handoff.md).
 

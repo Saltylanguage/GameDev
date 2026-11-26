@@ -125,7 +125,7 @@ namespace SaltyGame
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public void BindSimulationLauncher(Action launch)
+        public void BindSimulationLauncher(Action<bool> launch)
         {
             simulationLauncher = launch;
         }
@@ -166,7 +166,7 @@ namespace SaltyGame
             SelectPlannerSpeciesCommand = new DelegateCommand(SelectPlannerSpecies);
             ContinuePlannerCommand = new DelegateCommand(() => SetPlannerStep(Math.Min(2, plannerStep + 1)));
             BackPlannerCommand = new DelegateCommand(() => SetPlannerStep(Math.Max(0, plannerStep - 1)));
-            LaunchPlannerCommand = new DelegateCommand(() => simulationLauncher?.Invoke());
+            LaunchPlannerCommand = new DelegateCommand(() => simulationLauncher?.Invoke(true));
             volume = ReadSavedVolume();
             muted = PlayerPrefs.GetInt(MutePreference, 0) == 1;
             ApplyAudioVolume();
@@ -201,7 +201,7 @@ namespace SaltyGame
             {
                 if (simulationLauncher != null)
                 {
-                    simulationLauncher();
+                    simulationLauncher(false);
                 }
                 else
                 {
@@ -568,7 +568,7 @@ namespace SaltyGame
         bool gameSpeedPanelOpen;
         string activeDesktopAppTitle;
         string activeDesktopAppDescription;
-        Action simulationLauncher;
+        Action<bool> simulationLauncher;
         string plannerScenarioId = "ForestEdge";
         string plannerPlayerSpeciesId = "rabbit";
         int plannerStep;

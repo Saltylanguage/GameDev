@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Noesis;
@@ -65,6 +66,7 @@ namespace SaltyGame
 
             desktopCamera.enabled = true;
             view.enabled = true;
+            StartCoroutine(EnableDesktopAudioListener());
             if (simulationCamera != null)
             {
                 simulationCamera.enabled = false;
@@ -112,6 +114,29 @@ namespace SaltyGame
             if (simulationCompositionReady && simulationPreview != null)
             {
                 SpeciesSimulationPreview.RunCompleted += HandleRunCompleted;
+            }
+        }
+
+        IEnumerator EnableDesktopAudioListener()
+        {
+            var listener = GetComponent<AudioListener>();
+            if (listener == null) listener = gameObject.AddComponent<AudioListener>();
+            listener.enabled = false;
+            while (true)
+            {
+                var otherListenerActive = false;
+                foreach (var candidate in FindObjectsByType<AudioListener>())
+                {
+                    if (candidate == listener || !candidate.enabled) continue;
+                    otherListenerActive = true;
+                    break;
+                }
+                if (!otherListenerActive)
+                {
+                    listener.enabled = true;
+                    yield break;
+                }
+                yield return null;
             }
         }
 
@@ -176,7 +201,7 @@ namespace SaltyGame
             }
         }
 
-        void OpenSimulation()
+        void OpenSimulation(bool launchedFromPlanner)
         {
             if (!simulationCompositionReady)
             {
@@ -256,8 +281,6 @@ namespace SaltyGame
             ApplyBoardSnapshot();
             SimulationSoundPalette.StartBed(gameObject);
 
-            // The journey map is the entry point for Forest Edge/Rabbit. Other
-            // scenarios keep the prepared live-board launch behavior.
             if (preparingNextJourney)
             {
                 if (!simulationPreview.JourneyActive && simulationPreview.ConfiguredFieldDataJourney == null)
@@ -266,7 +289,11 @@ namespace SaltyGame
                 }
                 simulationBoardViewModel.Initialize(simulationPreview);
                 ApplyBoardSnapshot();
-                if (simulationPreview.JourneyActive || simulationPreview.ConfiguredFieldDataJourney != null)
+                if (!launchedFromPlanner && simulationPreview.JourneyMap != null)
+                {
+                    simulationViewModel.OpenLaunchSelection();
+                }
+                else if (simulationPreview.JourneyActive || simulationPreview.ConfiguredFieldDataJourney != null)
                 {
                     simulationViewModel.OpenJourneyMapCommand.Execute(null);
                 }
@@ -274,7 +301,11 @@ namespace SaltyGame
             else if (simulationPreview.State == SpeciesPreviewState.Ready
                 && simulationViewModel.CanStart)
             {
-                if (simulationPreview.JourneyActive || simulationPreview.ConfiguredFieldDataJourney != null)
+                if (!launchedFromPlanner && simulationPreview.JourneyMap != null)
+                {
+                    simulationViewModel.OpenLaunchSelection();
+                }
+                else if (simulationPreview.JourneyActive || simulationPreview.ConfiguredFieldDataJourney != null)
                 {
                     simulationViewModel.OpenJourneyMapCommand.Execute(null);
                 }
