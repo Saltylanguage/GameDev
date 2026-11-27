@@ -1,28 +1,55 @@
-# Sprint 6 control record — The Fun Pass
+# Sprint 6 control record — Track A technical foundations
 
 - **Sprint ID:** S6
-- **Status:** Planned; direction approved November 9, 2026. Kickoff and task allocation are pending.
+- **Status:** Active; Track A work began November 16 and formal kickoff was recorded November 27, 2026.
 - **Work window:** November 16–29, 2026, inclusive (normal two-week cadence).
 - **Milestone:** M2 — Vertical Slice.
-- **Product owner:** Josh. **Technical collaborator/reviewer:** Sim. Assign implementation owners at kickoff.
-- **Primary outcome:** Demonstrate and evaluate one complete Hare journey with consequential choices, readable ecological pressure, distinct strategies, and a reason to replay.
-- **Capacity:** Reconfirm availability and estimate the selected tasks at kickoff. The normal planning envelope is about 20 hours per developer over two weeks; this plan does not pre-commit all five work packages or borrow unestimated time.
+- **Product and implementation owner:** Josh for the selected Track A cards. **Technical collaborator:** Sim as available. Remaining estimates and review assignments are open.
+- **Primary outcome:** Establish and review the Track A technical foundations needed before the representative Rabbit balance and play review.
+- **Capacity:** The normal envelope is about 20 hours per developer over two weeks. Size the selected work against Josh's availability and confirm Sim's time separately if he can assist.
 
-This is the approved next-sprint direction and execution gate, not a claim that S6 has started or that the gameplay exit gate has passed. [S5 remains active through November 15](S5-control-record.md); its remaining GLJP work and closeout are not silently moved or closed by this plan. The older [future-sprint horizon](../FUTURE_SPRINT_ROADMAP.md) is historical; this record and the [active roadmap](../../ROADMAP.md) supersede its S6 persistence/Genome forecast.
+Josh approved this correction to the sprint that was already under way.
+[S5 closed November 27](S5-control-record.md#closeout--2026-11-27), after its
+October 19–November 15 execution window. S6's November 29 date is a technical
+checkpoint and deliberate carry-over decision, not a promise that every Track A
+card or the full Rabbit play review will finish. The older [future-sprint
+horizon](../FUTURE_SPRINT_ROADMAP.md) is historical.
+
+## Current Track A scope and November 29 checkpoint
+
+| Selected card | Current board state | Evidence and next gate |
+| --- | --- | --- |
+| [VS-A1](https://trello.com/c/wsmjVY20) | In Progress; moved by Josh November 27 | Reconcile authored wrapping with ponds, rivers, islands and water continuity before integration. |
+| [WTR-01](https://trello.com/c/AhPFXox7) | In Progress; carried from S5 | Seeded generator prototype remains isolated; scenario terrain, replay, shore art and in-game checks are not integrated. |
+| [VS-A3](https://trello.com/c/wf9cwfhD) | In Progress; moved by Josh November 27 | Prove the smallest authorable Trinket skeleton and dummy behavior; the player flow remains to be decided. |
+| [VS-A6](https://trello.com/c/YVqjvxYn) | In Progress | The low-population Rabbit setup and code foundation are published; identity, lineage, events, inspection and player-feel review remain. |
+| [VS-A7](https://trello.com/c/IiCOUGOz) | In Progress | The five-species sandbox is published; a full non-Rabbit journey and correct species presentation remain. |
+
+Josh owns the selected cards for now and Sim may assist when available. The
+remaining-hour estimates and specific review assignments are still open. Size the next slice
+before treating it as a capacity commitment. [VS-A4](https://trello.com/c/IKjreLWW),
+[VS-A5](https://trello.com/c/5QZIUMoD), and
+[VF-03](https://trello.com/c/rx9JnIcc) are uncommitted Backlog candidates;
+Track B visual polish remains deferred. Other M2 outcome tickets remain in
+Backlog. The November 29 review records the topology choice or named blocker,
+verified prototype state, remaining estimates, review assignments and deliberate
+carry-over. The complete Rabbit Fun Pass play review is reforecast after this
+technical checkpoint; S7 timing and scope must be reset from the evidence.
+M2 remains open. See the [transition handoff](../handoffs/2026-11-27-1436-codex-s5-closeout-s6-track-a-kickoff.md).
 
 ## M2 alignment — November 14 vision consolidation
 
 The [ten M2 outcomes](../../ROADMAP.md#m2-outcome-contract--consolidated-2026-11-14)
-are the milestone exit contract. S6 concentrates on the representative Hare
-journey: clarify the route's legitimate success and failure, make avoidance,
+are the milestone exit contract. The reforecast Rabbit play review concentrates
+on the representative journey: clarify the route's legitimate success and failure, make avoidance,
 survival, and faster reproduction available and distinct, and show players the
 Fox pressure, their choice's observable effect, and the result's leading
 causes. Reuse the current menu, map, Field Data, Gene Lab, board, and report
-foundations. S6 may surface defects in any of them, but does not claim all ten
+foundations. Track A may surface defects in any of them, but does not claim all ten
 outcomes or pull the full presentation, persistence, onboarding, and
 accessibility integration gate forward from S7.
 
-At S6 review, preserve every accepted behavior and every unresolved finding.
+At the Rabbit play review, preserve every accepted behavior and every unresolved finding.
 Record the exact source, authored route, seed/action schedule, Genome state,
 Mutation access, terminal outcome, test results, and player observations. A
 controlled fixture that removes Foxes or disables metabolism proves route
@@ -44,6 +71,21 @@ assumptions before using these failures to change ecology or to assert M2
 readiness. Retained XML/logs: `artifacts/unity-tests-20261114-111056/` (local,
 ignored). This baseline is not an S6 kickoff, a balance decision, or player
 acceptance.
+
+## November 27 continuity for the selected species
+
+Josh clarified that continuity applies to whichever creature species the
+player selects for the journey. A new node places survivors on the seeded
+starting tiles with their existing identity and individual state, including
+health, energy, age, cooldowns and pending litters. Family relationships
+recorded for that species and existing run events retain the same creature IDs.
+The new board resets the other species and resources to their authored counts.
+Burrow occupants join the survivors on the surface because the burrows belong
+to the old board. Tracking targets and scent memories tied to the previous
+board are cleared on transfer.
+
+This implements the continuity rule for VS-A6. The player facing event history,
+inheritance and goals are separate work.
 
 ## November 18 cozy individual-led simulation direction
 
@@ -179,9 +221,11 @@ Other open work at the boundary:
 - [GLJP-05](https://trello.com/c/Htt7PJBY/153-gljp-05-integrate-gene-lab-and-journey-upgrade-ui-tests-and-captures): November UI and route checks exist; player review and catalog decisions remain open. Its full PlayMode rerun still reports the authored seed-10100 failure under GLJP-06.
 - [WTR-01](https://trello.com/c/AhPFXox7/136-wtr-01-procedural-water-maps-and-gameplay-shorelines): isolated procedural-water work remains separate from the S6 playable outcome.
 
-These are dated evidence statements, not S5 closeout or acceptance decisions. Recheck the cards and source at kickoff.
+These are November 9 evidence statements, not current card status. At the
+November 27 transition, GLJP-01 through GLJP-06 were Done, WTR-01 carried into
+S6, and ProjectMain was verified at `49c81f91`; see the current control above.
 
-## Work packages, in order
+## Reforecast Fun Pass work packages, in order
 
 ### FP-01 — Agree on the route-survival contract
 
@@ -217,10 +261,25 @@ Play representative complete journeys using the three Mutation responses. For ea
 
 For each change: state one gameplay hypothesis, predict its observable effect, run a controlled comparison, inspect the difference, play representative cases, then retain, revise, or reject. Favor authored scenario constraints and distinct decisions over broad global number tuning. A no-action failure may be intentional; its meaning follows FP-01.
 
-The S6 primary scope excludes new biomes/species, unrelated Genome branches, procedural-water integration without a demonstrated dependency, comprehensive ecology rebalance, a large UI redesign, new economies, major simulation rewrites, and an optimization framework. A blocker may enter only with evidence that it directly prevents the playable outcome and a capacity decision at kickoff or review.
+The original Fun Pass scope excluded new biomes/species, procedural water and
+major simulation/UI work. The November Track A direction supersedes that sprint
+boundary for the selected technical foundations above. It does not approve a
+broad ecology rebalance, final species content, or an unestimated completion
+commitment. Revisit the playable route after the foundation review.
 
 ## Exit gate and handoff to design
 
-The sprint passes only if the team can demonstrate a complete Hare journey using legitimate decisions; three visibly different approaches; at least one meaningful tradeoff; recognizable causes of deterioration and recovery; a repeatable low-effort comparison; and playtest feedback that identifies both friction and a reason to replay. If the fun/replay gate fails, record a prioritized revision plan instead of expanding content.
+The reforecast Rabbit play-review gate passes only if the team can demonstrate
+a complete Rabbit journey using legitimate decisions; three visibly different
+approaches; at least one meaningful tradeoff; recognizable causes of
+deterioration and recovery; a repeatable low-effort comparison; and playtest
+feedback that identifies both friction and a reason to replay. If the
+fun/replay gate fails, record a prioritized revision plan instead of expanding
+content. This gate is not claimed by the S6 Track A checkpoint.
 
-Before gameplay implementation, the design discussion should decide the Hare journey's beginning/middle/end emotional arc, the most exciting player decision, fair failure, feedback and spectacle, and the smallest experiment set. Kickoff must also verify S5 closeout, current source and November evidence, owner availability, task estimates, and the exact playable route. No GLJP ticket is closed by publishing this plan.
+Before the reforecast play review, the design discussion should decide the
+Rabbit journey's beginning/middle/end emotional arc, the most exciting player
+decision, fair failure, feedback and spectacle, and the smallest experiment
+set. S5 closeout and current source were verified at the November 27
+transition. Task estimates, review assignments, and the exact playable route
+remain open. GLJP cards are Done from their separate November closeout.

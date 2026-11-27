@@ -1,5 +1,22 @@
 # Working state
 
+**November 27 sprint transition and source review:** S5 is Closed: all 16 Field
+Data and six GLJP cards are Done/complete. WTR-01 was carried unfinished into
+the active S6 Track A technical-foundations sprint. VS-A1, WTR-01, VS-A3,
+VS-A6 and VS-A7 are In Progress. VS-A4, VS-A5 and VF-03 remain
+uncommitted Backlog candidates. Josh owns all five active cards for now. Sim
+may assist as available. Remaining-hour estimates and review assignments are
+open. The November 29
+S6 review records topology, prototype evidence and deliberate carry-over; the
+full Rabbit play review is reforecast after Track A, while M2 remains open.
+Remote `ProjectMain` was verified at `49c81f91`, containing Josh's Rabbit,
+species, wrapping and Cozy Pond work and Sim's M2, inspection and map work.
+The clean 831 EditMode / 110 PlayMode integration pass remains the current
+automated baseline. The main worktree's 40×25 Forest Edge layout edit is local
+and uncommitted, so the shared 34×19 authored route and earlier seed evidence
+must not be conflated with it. See the [S5/S6 transition handoff](handoffs/2026-11-27-1436-codex-s5-closeout-s6-track-a-kickoff.md)
+and [active S6 control](Sprints/S6-control-record.md).
+
 **November 25 ProjectMain integration:** The published Rabbit/M2 work and Josh's Cozy Pond choice are combined at merge commit `04d8da9a` for `ProjectMain`; the rejected Calm Track asset is absent. The combined project passed a clean Unity run: 831 EditMode and 110 PlayMode passed, zero failures (1 and 7 skipped). The earlier main-Editor Live run was stale/interrupted and is not the acceptance record. M2 route, water, player-feel, and audio-listening gates remain open. See the [integration handoff](handoffs/2026-11-25-2052-codex-projectmain-rabbit-m2-cozy-pond-integration.md).
 
 **November 25 simulation music:** The rejected "Calm Track" pilot was removed. The player chose ["Feel good slow ambient track with a beat"](https://opengameart.org/content/feel-good-slow-ambient-track-with-a-beat), imported as `CozyPond.ogg`, for bright, happy simulation music. The Desktop host supplies one enabled AudioListener after the Main Menu transition. Focused PlayMode checks passed: simulation audio palette 1/1 and Main Menu -> Desktop -> Rabbit journey -> running simulation 1/1, including an active CozyPond audio source. See the [music source and license](AUDIO_SOURCES.md) and [handoff](handoffs/2026-11-25-1629-codex-cozy-pond-simulation-music.md).

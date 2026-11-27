@@ -80,6 +80,27 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **November 27, 2026 creature continuity:** Surviving individuals of the
+  species selected for the journey carry their identity, state and family
+  history into the next simulation node. Each new board starts with its
+  authored populations for the other species and resources. Rabbits hiding
+  in burrows surface on the new board. The existing event records can be
+  linked to the same individuals across nodes. The creature history view,
+  inheritance rules and goals remain open. See the
+  [S6 design record](Sprints/S6-control-record.md#november-27-continuity-for-the-selected-species).
+
+- **November 27, 2026 sprint control:** S5 is Closed after the accepted Field
+  Data and GLJP work; unfinished WTR-01 was carried into the active
+  [S6 Track A technical-foundations sprint](Sprints/S6-control-record.md).
+  Track A is a staged technical preparation for M2, not an approval to complete
+  every listed feature in the November 16–29 window. The current subset is
+  VS-A1, WTR-01, VS-A3, VS-A6 and VS-A7. Josh owns the active subset and Sim
+  may assist as available. Remaining estimates and review assignments are
+  open. The full Rabbit Fun Pass play review and its
+  three-response player accept/revise gate are reforecast after the Track A
+  checkpoint; the representative Forest Edge/Rabbit route and ten M2 outcomes
+  remain the acceptance contract. See the [transition handoff](handoffs/2026-11-27-1436-codex-s5-closeout-s6-track-a-kickoff.md).
+
 - **November 19, 2026 Forest Edge wrapping:** Josh chose connected left/right
   and top/bottom grid edges for the authored Forest Edge route. Scenario assets
   now own topology; the Desktop preview and experiment runner inherit it unless
@@ -148,7 +169,9 @@ uncertainty or regression risk.
   November-build comparisons to guide playtests and assess fun through player
   feedback. This supersedes the older S6 persistence and Genome forecast.
   November GLJP code from `BevBranch` is integrated into `feature/s6-fun-pass`;
-  S6 kickoff remains pending. See the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
+  The planned S6 kickoff was pending at this November 9 checkpoint; the
+  November 27 Track A control above supersedes that schedule. See the
+  [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
 
 - **November 10, 2026 node-boundary correction and historical evidence:** The implemented transition carries only the played species' population count, recreates individuals with default state, and restores static starting counts for other species and resources. The November 18 cozy direction supersedes count-only Rabbit carryover as the design target; the implemented rule and its evidence remain historical/current-code context until changed. The earlier [retained-world Fox sweep](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) remains historical and its node-two outcomes do not apply. In the [corrected 100-seed-per-arm sweep](Research/Experiments/S6-Fox-Node-Reset-20261110/REPORT.md), 16/18/20 Foxes caused 19/15/20 first-node failures and 55/51/61 cumulative node-two failures. A follow-up [12-seed lower-count diagnostic](Research/Experiments/S6-Fox-Soft-Opening-20261110/REPORT.md) tested 8/10/12 Foxes: each had 2/12 first-node failures and 4/2/3 cumulative node-two failures. Its intervals are wide and no arm triggered confirmation; one 10-Fox run depleted Plants by node-two close. No tested count is approved for balance. See the [S6 decision record](Sprints/S6-control-record.md#november-10-node-boundary-design-correction) and [analyses](Research/Experiments/S6-Fox-Node-Reset-20261110/AI_ANALYSIS.md), [lower-count analysis](Research/Experiments/S6-Fox-Soft-Opening-20261110/AI_ANALYSIS.md); no authored balance value changed.
 

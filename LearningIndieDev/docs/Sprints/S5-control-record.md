@@ -1,12 +1,34 @@
 # Sprint 5 control record - Field Data and playability
 
 - **Sprint:** S5
-- **Status:** Active; kickoff verified 2026-10-16
+- **Status:** Closed 2026-11-27; kickoff verified 2026-10-16
 - **Work window:** October 19-November 15, 2026, inclusive (four weeks)
 - **Trello control:** [Sprint 5 Control Record - Field Data journey implementation](https://trello.com/c/hqQczLQ9/135-sprint-5-control-record-field-data-journey-implementation)
 - **Execution state at kickoff:** 16 cards in Current Work; none started; 79 acceptance items unchecked
 - **Owner / reviewer allocation:** Unassigned on all 16, explicitly requested by Bevin for team allocation
-- **Carry-over:** None. S4 remains Closed; P1-032 and S4-04/05 remain Backlog.
+- **Carry-over at closeout:** WTR-01 to the active S6 Track A sprint. S4 remains Closed; P1-032 and S4-04/05 remain Backlog.
+
+## Closeout — 2026-11-27
+
+Josh approved closing S5 and formalizing S6 as the Track A sprint already under
+way. The October 19–November 15 execution window remains historical; the
+administrative closeout was recorded November 27. All 16 Field Data cards are
+Done and complete following the October 21 player acceptance. GLJP-01 through
+GLJP-06 are also Done and complete following the November implementation and
+review. The current [Trello control card](https://trello.com/c/hqQczLQ9) was
+marked complete and moved to Done after readback.
+
+[WTR-01](https://trello.com/c/AhPFXox7) is the only unfinished S5 work. It was
+carried into the active S6 Track A subset without being marked complete; its
+seeded water prototype remains separate from `ProjectMain`. Josh owns the
+integration work and the remaining estimate is open. The full Rabbit play review, water
+continuity, and M2 acceptance remain open. The combined published source at
+`49c81f91` passed clean Unity suites with 831 EditMode and 110 PlayMode passes,
+zero failures (one and seven skips). This is integration evidence, not a
+player-route or balance verdict. See the [transition handoff](../handoffs/2026-11-27-1436-codex-s5-closeout-s6-track-a-kickoff.md)
+and [active S6 control](S6-control-record.md).
+
+The dated planning and Field Data checkpoints below remain historical evidence.
 
 **November 9 transition note:** Josh approved [S6 — The Fun Pass](S6-control-record.md)
 as the planned November 16–29 sprint. S5 remains Active through November 15;

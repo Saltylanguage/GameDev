@@ -1,5 +1,11 @@
 # Field Data — internal self-play and decision record
 
+**Current sprint status, November 27, 2026:** The Field Data workstream remains
+accepted and all FD cards remain Done. S5 itself is now Closed; unfinished
+WTR-01 was carried into active S6 Track A. The October 21 text below records
+the workstream status at that date, not the current sprint status. See the
+[S5 closeout](Sprints/S5-control-record.md#closeout--2026-11-27).
+
 **Published and closed, October 21, 2026:** Bevin authorized publication and
 closing the FD workstream after acceptance. All 16 Trello cards are now Done
 and complete. T16's checklist explicitly resolves uncollected timing and matched

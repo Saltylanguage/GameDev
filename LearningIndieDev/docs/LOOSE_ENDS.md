@@ -3,7 +3,36 @@
 This ledger tracks unresolved gaps that are not already owned by a sprint,
 roadmap, or hygiene ticket. Closed decisions remain in Git and dated handoffs.
 
-## Current review — 2026-10-16
+## Current review — 2026-11-27
+
+No P0 issue is verified. S5 is Closed and S6 is Active Track A; the sprint
+control and Trello cards track remaining estimates, water topology, and
+player-route work. Josh owns the active Track A cards and Sim may assist as
+available. The complete Rabbit play
+review was reforecast after the S6 technical checkpoint, not marked accepted.
+The current [transition handoff](handoffs/2026-11-27-1436-codex-s5-closeout-s6-track-a-kickoff.md)
+records the verified board and Git baseline. The two local-state gaps below
+need owner disposition; they are not sprint completion claims.
+
+## Open items
+
+- **P1 — Uncommitted Forest Edge route inputs.** The main worktree has a local
+  `ForestEdge.asset` edit changing the authored map from 34×19 to 40×25 and
+  adding a seeded irregular layout with a hole and island. **Status:** new,
+  unassigned. **Next:** Josh or the scenario editor identifies whether this is
+  an experiment or the intended route, records the input identity, and
+  validates it before comparing to prior route evidence. **Confidence:** high
+  in the diff, low in its intent. Preserve the edit until its owner decides.
+- **P2 — Detached Field Data retry worktree.** The old
+  `D:/GameDev/CrossAgent/unity-retry-field-data-4` worktree has tracked test
+  edits and Unity settings line-ending changes. The metrics correction appears
+  on current `ProjectMain`, but the remaining test differences are unreviewed.
+  **Status:** newly surfaced. **Next:** the original Field Data implementer or
+  Sim compares its tests with main and decides whether to retain or retire the
+  worktree. **Confidence:** high in the worktree diff, uncertain about unique
+  test value.
+
+## Historical review — 2026-10-16
 
 No P0 issue is verified. S4 closed on 2026-10-15, with P1-032 returned to
 Backlog for Sim's launch-input review and a real app save/exit/relaunch check;
@@ -26,11 +55,6 @@ retention and pruning decisions are recorded in the
 [2026-10-01 handoff](handoffs/2026-10-01-0112-codex-loose-ends-retention-decisions.md).
 P1-026, the remote worker lifecycle issue, was resolved on 2026-10-01; see its
 [closeout handoff](handoffs/2026-10-01-0158-codex-p1-026-worker-lifecycle-closeout.md).
-
-## Open items
-
-None currently recorded. Deferred implementation and hygiene work is owned by
-the roadmap or project hygiene records listed above.
 
 ## Closed in this review — 2026-10-01
 

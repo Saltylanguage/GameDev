@@ -1,5 +1,9 @@
 # Field Data implementation tickets - Sprint 5
 
+- **Current sprint status, November 27:** S5 is Closed. FD-T01–FD-T16 remain
+  Done/complete and WTR-01 was carried unfinished into active S6 Track A.
+  The dated implementation and planning checkpoints below are historical;
+  see the [S5 closeout](Sprints/S5-control-record.md#closeout--2026-11-27).
 - **Prepared:** 2026-10-16
 - **Published closeout, October 21:** All FD-T01–FD-T16 are verified Done/complete in Trello, with 79 current checklist items resolved. Bevin accepted the first five-node slice and confirmed APS fixed. Implementation `e6cadcd` and integration `dc4f6c5` are on BevBranch and ProjectMain; Salty's incoming planning update is preserved. T16 explicitly defers uncollected timing/matched-human notes and next content rather than claiming they occurred. Sprint 5 remains Active for unrelated work. See the [publication handoff](handoffs/2026-10-21-0153-codex-field-data-publication-and-ticket-closeout.md). Older dated status entries below are historical.
 - **October21 acceptance:** Bevin explicitly accepts the initial five-node slice as a good starting point and confirms APS fixed in play. The local T13 human presentation criterion and T16 keep-loop decision are satisfied; missing timing/matched-human-path metadata is preserved as unrecorded, not invented or made into another acceptance gate. Further content remains unspecified. This records human acceptance without claiming a fresh Trello audit, all16 external cards closed or publication. See the [acceptance record](FIELD_DATA_SELF_PLAY_REVIEW.md).
@@ -72,7 +76,7 @@ other domain work proceeds. Agree shared-file ownership before parallel edits.
 
 ## Published Trello index - 2026-10-16
 
-[Active Sprint 5 control](https://trello.com/c/hqQczLQ9/135-sprint-5-control-record-field-data-journey-implementation) |
+[Closed Sprint 5 control](https://trello.com/c/hqQczLQ9/135-sprint-5-control-record-field-data-journey-implementation) |
 [Repository control and capacity](Sprints/S5-control-record.md)
 
 | Card | Verified workflow list, October 21 | Execution state |

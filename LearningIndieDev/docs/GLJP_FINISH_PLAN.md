@@ -1,5 +1,11 @@
 # GLJP finish plan
 
+**Current status, November 27, 2026:** GLJP-01 through GLJP-06 are Done and
+complete in Trello, and S5 is Closed. The November 12 checklist below is a
+historical closeout plan, not the current card state. Its accepted seed-10100
+route finding remains separate from the reforecast Rabbit player review and
+M2 acceptance. See the [S5 closeout](Sprints/S5-control-record.md#closeout--2026-11-27).
+
 ## November 12 closeout checklist
 
 **Goal:** Close GLJP-01 through GLJP-06 on the approved November design, with each remaining card backed by current-source evidence and its own acceptance. GLJP-02/03/06 are Done; GLJP-01 is In Progress; GLJP-04/05 are in Current Work. The accepted Forest Edge seed-10100 extinction at tick 1210 remains a documented, non-gating finding.

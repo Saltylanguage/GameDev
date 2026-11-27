@@ -1,5 +1,11 @@
 # S5 playability goalpost — meeting draft
 
+> **Historical planning note:** S5 closed administratively on November 27,
+> 2026. This October 16 proposal was not the final player-acceptance claim;
+> the full Rabbit play review is reforecast after the active S6 Track A
+> technical checkpoint. See the [S5 closeout](S5-control-record.md#closeout--2026-11-27)
+> and [S6 control](S6-control-record.md).
+
 > **Direction from Josh, October 16, 2026:** S5 should prove that Forest Edge
 > can become a fun, engaging game through a much more solid simulation and a
 > playable route. Josh wants the full Field Data card list available for the

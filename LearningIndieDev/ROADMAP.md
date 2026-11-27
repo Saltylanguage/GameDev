@@ -1,7 +1,7 @@
-# Cellular Automata Roguelike Roadmap v2.8
+# Cellular Automata Roguelike Roadmap v2.9
 
-> **Status:** Active production roadmap | **Version:** 2.8 | **Updated:**
-> 2026-11-18 | **Cadence:** Two weeks, approximately 20 hours per developer |
+> **Status:** Active production roadmap | **Version:** 2.9 | **Updated:**
+> 2026-11-27 | **Cadence:** Two weeks, approximately 20 hours per developer |
 > **Product owner:** Josh
 
 This is the product-level source of truth for what the team is trying to make,
@@ -25,15 +25,18 @@ links the Trello work and open decisions. Reconcile this added scope with the
 ten-outcome M2 gate below and the M3 content boundary before marking new work
 accepted. No balance value or milestone closeout was approved by this update.
 
-**Sprint transition:** [S5](docs/Sprints/S5-control-record.md) remains active
-through November 15; its Field Data tickets closed October 21, while current
-GLJP work and S5 closeout remain separate. The four-week S5 exception does not
-extend into S6. Josh approved [S6 — The Fun Pass](docs/Sprints/S6-control-record.md)
-as the planned November 16–29 direction: prove one complete, understandable,
-replayable Rabbit journey and make balance comparisons inexpensive. S6 kickoff,
-owner allocation, and the November source/evidence integration check are still
-pending. This replaces the older S6 persistence/first-Genome forecast, not
-the need to preserve permanent progression already developed elsewhere.
+**November 27 sprint transition:** [S5](docs/Sprints/S5-control-record.md) is
+Closed: all 16 Field Data and six GLJP cards are Done, while WTR-01 was carried
+forward unfinished. [S6 — Track A technical foundations](docs/Sprints/S6-control-record.md)
+is Active for the November 16–29 window, formalized after work began. Its
+selected subset is VS-A1, WTR-01, VS-A3, VS-A6 and VS-A7. Josh owns these
+cards for now; Sim may assist when available. Remaining-hour estimates and
+specific review assignments are open, so no capacity-fit claim is made.
+November 29 is a technical review and carry-over
+checkpoint. The complete Rabbit play review and three-response accept/revise
+gate are reforecast after Track A, before M2 can close; S7 dates and scope
+must be reset from that evidence. This supersedes the older S6 Fun Pass sprint
+schedule, not its player outcome or the permanent progression already built.
 
 ## Product outcome
 
@@ -96,8 +99,8 @@ small evidence-producing corrections.
 
 - The accepted M1 expedition contains six ten-second rounds in one world. The
   current Field Data journey connects multiple such simulation nodes through
-  map, reward, and shop decisions. Freeze the representative M2 route at S6
-  review; do not describe one node as the whole journey.
+  map, reward, and shop decisions. Freeze the representative M2 route at the
+  reforecast Rabbit play review; do not describe one node as the whole journey.
 - The M1 node starts without a Mutation and has decisions after rounds 1–5.
   The current journey also has node-end reward and shop decisions; terminal
   results occur when the journey succeeds, fails, or is ended.
@@ -110,7 +113,8 @@ small evidence-producing corrections.
   Mutations; already permanent balances and unlocks remain.
 - The M1 one-node victory rule is historical acceptance. For the M2 journey,
   extinction ends the whole journey without cash-out. The exact authored
-  phase-clear and route-survival expectations remain under S6 review.
+  phase-clear and route-survival expectations remain under the reforecast
+  Rabbit play review.
 - The Field Data journey has implemented round payouts, shops, and permanent
   success settlement. Their player-facing balance and M2 result explanation
   still need review; older proposed performance and Skip-bonus formulas do not
@@ -168,8 +172,10 @@ small evidence-producing corrections.
 These are the ten required outcomes, not ten claims of completion. Existing
 implementation, design decisions, and tests are starting evidence; M2 closes
 only after one representative, legitimate player route passes all rows. S6
-proves the Rabbit journey and its three responses. S7 integrates the complete
-menu-to-next-journey experience and obtains external-player evidence. The
+reviews Track A technical foundations. The complete Rabbit journey and its
+three responses move to the next planned play review, before S7 integrates the
+menu-to-next-journey experience and obtains external-player evidence. S7's
+dates and scope must be reforecast from the S6 checkpoint. The
 [Trello M2 milestone](https://trello.com/c/PoxE1gpz/19-m2-vertical-slice) links
 one ticket per outcome with provisional remaining-effort ranges; refine those
 ranges and assign owners and reviewers at kickoff rather than treating them as
@@ -178,13 +184,13 @@ sprint commitments.
 | Required outcome | Current foundation / open acceptance | Planned gate |
 | --- | --- | --- |
 | Main menu, profile/new/continue, scenario/species selection, run introduction | Menu and versioned profiles exist. Desktop Simulation must open Species & Scenario Selection with Rabbit and Forest Edge selected, Rabbit alone available, and other shown species as locked silhouettes; Continue then opens Journey, first reward, and first simulation. Verify real exit/relaunch and launch inputs. | S7 integration |
-| Complete live-run UI: readable board, inspection, objectives, upgrades, feedback | Board, Field Ledger, controls, choices, and map exist. A player must find the Fox pressure, inspect relevant state, understand the current objective and next action at 1920×1080. | S6 comprehension, S7 visual acceptance |
-| One curated scenario and small visually distinct species roster | Forest Edge with Rabbit, Fox, and Plant resources is authored. Keep Fern as a resource, not a promised playable species; validate the chosen route and visual identities rather than expanding content. | S6 route review, S7 visual acceptance |
-| Three understandable strategies using the proven upgrade grammar | Current introductory answers are avoidance, survival, and faster reproduction. Verify each is available to a fresh profile, has an observable effect and tradeoff, and can be described after legitimate play. Preserve older Trailblazer/Warren/Gardeners research as history. | S6 core gate |
+| Complete live-run UI: readable board, inspection, objectives, upgrades, feedback | Board, Field Ledger, controls, choices, and map exist. A player must find the Fox pressure, inspect relevant state, understand the current objective and next action at 1920×1080. | Post-Track A comprehension; S7 visual acceptance |
+| One curated scenario and small visually distinct species roster | Forest Edge with Rabbit, Fox, and Plant resources is authored. Keep Fern as a resource, not a promised playable species; validate the chosen route and visual identities rather than expanding content. | Post-Track A route review; S7 visual acceptance |
+| Three understandable strategies using the proven upgrade grammar | Current introductory answers are avoidance, survival, and faster reproduction. Verify each is available to a fresh profile, has an observable effect and tradeoff, and can be described after legitimate play. Preserve older Trailblazer/Warren/Gardeners research as history. | Post-Track A Rabbit play gate |
 | Selected art direction on board and core UI | Pastel eco-OS and board-first direction are approved; production art and event cues are partial. Review actual board, menu, choices, results, and imported art at 1920×1080; do not substitute concept images for runtime art. | S7 presentation gate |
 | Initial UI, upgrade, danger, outcome, ambience, and music audio language | Menu and birth chimes exist; the wider palette and sourced ambience/music remain open. Validate distinct, restrained cues, mute/volume behavior, and 4× fatigue without requiring final-volume production. | S7 presentation gate |
-| Aggregated, rate-limited dense-activity feedback | Birth grouping, a chime limit, and prioritized reactions are partial. Test crowded and 4× play for truthful, bounded visual/audio cues and a readable summary of suppressed routine events. | S6 feedback, S7 acceptance |
-| Results identify primary causes and upgrade contributions | Settlement, population, stat lines, and loadouts exist. Explain leading observed causes and show directly measured Mutation effects or a clearly identified matched comparison; do not claim causal contribution from a loadout list alone. | S6 causal read, S7 result gate |
+| Aggregated, rate-limited dense-activity feedback | Birth grouping, a chime limit, and prioritized reactions are partial. Test crowded and 4× play for truthful, bounded visual/audio cues and a readable summary of suppressed routine events. | Post-Track A feedback; S7 acceptance |
+| Results identify primary causes and upgrade contributions | Settlement, population, stat lines, and loadouts exist. Explain leading observed causes and show directly measured Mutation effects or a clearly identified matched comparison; do not claim causal contribution from a loadout list alone. | Post-Track A causal read; S7 result gate |
 | Versioned meta-progression unlocks at least one scenario, species, or upgrade option | Versioned profile, settlement, Gene Lab research, and journey-Mutation eligibility are implemented. A fresh profile must earn, buy, save, relaunch, and use one permanent unlock on the next journey; verify active versus owned state. | S7 persistence gate |
 | Onboarding, accessibility baseline, clean next-run flow | Results can return to map or start again; some focus and volume controls exist. A first-time player must reach and replay the route without developer help, with visible keyboard focus, readable text/contrast, mute, and a reduced-motion equivalent for essential feedback. | S7 external-player gate |
 
@@ -275,22 +281,24 @@ reserve; do not replace the reserve with new feature scope.
 S4 closed on 2026-10-15 with the research and Desktop foundation published.
 Its original in-game strategy acceptance remains open. P1-032 returned to
 Backlog for Sim's launch-input review and a real save/exit/relaunch check;
-S4-04/05 remain Backlog. S5 remains Active through November 15, with Field Data
-closed but GLJP work and sprint closeout still open. S6 is Planned for November
-16–29. S7 must be reforecast after the S6 playability review.
+S4-04/05 remain Backlog. S5 closed administratively November 27 after its
+November 15 execution end; Field Data and GLJP are Done and WTR-01 carried into
+S6. S6 is Active Track A for November 16–29, with a technical review at its
+end. S7 and the full Rabbit play review must be reforecast after that checkpoint.
 
 | Sprint | Forecast dates | Primary outcome | Feature capacity | Reserve | Exit test |
 | --- | --- | --- | ---: | ---: | --- |
 | **S4 — Build identity and evidence (Closed 2026-10-15)** | 2026-10-01–2026-10-14 | Trailblazer, Warren, and Gardeners create distinct decisions in Forest Edge; the canonical Desktop starts from the active profile and current defaults. | Historical plan: 28h scheduled feature work across P1-032, F03, F07, and F11; local profile-choice save/restore and optional design spikes deferred | 8h | Research and Desktop foundation published; four selected cards Done. The original in-game strategy acceptance and independent review remain open, and P1-032 was returned to Backlog. See the [closeout](docs/Sprints/S4-control-record.md#closeout--2026-10-15). |
-| **S5 — Field Data and playability (Active)** | 2026-10-19–2026-11-15 | Complete the current Field Data/GLJP work and record an honest closeout; FD-T01–FD-T16 were accepted October 21. | Remaining GLJP work and owners/estimates require reconciliation; do not reuse the original 57–95h estimate as remaining effort | No protected reserve under the October 16 exception | S5 closeout must distinguish implemented work, November evidence, player acceptance, and unresolved route behavior. See the [S5 control](docs/Sprints/S5-control-record.md). |
-| **S6 — The Fun Pass (Planned)** | 2026-11-16–2026-11-29 | Demonstrate one enjoyable Rabbit journey with avoidance, survival, and faster reproduction as distinct responses to Fox pressure, causal feedback, and a low-effort comparison loop. | Re-estimate and assign at kickoff; normal envelope about 20h per developer, not an automatic commitment of every work package | Agree integration/review allowance at kickoff | Complete legitimate journey, three differentiated approaches, readable tradeoff and failure/recovery, repeatable comparisons, and an explicit playtest accept/revise decision. Map evidence to the M2 outcomes; S6 does not itself close M2. See the [S6 control](docs/Sprints/S6-control-record.md). |
-| **S7 — Vertical-slice integration** | TBD; reforecast after S6 | Integrate the ten M2 outcomes into one menu-to-next-journey route, then observe an external player complete and replay it without developer help. | Select and size after S6 evidence; do not treat all open work as pre-committed | Reforecast | Every M2 outcome passes on the representative route, or the evidence produces a short prioritized revision plan and M2 stays open. |
+| **S5 — Field Data and playability (Closed 2026-11-27)** | 2026-10-19–2026-11-15 | Deliver and review the Field Data and GLJP foundations; FD-T01–FD-T16 and GLJP-01–06 are Done. | Historical 57–95h Field Data range; actual remaining hours were not reconstructed | No protected reserve under the October 16 exception | WTR-01 carried into S6 unfinished. Closeout does not claim Rabbit route, balance or M2 acceptance. See the [S5 control](docs/Sprints/S5-control-record.md). |
+| **S6 — Track A technical foundations (Active)** | 2026-11-16–2026-11-29 | Reconcile water/wrapping and prove the smallest useful Trinket, creature-scale Rabbit and five-species sandbox foundations before balance. | Josh owns VS-A1, WTR-01, VS-A3, VS-A6 and VS-A7; Sim may assist. Remaining-hour estimates are open and capacity fit is unverified | Set at technical review | Record topology decision or blocker, verified prototype state, estimate/reviewer reconciliation and deliberate carry-over. Full Rabbit Fun Pass play review is reforecast after Track A. M2 remains open. See the [S6 control](docs/Sprints/S6-control-record.md). |
+| **S7 — Vertical-slice integration (Proposed)** | TBD; reforecast after S6 | Plan the Rabbit play-review gate first, then select a realistic S7 integration scope for the ten M2 outcomes and external-player review. The play review is not automatically committed to one sprint. | Select and size after S6 evidence; do not treat all open work as pre-committed | Reforecast | Every M2 outcome passes on the representative route, or the evidence produces a short prioritized revision plan and M2 stays open. |
 
-Do not fill S6's two-week envelope with unestimated GLJP or tooling work.
-Reconcile the unpublished November source and assign the smallest playable
-subset at kickoff. Defer the former S6 persistence/Genome forecast until its
-remaining scope and acceptance are checked against the already completed FD2
-work; do not count it as a new S6 commitment.
+Do not treat every Track A card as committed merely because S6 is Active.
+Assign remaining estimates and review responsibility for the selected cards
+before claiming capacity fit. The November source is published on `ProjectMain` at
+`49c81f91`; the procedural-water prototype remains separate. The former S6
+persistence/Genome forecast is superseded as a sprint schedule, while its
+remaining M2 acceptance remains open.
 
 ## Feature allocation ledger
 
@@ -299,12 +307,12 @@ before M2.
 
 | ID | Feature | Priority | First useful slice | Effort | Landing window | Owner / reviewer | Scheduling state |
 | --- | --- | --- | --- | ---: | --- | --- | --- |
-| F01 | Expedition decision loop | Now | Preserve six 10-second rounds per simulation node, map/node transitions, confirmed End, and whole-journey terminal outcomes | M | M1 foundation; S5 Field Data; S6 route review | Josh / Sim | M1 and Field Data foundations delivered; current route acceptance open |
-| F02 | Phase decision moment | Now | Keep readable frozen round choices, node-end rewards, shop decisions, and a clear next map action | M | M1 foundation; S5 Field Data; S6 comprehension | Josh / Sim | Foundations delivered; player comprehension open |
-| F03 | Mutation grammar and build identity | Now → Next | Prove fresh-profile avoidance, survival, and faster-reproduction responses to Fox pressure; retain original build research | XL | S4 research; S6 playability | Josh / Sim | Grammar and bounded research delivered; three-response player acceptance open |
+| F01 | Expedition decision loop | Now | Preserve six 10-second rounds per simulation node, map/node transitions, confirmed End, and whole-journey terminal outcomes | M | M1 foundation; S5 Field Data; post-Track A route review | Josh / Sim | M1 and Field Data foundations delivered; current route acceptance open |
+| F02 | Phase decision moment | Now | Keep readable frozen round choices, node-end rewards, shop decisions, and a clear next map action | M | M1 foundation; S5 Field Data; post-Track A comprehension | Josh / Sim | Foundations delivered; player comprehension open |
+| F03 | Mutation grammar and build identity | Now → Next | Prove fresh-profile avoidance, survival, and faster-reproduction responses to Fox pressure; retain original build research | XL | S4 research; post-Track A Rabbit play review | Josh / Sim | Grammar and bounded research delivered; three-response player acceptance open |
 | F04 | Mutation and Genome tree presentation | Next | Author the first approved Genome content and make temporary/permanent tree language understandable before functional Genome actions | L | content not selected in S5 kickoff; functional actions after their contract | Josh / UI reviewer | Proposed content / horizon |
-| F05 | Cause-and-effect phase summary | Now → Next | Explain observed Fox, food, and reproduction pressure and directly supported Mutation effects in phase and journey results | M | S3 foundation; S6 causal review; S7 integrated result | Josh / Sim | Metrics and results foundation; player explanation open |
-| F06 | Economy and currency loop | Now → Next | Preserve the accepted Field Data loop and verify its contribution to playable decisions; reconcile permanent progression against the current branch | XL | S5 Field Data accepted; S6 playability review | Assign S6 owner at kickoff | FD workstream Done; November integration and player review remain separate |
+| F05 | Cause-and-effect phase summary | Now → Next | Explain observed Fox, food, and reproduction pressure and directly supported Mutation effects in phase and journey results | M | S3 foundation; post-Track A causal review; S7 integrated result | Josh / Sim | Metrics and results foundation; player explanation open |
+| F06 | Economy and currency loop | Now → Next | Preserve the accepted Field Data loop and verify its contribution to playable decisions; reconcile permanent progression against the current branch | XL | S5 Field Data accepted; post-Track A play review | Assign next-review owner | FD workstream Done; November integration and player review remain separate |
 | F07 | Species identity and counterplay | Next | Rabbit and Fox create different pressures and invite different responses; playable plants remain deferred | L | not selected in Field Data S5 kickoff | Josh / Sim | Proposed / horizon |
 | F08 | Risk/reward events and adaptive pressure | Next → Later | Define one readable event or pressure response without hidden rubber-banding | L | S4 design; S7 only if accepted; otherwise post-M2 | Josh / Sim | Horizon |
 | F09 | Species simulation and ecology depth | Next, foundational | Implement one focused predator/prey/plant interaction slice | XL | S4 design; staged validation; broad portfolio post-M2 | Josh / Sim | Horizon |
@@ -313,7 +321,7 @@ before M2.
 | F12 | Collection and Field Notes | Next | Define seen, discovered, owned, researched, and secret states | L | taxonomy unscheduled; full surface post-M2 | Josh / UI reviewer | Horizon |
 | F13 | Expedition setup and home-base context | Next | Verify canonical profile/menu-to-Desktop-to-journey-to-results-to-next-journey route, constrained selection, and real exit/relaunch | L | S3/S4 foundation; S7 integration | Josh / Sim for launch inputs | Foundation published; full route acceptance open |
 | F14 | Readable visual language | Next | Apply approved pastel eco-OS and board-first direction to menu, board, choices, and results at the 1920×1080 acceptance target | L | Current exploration; S7 presentation | Josh / art reviewer | Partial production assets and visual evidence; review open |
-| F15 | Audio and simulation feedback | Next | Initial UI, upgrade, danger, outcome, ambience, and music palette with truthful dense-event limits and mute/reduced-motion equivalents | M | S6 feedback; S7 presentation | Josh / audio reviewer TBD | Chime/reaction pilots; full palette and acceptance open |
+| F15 | Audio and simulation feedback | Next | Initial UI, upgrade, danger, outcome, ambience, and music palette with truthful dense-event limits and mute/reduced-motion equivalents | M | Post-Track A feedback; S7 presentation | Josh / audio reviewer TBD | Cozy Pond integrated; full palette and listening acceptance open |
 | F16 | Species Genome progression | Now → Later | Preserve the integrated Gene Lab research, owned/equipped distinction, journey eligibility, and permanent settlement; prove one earned unlock applies on a later journey | XL | S5 GLJP review; S7 persistence gate | Josh / Sim | Functional paths and focused tests exist; final catalog choices, player review, and relaunch acceptance open |
 | F17 | Profile, save/load, and cloud sync | Now → Later | Local versioned multi-profile save/restore and recovery copy exist; verify real exit/relaunch and the earned-unlock loop. Active-run resume and cloud remain separate. | XL | Local foundation published; S7 acceptance; cloud post-M2 | Josh / platform reviewer TBD | Foundation ready for real relaunch review |
 | F18 | Additional species, scenarios, and builds | Next | Bring the confirmed Rabbit/Fox/Owl/Deer/Wolf roster into a test scenario and selection flow with provisional rules and working test upgrades | XL | VS-A7 technical expansion; balance and production acceptance later | Josh / Sim | Roster confirmed; implementation and estimate pending |
@@ -326,9 +334,9 @@ before M2.
 S2 trustworthy Mutation foundation
   -> S3 expedition decision loop + M1 closeout
        -> S4 build, species, and scenario identity
-            -> S5 Field Data journey and GLJP work (Active through Nov 15)
-                 -> S6 Rabbit playability and low-friction comparison (Planned Nov 16–29)
-                      -> S7 vertical-slice integration and M2 decision
+            -> S5 Field Data journey and GLJP work (Closed Nov 27)
+                 -> S6 Track A technical foundations (Active Nov 16–29)
+                      -> Rabbit play review, S7 integration and M2 decision (reforecast)
 
 Tooling supports the path when repeated friction justifies it.
 It does not become a feature prerequisite by default.
@@ -409,8 +417,8 @@ belongs in the sprint control record and task board.
 - [Sprint 2 plan](docs/NEXT_WORK_BUCKET_PLAN.md)
 - [Closed Sprint 3 control record](docs/Sprints/S3-control-record.md)
 - [Closed Sprint 4 control record](docs/Sprints/S4-control-record.md)
-- [Active Sprint 5 control](docs/Sprints/S5-control-record.md)
-- [Planned Sprint 6 control — The Fun Pass](docs/Sprints/S6-control-record.md)
+- [Closed Sprint 5 control](docs/Sprints/S5-control-record.md)
+- [Active Sprint 6 control — Track A technical foundations](docs/Sprints/S6-control-record.md)
 - [Historical S5 simulation and upgrades proposal](docs/Sprints/S5-proposal-2026-10-15.md)
 - [Sprint 4 kickoff handoff](docs/handoffs/2026-10-01-codex-s4-kickoff.md)
 - [Mutation and Genome direction](docs/UPGRADE_SYSTEM_DIRECTION.md)
